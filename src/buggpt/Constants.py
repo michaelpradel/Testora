@@ -1,0 +1,1 @@
+defects4j_root_path = "/home/m/research/collabs/defects4j"

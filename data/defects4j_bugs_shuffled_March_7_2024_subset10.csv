@@ -1,0 +1,11 @@
+project.id,bug.id,revision.id.buggy,revision.id.fixed,report.id,report.url
+JacksonDatabind,8,a399c540e540ac616fd3c19a8e46ce065ef71f8c,3b041e3bad5968ade7f7519daeef6695a8f6b7f9,667,https://github.com/FasterXML/jackson-databind/issues/667
+Jsoup,29,59fb5117a767ab75fe3baf5c37966c83430b02af,05ae97865c84536a6cfe7759ca6c382eb761ecb2,168,https://github.com/jhy/jsoup/issues/168
+Lang,13,d0cf0fdd4ff2329f9584c4f663f1af177c1994f6,bd59a1908a1df3364918be7b07782500616b15ac,LANG-788,https://issues.apache.org/jira/browse/LANG-788
+Math,81,6e3ea6857dce8b7a586c3af555e21ba35a59ea54,7d903ca533833e5db8d2fe150f1e31b54ddda700,MATH-308,https://issues.apache.org/jira/browse/MATH-308
+Math,55,3114d4ed4654f54fc1ee8e3c3da5b6cd1cd2cc87,0c38504ffa3ef520ce78e260538d7b8742c895e8,MATH-554,https://issues.apache.org/jira/browse/MATH-554
+JacksonDatabind,82,dec4a483d9d70a8e7d14e28474058ef50df1204d,4a2b1ae08ded66b77e05bf8fa0ac8a2e8c60709d,1595,https://github.com/FasterXML/jackson-databind/issues/1595
+JacksonXml,1,81f38e1985bdfafdbe02e32dfb5ccb200fc64eae,2d7683ed820116b77cba9b4b290cd7ce7dfa5cf4,180,https://github.com/FasterXML/jackson-dataformat-xml/issues/180
+Closure,101,2d892b164f41c053de4d56e424f0815576c6dc54,369282db85567f1bf2c9635d0c0043d47f114814,130,https://storage.googleapis.com/google-code-archive/v2/code.google.com/closure-compiler/issues/issue-130.json
+Math,38,74e00296574dc3ac0bc064fc3258faabaf732d6c,91cc42ba0493938aa53585720b315b62c5784a96,MATH-728,https://issues.apache.org/jira/browse/MATH-728
+Closure,4,1c95684b4a6add525b3070cbd27c234981520676,efefb736fccc2039b5fb079710b3f2ac82b8c6e4,873,https://storage.googleapis.com/google-code-archive/v2/code.google.com/closure-compiler/issues/issue-873.json
