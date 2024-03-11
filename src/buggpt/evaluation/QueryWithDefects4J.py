@@ -1,8 +1,11 @@
 from csv import reader
 from buggpt.prompts.CodeExtractor import get_changed_code_and_patch
 from buggpt.prompts.Prompt import Prompt
-import buggpt.llms.GPT_3_5_Turbo_0125 as LLM
-# import buggpt.llms.MockModel as LLM
+# import buggpt.llms.MockModel as llm
+# from buggpt.llms.LLMCache import LLMCache
+# import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
+# llm = LLMCache(uncached_llm)
+import buggpt.llms.RandomModel as llm
 
 
 def get_target_bugs(bugs_file):
@@ -40,7 +43,7 @@ def answer_matches_patch(warning, patch):
 
 
 target_bugs = get_target_bugs(
-    "./data/defects4j_bugs_shuffled_March_7_2024_subset2.csv")
+    "./data/defects4j_bugs_shuffled_March_7_2024_subset10.csv")
 
 unparsable_answers = 0
 true_positives = 0
@@ -54,7 +57,7 @@ for project_id, bug_id in target_bugs:
         code, patch = get_changed_code_and_patch(
             project_id, bug_id, version=version)
         p = Prompt(code)
-        raw_answer = LLM.query(p)
+        raw_answer = llm.query(p)
         answer = p.parse_answer(raw_answer)
         print(f"Answer: {answer}\n")
         if answer is None:
@@ -87,4 +90,3 @@ print(f"True negatives: {true_negatives}")
 print(f"False negatives: {false_negatives}")
 print(f"Precision: {true_positives / (true_positives + false_positives)}")
 print(f"Recall: {true_positives / (true_positives + false_negatives)}")
-
