@@ -2,10 +2,10 @@ from csv import reader
 from buggpt.prompts.CodeExtractor import get_changed_code_and_patch
 from buggpt.prompts.Prompt import Prompt
 # import buggpt.llms.MockModel as llm
-# from buggpt.llms.LLMCache import LLMCache
-# import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
-# llm = LLMCache(uncached_llm)
-import buggpt.llms.RandomModel as llm
+from buggpt.llms.LLMCache import LLMCache
+import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
+llm = LLMCache(uncached_llm)
+# import buggpt.llms.RandomModel as llm
 
 
 def get_target_bugs(bugs_file):
@@ -88,5 +88,8 @@ print(f"True positives: {true_positives}")
 print(f"False positives: {false_positives}")
 print(f"True negatives: {true_negatives}")
 print(f"False negatives: {false_negatives}")
-print(f"Precision: {true_positives / (true_positives + false_positives)}")
-print(f"Recall: {true_positives / (true_positives + false_negatives)}")
+precision = true_positives / (true_positives + false_positives)
+print(f"Precision: {precision:.2f}")
+recall = true_positives / (true_positives + false_negatives)
+print(f"Recall: {recall:.2f}")
+print(f"F1 score: {(2 * precision * recall) / (precision + recall):.2f}")
