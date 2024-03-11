@@ -1,11 +1,16 @@
 from csv import reader
-from buggpt.prompts.CodeExtractor import get_changed_code_and_patch
 from buggpt.prompts.Prompt import Prompt
-# import buggpt.llms.MockModel as llm
-from buggpt.llms.LLMCache import LLMCache
-import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
-llm = LLMCache(uncached_llm)
+
+# Choose how to extract code to be used in prompt:
+from buggpt.prompts.CodeExtractor import get_hunk_windows_and_patch as get_code_and_patch
+# from buggpt.prompts.CodeExtractor import get_full_file_and_patch as get_code_and_patch
+
+# Choose which language model to use:
+import buggpt.llms.MockModel as llm
 # import buggpt.llms.RandomModel as llm
+# from buggpt.llms.LLMCache import LLMCache
+# import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
+# llm = LLMCache(uncached_llm)
 
 
 def get_target_bugs(bugs_file):
@@ -54,7 +59,7 @@ false_negatives = 0
 for project_id, bug_id in target_bugs:
     for version in ["b", "f"]:
         print(f"\n{'Fixed' if version == 'f' else 'Buggy'} version of {project_id} {bug_id}\n-----------------------------------------")
-        code, patch = get_changed_code_and_patch(
+        code, patch = get_code_and_patch(
             project_id, bug_id, version=version)
         p = Prompt(code)
         raw_answer = llm.query(p)
@@ -92,4 +97,5 @@ precision = true_positives / (true_positives + false_positives)
 print(f"Precision: {precision:.2f}")
 recall = true_positives / (true_positives + false_negatives)
 print(f"Recall: {recall:.2f}")
-print(f"F1 score: {(2 * precision * recall) / (precision + recall):.2f}")
+f1_score = (2 * precision * recall) / (precision + recall) if precision + recall > 0 else 0
+print(f"F1 score: {f1_score:.2f}")
