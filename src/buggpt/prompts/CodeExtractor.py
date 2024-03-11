@@ -28,7 +28,14 @@ def get_hunk_windows_and_patch(project_id, bug_id, version="b"):
     patch = get_patch(project_id, bug_id, version)
     project_root_dir = get_project_root_dir(project_id, bug_id, version)
     code = ""
+    nb_extra_lines = 10  # added both before and after the hunk
     for modified_file in patch.modified_files:
+        modified_file_path = join(project_root_dir, modified_file.path)
+        with open(modified_file_path, "r") as f:
+            lines = f.readlines()
+
+        # 1) find line ranges to extract
+        ranges = []
         for hunk in modified_file:
             if version == "b":
                 start_line = hunk.target_start
@@ -40,13 +47,22 @@ def get_hunk_windows_and_patch(project_id, bug_id, version="b"):
                 raise ValueError(
                     f"Invalid version (must be 'b' or 'f'): {version}")
 
+            start_line = max(1, start_line - nb_extra_lines)
+            end_line = min(len(lines), end_line + nb_extra_lines)
+            ranges.append([start_line, end_line])
+
+        # 2) merge overlapping ranges
+        merged_ranges = []
+        for start_line, end_line in sorted(ranges):
+            if not merged_ranges or merged_ranges[-1][1] < start_line:
+                merged_ranges.append([start_line, end_line])
+            else:
+                merged_ranges[-1][1] = max(merged_ranges[-1][1], end_line)
+
+        # 3) extract code
+        for start_line, end_line in merged_ranges:
             code += f"File: {modified_file.path}. Lines: {start_line}-{end_line}\n"
-
-            modified_file_path = join(project_root_dir, modified_file.path)
-
-            with open(modified_file_path, "r") as f:
-                lines = f.readlines()
-                code += "".join(lines[start_line-1:end_line])+"\n"
+            code += "".join(lines[start_line-1:end_line])+"\n"
 
     return code, patch
 

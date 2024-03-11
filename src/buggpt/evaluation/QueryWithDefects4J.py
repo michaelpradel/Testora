@@ -1,28 +1,16 @@
-from csv import reader
 from buggpt.prompts.Prompt import Prompt
+from buggpt.util.Defects4J import get_target_bugs
 
 # Choose how to extract code to be used in prompt:
 from buggpt.prompts.CodeExtractor import get_hunk_windows_and_patch as get_code_and_patch
 # from buggpt.prompts.CodeExtractor import get_full_file_and_patch as get_code_and_patch
 
 # Choose which language model to use:
-import buggpt.llms.MockModel as llm
+# import buggpt.llms.MockModel as llm
 # import buggpt.llms.RandomModel as llm
-# from buggpt.llms.LLMCache import LLMCache
-# import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
-# llm = LLMCache(uncached_llm)
-
-
-def get_target_bugs(bugs_file):
-    target_bugs = []  # list of tuples (project_id, bug_id)
-    with open(bugs_file, "r") as f:
-        r = reader(f)
-        next(r)
-        for row in r:
-            project_id = row[0]
-            bug_id = row[1]
-            target_bugs.append((project_id, bug_id))
-    return target_bugs
+from buggpt.llms.LLMCache import LLMCache
+import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
+llm = LLMCache(uncached_llm)
 
 
 def answer_matches_patch(warning, patch):
@@ -97,5 +85,6 @@ precision = true_positives / (true_positives + false_positives)
 print(f"Precision: {precision:.2f}")
 recall = true_positives / (true_positives + false_negatives)
 print(f"Recall: {recall:.2f}")
-f1_score = (2 * precision * recall) / (precision + recall) if precision + recall > 0 else 0
+f1_score = (2 * precision * recall) / (precision +
+                                       recall) if precision + recall > 0 else 0
 print(f"F1 score: {f1_score:.2f}")
