@@ -1,6 +1,6 @@
 import json
 
-class Prompt:
+class Prompt1:
     # NOTE: when changing the system message, must remove the old cache
     system_message = """
 You are an experienced Java developer reviewing code for bugs.

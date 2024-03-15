@@ -12,7 +12,8 @@ authors = [
 license = "MIT"
 dependencies = [
     "openai",
-    "unidiff"
+    "unidiff",
+    "libcst"
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -1,4 +1,4 @@
-from buggpt.prompts.Prompt import Prompt
+from buggpt.prompts.Prompt1 import Prompt1
 from buggpt.util.Defects4J import get_target_bugs
 
 # Choose how to extract code to be used in prompt:
@@ -49,7 +49,7 @@ for project_id, bug_id in target_bugs:
         print(f"\n{'Fixed' if version == 'f' else 'Buggy'} version of {project_id} {bug_id}\n-----------------------------------------")
         code, patch = get_code_and_patch(
             project_id, bug_id, version=version)
-        p = Prompt(code)
+        p = Prompt1(code)
         raw_answer = llm.query(p)
         answer = p.parse_answer(raw_answer)
         print(f"Answer: {answer}\n")

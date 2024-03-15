@@ -41,6 +41,7 @@ class LLMCache:
         result = self.cache.get(prompt_str)
         if result is not None:
             self.nb_hits += 1
+            print(f"Prompt:\n{prompt_str}\nReturning cached result\n")
             return result
 
         result = self.llm_module.query(prompt)
