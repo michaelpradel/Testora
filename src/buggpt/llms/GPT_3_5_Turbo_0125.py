@@ -9,7 +9,7 @@ def query(prompt):
     print(
         f"System message:\n{prompt.system_message}\nUser message:\n{prompt.create_prompt()}")
 
-    if prompt.json:
+    if prompt.use_json_output:
         completion = openai.chat.completions.create(
             model=model,
             messages=[

@@ -12,7 +12,8 @@ Do you see any bugs in this code?
 ```python
 <CODE>
 ```
-The code is extracted from a larger context, and you can assume that all necessary imports, other functions, and global variables are available.
+The code is extracted from a larger project.
+Assume that all necessary imports, other functions, and global variables are available.
 Focus on logic errors, incorrect assumptions, and missing corner cases.
 """
 
@@ -36,19 +37,19 @@ Answer:
 Provide your answer as an enumerated list, with one bug on each line.
 """
 
-    def __init__(self, code):
-        self.code = code
-        self.json = False
+    def __init__(self, code_to_check):
+        self.code_to_check = code_to_check
+        self.use_json_output = False
 
     def create_prompt(self):
-        if self.json:
-            prompt = self.instruction.replace("<CODE>", self.code) + self.json_instruction
+        if self.use_json_output:
+            prompt = self.instruction.replace("<CODE>", self.code_to_check) + self.json_instruction
         else:
-            prompt = self.instruction.replace("<CODE>", self.code) + self.output_instruction
+            prompt = self.instruction.replace("<CODE>", self.code_to_check) + self.output_instruction
         return prompt
 
     def parse_answer(self, raw_answer):
-        if self.json:
+        if self.use_json_output:
             try:
                 answer = json.loads(raw_answer)
             except json.JSONDecodeError:
