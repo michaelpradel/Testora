@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import json
+from buggpt.util import Stats
 from buggpt.util.Defects4J import get_target_bugs
 from buggpt.util.PythonCodeUtil import add_call_to_test_function, is_parsable
 
@@ -40,22 +41,28 @@ def create_and_execute_test_case(code_to_check, hypothesis):
     parses = is_parsable(generated_test)
     print(f"Parsable: {parses}")
     if parses:
-        executor.execute_python(generated_test)
-
+        Stats.parsable_tests += 1
+        executor.execute_python_test(generated_test)
+    else:
+        Stats.unparsable_tests += 1
 
 
 # for testing on a single function:
 # target_bugs = [("scrapy", 29)]
 # for testing on tens of functions:
-target_bugs = get_target_bugs("data/bugsInPy_manually_selected_target_bugs.csv")[:2]
+target_bugs = get_target_bugs(
+    "data/bugsInPy_manually_selected_target_bugs.csv")[:5]
 
 for target_bug in target_bugs:
-    print(f"========================= Starting to check {target_bug[0]} {target_bug[1]} =========================\n")
+    Stats.attempted_target_bugs += 1
+    print(
+        f"========================= Starting to check {target_bug[0]} {target_bug[1]} =========================\n")
     code_to_check = get_code_to_check(target_bug[0], target_bug[1])
 
     print(f"++++++++++++++++++++++++++++++\nCreating hypotheses about bug\n++++++++++++++++++++++++++++++\n")
     hypotheses = create_bug_hypotheses(code_to_check)
     for idx, hypothesis in enumerate(hypotheses):
+        Stats.attempted_hypotheses += 1
         print(
             f"+++++++++++++++++++++++++++++++++++++++++\nGenerating test to validate hypothesis {idx}\n+++++++++++++++++++++++++++++++++++++++++\n")
         create_and_execute_test_case(code_to_check, hypothesis)

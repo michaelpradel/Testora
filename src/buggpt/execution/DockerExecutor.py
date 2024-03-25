@@ -3,14 +3,7 @@ import tarfile
 import tempfile
 from os.path import join
 from os import chdir, getcwd
-
-# def exec(cmd):
-#     result = subprocess.run(cmd, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
-#     if result.returncode != 0:
-#         print(result.stdout)
-#         raise RuntimeError(f"Failed to execute command: {cmd}")
-#     return result.stdout
-
+from buggpt.util import Stats
 
 
 class DockerExecutor:
@@ -18,7 +11,8 @@ class DockerExecutor:
         client = docker.from_env()
         self.container = client.containers.get("BugGPT_base")
 
-    def execute_python(self, code):
+    def execute_python_test(self, code):
+        Stats.test_execution_attempts += 1
         # copy code into container (via tarfile)
         with tempfile.TemporaryDirectory() as tmp_dir:
             code_file = join(tmp_dir, "code.py")
@@ -35,7 +29,19 @@ class DockerExecutor:
 
             data = open(tar_file, "rb").read()
             self.container.put_archive("/tmp", data)
-        
+
         # execute the code in the container
-        res2 = self.container.exec_run("python -m unittest /tmp/code.py")
-        print("Command results in:\n"+res2.output.decode("utf-8"))
+        exec_result = self.container.exec_run(
+            "python -m unittest /tmp/code.py")
+        test_execution_output = exec_result.output.decode("utf-8")
+        print(f"Command results in:\n{test_execution_output}")
+        if test_execution_output.startswith("Traceback"):
+            Stats.test_crashes += 1
+        elif "FAIL: " in test_execution_output:
+            Stats.test_failures += 1
+        elif "ERROR: " in test_execution_output:
+            Stats.test_errors += 1
+        elif "Ran 1 test" in test_execution_output and "OK" in test_execution_output:
+            Stats.test_passes += 1
+        else:
+            Stats.test_other_results += 1
