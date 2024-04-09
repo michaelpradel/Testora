@@ -51,9 +51,40 @@ def get_name_of_defined_function(code: str) -> str:
     function_nodes = [node for node, _, _ in extractor.nodes_and_lines]
 
     if len(function_nodes) != 1:
-        raise ValueError("Expected exactly one function in the code")
+        print(
+            f"Warning: {len(function_nodes)} functions found, using the first one")
 
     return function_nodes[0].name.value
+
+
+class FunctionRemover(cst.CSTTransformer):
+    def __init__(self, function_name: str):
+        self.function_name = function_name
+
+    def leave_FunctionDef(self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef) -> cst.FunctionDef:
+        if updated_node.name.value == self.function_name:
+            return cst.RemoveFromParent()
+        return updated_node
+
+
+def remove_function_with_name(code: str, function_name: str) -> str:
+    tree = cst.parse_module(code)
+    transformer = FunctionRemover(function_name)
+    new_tree = tree.visit(transformer)
+    return new_tree.code
+
+    # wrapper = cst.metadata.MetadataWrapper(tree)
+    # extractor = FunctionExtractor()
+    # wrapper.visit(extractor)
+
+    # function_nodes = [node for node, _, _ in extractor.nodes_and_lines]
+    # function_nodes_with_matching_name = [
+    #     n for n in function_nodes if n.name.value == function_name]
+
+    # result = code
+    # for n in function_nodes_with_matching_name:
+    #     result = result.replace(n.code, "")
+    # return result
 
 
 def add_call_to_test_function(code: str):

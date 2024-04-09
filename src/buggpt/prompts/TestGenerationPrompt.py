@@ -1,4 +1,4 @@
-from buggpt.util.PythonCodeUtil import get_name_of_defined_function
+from buggpt.util.PythonCodeUtil import get_name_of_defined_function, remove_function_with_name
 
 
 class TestGenerationPrompt:
@@ -48,6 +48,8 @@ Respond only with Python, i.e., no explanations.
 
     def parse_answer(self, raw_answer):
         generated_test = ""
+
+        # extract code
         in_code = False
         for line in raw_answer.split("\n"):
             if line == "```":
@@ -57,6 +59,10 @@ Respond only with Python, i.e., no explanations.
             if line == "```python" or line.startswith("import"):
                 in_code = True
 
+        # remove any copy (or modified version) of the code to check
+        generated_test = remove_function_with_name(generated_test, self.fut_name)
+         
+        # insert the code to check
         fut_import_stmt = f"from my_module import {self.fut_name}"
         if fut_import_stmt in generated_test:
             full_code = generated_test.replace(

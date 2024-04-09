@@ -1,11 +1,12 @@
 from os.path import join
 from unidiff import PatchSet
 
-from buggpt.util.BugsInPy import bugs_in_py_dir, all_bugs_file
+from buggpt.util.BugsInPy import bugs_in_py_dir, all_bugs_file, get_commit_url
 
 with open(all_bugs_file, 'r') as f:
     bug_info_files = [line.strip() for line in f.readlines()]
     # format: projects/luigi/bugs/3/bug.info
+
 
 for bug_info_file in bug_info_files:
     _, project, _, id, _ = bug_info_file.split("/")
@@ -25,22 +26,6 @@ for bug_info_file in bug_info_files:
         continue
 
     # print commit URL
-    with open(join(bugs_in_py_dir, bug_info_file), 'r') as f:
-        bug_info_lines = f.readlines()
-
-    fixed_commit_id_line = [
-        l for l in bug_info_lines if "fixed_commit_id" in l][0]
-    _, _, commit_id = fixed_commit_id_line.partition("=")
-    commit_id = commit_id.strip()
-    commit_id = commit_id.replace("\"", "")
-
-    with open(join(bugs_in_py_dir, "projects", project, "project.info"), 'r') as f:
-        project_info_lines = f.readlines()
-    project_url_line = [l for l in project_info_lines if "github_url" in l][0]
-    _, _, project_url = project_url_line.partition("=")
-    project_url = project_url.strip()
-    project_url = project_url.replace("\"", "")
-
-    print(f"{project}-{id}: {project_url}/commit/{commit_id}")
+    print(f"{project}-{id}: {get_commit_url(bug_info_file)}")
 
     # Status: Inspected all until keras-27 (inclusive)

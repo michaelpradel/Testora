@@ -2,7 +2,8 @@ from os import getenv
 from openai import OpenAI
 
 openai = OpenAI(api_key=getenv("OPENAI_KEY"))
-model = "gpt-3.5-turbo-0125"
+# model = "gpt-3.5-turbo-0125"
+model = "gpt-4-0125-preview"
 
 
 def query(prompt):

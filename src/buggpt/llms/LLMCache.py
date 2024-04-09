@@ -1,4 +1,3 @@
-from datetime import date
 import json
 from os import makedirs
 from os.path import join, exists
@@ -13,7 +12,7 @@ class LLMCache:
     def __init__(self, llm_module):
         self.llm_module = llm_module
 
-        name = llm_module.__name__.split(".")[-1]
+        name = llm_module.model
         cache_dir = join(cache_base_dir, name)
         if not exists(cache_dir):
             makedirs(cache_dir)

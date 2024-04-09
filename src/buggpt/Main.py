@@ -7,9 +7,9 @@ from buggpt.util.PythonCodeUtil import add_call_to_test_function, is_parsable
 from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.prompts.BugHypothesesPrompt import BugHypothesesPrompt
 from buggpt.prompts.TestGenerationPrompt import TestGenerationPrompt
-from buggpt.util.BugsInPy import get_code_to_check
+from buggpt.util.BugsInPy import get_code_to_check, get_commit_url
 from buggpt.llms.LLMCache import LLMCache
-import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
+import buggpt.llms.OpenAIGPT as uncached_llm
 llm = LLMCache(uncached_llm)
 
 
@@ -50,14 +50,14 @@ def create_and_execute_test_case(code_to_check, hypothesis):
 # for testing on a single function:
 # target_bugs = [("scrapy", 29)]
 # for testing on tens of functions:
-target_bugs = get_target_bugs(
-    "data/bugsInPy_manually_selected_target_bugs.csv")[:5]
+target_bugs = get_target_bugs("./data/bugsInPy_manually_selected_target_bugs.csv")[1:11]
 
-for target_bug in target_bugs:
+for project, id in target_bugs:
     Stats.attempted_target_bugs += 1
     print(
-        f"========================= Starting to check {target_bug[0]} {target_bug[1]} =========================\n")
-    code_to_check = get_code_to_check(target_bug[0], target_bug[1])
+        f"========================= Starting to check {project} {id} =========================\n")
+    print(f"Fix commit: {get_commit_url(project, id)}\n")
+    code_to_check = get_code_to_check(project , id)
 
     print(f"++++++++++++++++++++++++++++++\nCreating hypotheses about bug\n++++++++++++++++++++++++++++++\n")
     hypotheses = create_bug_hypotheses(code_to_check)

@@ -10,6 +10,7 @@ class DockerExecutor:
     def __init__(self):
         client = docker.from_env()
         self.container = client.containers.get("BugGPT_base")
+        self.container.start()
 
     def execute_python_test(self, code):
         Stats.test_execution_attempts += 1
@@ -35,13 +36,14 @@ class DockerExecutor:
             "python -m unittest /tmp/code.py")
         test_execution_output = exec_result.output.decode("utf-8")
         print(f"Command results in:\n{test_execution_output}")
-        if test_execution_output.startswith("Traceback"):
-            Stats.test_crashes += 1
-        elif "FAIL: " in test_execution_output:
+        if "FAIL: " in test_execution_output:
             Stats.test_failures += 1
         elif "ERROR: " in test_execution_output:
             Stats.test_errors += 1
         elif "Ran 1 test" in test_execution_output and "OK" in test_execution_output:
             Stats.test_passes += 1
+        elif test_execution_output.startswith("Traceback"):
+            Stats.test_crashes += 1
         else:
+            print(f"Warning: Unknown test result")
             Stats.test_other_results += 1

@@ -9,7 +9,7 @@ from buggpt.prompts.CodeExtractor import get_hunk_windows_and_patch as get_code_
 # import buggpt.llms.MockModel as llm
 # import buggpt.llms.RandomModel as llm
 from buggpt.llms.LLMCache import LLMCache
-import buggpt.llms.GPT_3_5_Turbo_0125 as uncached_llm
+import buggpt.llms.OpenAIGPT as uncached_llm
 llm = LLMCache(uncached_llm)
 
 
