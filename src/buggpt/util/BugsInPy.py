@@ -12,15 +12,25 @@ bugs_in_py_dir = "/home/m/research/collabs/BugsInPy"
 repo_cache_base_dir = join(getcwd(), "data/bugsinpy_cache/")
 
 
-def get_project_root_dir(project, id):
-    project_root_dir = f"{repo_cache_base_dir}/{project}/{id}b"
+def get_project_root_dir(project, id, version: str):
+    """
+    Values for "version": "b" for buggy, "f" for fixed, and "o" for original (= buggy without the fix-time test)
+    """
+
+    project_root_dir = f"{repo_cache_base_dir}/{project}/{id}{version}"
+
     if exists(project_root_dir):
         return join(project_root_dir, project)
 
     makedirs(project_root_dir)
 
     # checkout buggy or fixed version
-    cmd = f"bugsinpy-checkout -p {project} -i {id} -v 0 -w {project_root_dir}"
+    if version == "b":
+        cmd = f"bugsinpy-checkout -p {project} -i {id} -v 0 -w {project_root_dir}"
+    elif version == "f":
+        cmd = f"bugsinpy-checkout -p {project} -i {id} -v 1 -w {project_root_dir}"
+    elif version == "o":
+        cmd = f"bugsinpy-checkout-with-old-test -p {project} -i {id} -v 0 -w {project_root_dir}"
 
     result = subprocess.run(
         cmd, shell=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True)
@@ -33,7 +43,7 @@ def get_project_root_dir(project, id):
 
 
 def get_code_and_patch_range(project, id):
-    project_root_dir = get_project_root_dir(project, id)
+    project_root_dir = get_project_root_dir(project, id, "b")
     patch_file = join(bugs_in_py_dir, "projects", project,
                       "bugs", str(id), "bug_patch.txt")
 
@@ -79,9 +89,12 @@ def get_property_from_project_info_file(project, id, property_name):
 
 
 def get_test_code(project, id):
+    project_root_dir = get_project_root_dir(project, id, "o")
     relative_test_file = get_property_from_bug_info_file(
         project, id, "test_file")
-    # TODO CONT
+    test_file = join(project_root_dir, relative_test_file)
+    with open(test_file, "r") as f:
+        return f.read()
 
 
 def get_commit_url(project, id):

@@ -14,6 +14,19 @@ class FunctionExtractor(cst.CSTVisitor):
         self.nodes_and_lines.append((node, start_pos.line, end_pos.line))
 
 
+class CallExtractor(cst.CSTVisitor):
+    def __init__(self):
+        self.callees = []
+
+    def visit_Call(self, node: cst.Call) -> bool | None:
+        if isinstance(node.func, cst.Attribute):
+            self.callees.append(node.func.attr.value)
+        elif isinstance(node.func, cst.Name):
+            self.callees.append(node.func.value)
+        else:
+            raise ValueError("Unknown callee type")
+
+
 def extract_target_function(code, patch_range):
     tree = cst.parse_module(code)
     wrapper = cst.metadata.MetadataWrapper(tree)
@@ -59,6 +72,23 @@ def get_name_of_defined_function(code: str) -> str:
 
 def get_surrounding_class(code, patch_range, function_name):
     pass  # TODO implement
+
+
+def extract_tests_of_fut(all_test_code, fut_name):
+    tree = cst.parse_module(all_test_code)
+    wrapper = cst.metadata.MetadataWrapper(tree)
+    function_extractor = FunctionExtractor()
+    wrapper.visit(function_extractor)
+
+    test_functions = []
+    for node, _, _ in function_extractor.nodes_and_lines:
+        call_extractor = CallExtractor()
+        node.visit(call_extractor)
+        if fut_name in call_extractor.callees:
+            module_with_node = cst.Module(body=[node])
+            function_code = module_with_node.code
+            test_functions.append(function_code)
+    return "\n\n".join(test_functions)
 
 
 class FunctionRemover(cst.CSTTransformer):
