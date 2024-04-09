@@ -32,18 +32,17 @@ Respond only with Python, i.e., no explanations.
 ```python
 """
 
-    def __init__(self, code_to_check, hypothesis):
-        self.code_to_check = code_to_check
-        self.fut_name = get_name_of_defined_function(self.code_to_check)
+    def __init__(self, code_context, hypothesis):
+        self.code_context = code_context
         self.hypothesis = hypothesis
         self.use_json_output = False
 
     def create_prompt(self):
 
         prompt = self.instruction.replace(
-            "<CODE>", self.code_to_check).replace(
+            "<CODE>", self.code_context.fut).replace(
             "<HYPOTHESIS>", self.hypothesis).replace(
-            "<FUNCTION_NAME>", self.fut_name)
+            "<FUNCTION_NAME>", self.code_context.fut_name)
         return prompt
 
     def parse_answer(self, raw_answer):
@@ -60,14 +59,15 @@ Respond only with Python, i.e., no explanations.
                 in_code = True
 
         # remove any copy (or modified version) of the code to check
-        generated_test = remove_function_with_name(generated_test, self.fut_name)
-         
+        generated_test = remove_function_with_name(
+            generated_test, self.code_context.fut_name)
+
         # insert the code to check
-        fut_import_stmt = f"from my_module import {self.fut_name}"
+        fut_import_stmt = f"from my_module import {self.code_context.fut_name}"
         if fut_import_stmt in generated_test:
             full_code = generated_test.replace(
-                fut_import_stmt, f"\n{self.code_to_check}\n")
+                fut_import_stmt, f"\n{self.code_context.fut}\n")
         else:
-            full_code = f"{self.code_to_check}\n{generated_test}"
+            full_code = f"{self.code_context.fut}\n{generated_test}"
 
         return full_code

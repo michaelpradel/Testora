@@ -32,7 +32,7 @@ def get_project_root_dir(project, id):
     return join(project_root_dir, project)
 
 
-def get_code_to_check(project, id):
+def get_code_and_patch_range(project, id):
     project_root_dir = get_project_root_dir(project, id)
     patch_file = join(bugs_in_py_dir, "projects", project,
                       "bugs", str(id), "bug_patch.txt")
@@ -51,12 +51,20 @@ def get_code_to_check(project, id):
     with open(join(project_root_dir, modified_file.path), "rb") as f:
         code = f.read()
 
-    function_code = extract_target_function(code, (start_line, end_line))
-    return function_code
+    return code, (start_line, end_line)
+
+
+def get_test_code(project, id):
+    pass  # TODO implement
+
+
+def get_surrounding_class(code, patch_range, function_name):
+    pass  # TODO implement
 
 
 def get_commit_url(project, id):
-    bug_info_file = join(bugs_in_py_dir, "projects", project, "bugs", id, "bug.info")
+    bug_info_file = join(bugs_in_py_dir, "projects",
+                         project, "bugs", id, "bug.info")
 
     with open(join(bugs_in_py_dir, bug_info_file), 'r') as f:
         bug_info_lines = f.readlines()

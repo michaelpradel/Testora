@@ -37,15 +37,15 @@ Answer:
 Provide your answer as an enumerated list, with one bug on each line.
 """
 
-    def __init__(self, code_to_check):
-        self.code_to_check = code_to_check
+    def __init__(self, code_context):
+        self.code_context = code_context
         self.use_json_output = False
 
     def create_prompt(self):
         if self.use_json_output:
-            prompt = self.instruction.replace("<CODE>", self.code_to_check) + self.json_instruction
+            prompt = self.instruction.replace("<CODE>", self.code_context.fut) + self.json_instruction
         else:
-            prompt = self.instruction.replace("<CODE>", self.code_to_check) + self.output_instruction
+            prompt = self.instruction.replace("<CODE>", self.code_context.fut) + self.output_instruction
         return prompt
 
     def parse_answer(self, raw_answer):
