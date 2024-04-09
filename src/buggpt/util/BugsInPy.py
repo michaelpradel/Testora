@@ -54,32 +54,39 @@ def get_code_and_patch_range(project, id):
     return code, (start_line, end_line)
 
 
+def get_property_from_info_file(file_path, property_name):
+    with open(file_path, 'r') as f:
+        bug_info_lines = f.readlines()
+
+    target_line = [
+        l for l in bug_info_lines if property_name in l][0]
+    _, _, val = target_line.partition("=")
+    val = val.strip()
+    val = val.replace("\"", "")
+    return val
+
+
+def get_property_from_bug_info_file(project, id, property_name):
+    bug_info_file = join(bugs_in_py_dir, "projects",
+                         project, "bugs", id, "bug.info")
+    return get_property_from_info_file(bug_info_file, property_name)
+
+
+def get_property_from_project_info_file(project, id, property_name):
+    project_info_file = join(
+        bugs_in_py_dir, "projects", project, "project.info")
+    return get_property_from_info_file(project_info_file, property_name)
+
+
 def get_test_code(project, id):
-    pass  # TODO implement
-
-
-def get_surrounding_class(code, patch_range, function_name):
-    pass  # TODO implement
+    relative_test_file = get_property_from_bug_info_file(
+        project, id, "test_file")
+    # TODO CONT
 
 
 def get_commit_url(project, id):
-    bug_info_file = join(bugs_in_py_dir, "projects",
-                         project, "bugs", id, "bug.info")
-
-    with open(join(bugs_in_py_dir, bug_info_file), 'r') as f:
-        bug_info_lines = f.readlines()
-
-    fixed_commit_id_line = [
-        l for l in bug_info_lines if "fixed_commit_id" in l][0]
-    _, _, commit_id = fixed_commit_id_line.partition("=")
-    commit_id = commit_id.strip()
-    commit_id = commit_id.replace("\"", "")
-
-    with open(join(bugs_in_py_dir, "projects", project, "project.info"), 'r') as f:
-        project_info_lines = f.readlines()
-    project_url_line = [l for l in project_info_lines if "github_url" in l][0]
-    _, _, project_url = project_url_line.partition("=")
-    project_url = project_url.strip()
-    project_url = project_url.replace("\"", "")
+    commit_id = get_property_from_bug_info_file(project, id, "fixed_commit_id")
+    project_url = get_property_from_project_info_file(
+        project, id, "github_url")
 
     return f"{project_url}/commit/{commit_id}"

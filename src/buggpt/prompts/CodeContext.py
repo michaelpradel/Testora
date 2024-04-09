@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from buggpt.util.BugsInPy import get_code_and_patch_range, get_surrounding_class, get_test_code
-from buggpt.util.PythonCodeUtil import extract_target_function, get_name_of_defined_function
+from buggpt.util.BugsInPy import get_code_and_patch_range, get_test_code
+from buggpt.util.PythonCodeUtil import extract_target_function, get_name_of_defined_function, get_surrounding_class
 
 @dataclass
 class CodeContext:

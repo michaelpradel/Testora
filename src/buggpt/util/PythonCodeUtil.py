@@ -57,6 +57,10 @@ def get_name_of_defined_function(code: str) -> str:
     return function_nodes[0].name.value
 
 
+def get_surrounding_class(code, patch_range, function_name):
+    pass  # TODO implement
+
+
 class FunctionRemover(cst.CSTTransformer):
     def __init__(self, function_name: str):
         self.function_name = function_name
