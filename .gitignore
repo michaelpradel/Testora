@@ -1,3 +1,4 @@
 __pycache__
 data/llm_cache
 .vscode/launch.json
+/tmp
