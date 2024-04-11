@@ -70,8 +70,7 @@ def extract_target_function(code, patch_range):
         target_line = (patch_range[0] + patch_range[1]) / 2
         if start_line < target_line and target_line < end_line:
             if function_code is not None:
-                raise ValueError(
-                    "Multiple functions found in the patch range")
+                return None  # Multiple functions found in the patch range
             module_with_node = cst.Module(body=[node])
             function_code = module_with_node.code
 
