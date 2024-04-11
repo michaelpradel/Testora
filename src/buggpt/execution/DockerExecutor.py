@@ -38,6 +38,7 @@ class DockerExecutor:
         print(f"Command results in:\n{test_execution_output}")
         if "FAIL: " in test_execution_output:
             Stats.test_failures += 1
+            return True, test_execution_output
         elif "ERROR: " in test_execution_output:
             Stats.test_errors += 1
         elif "Ran 1 test" in test_execution_output and "OK" in test_execution_output:
@@ -47,3 +48,4 @@ class DockerExecutor:
         else:
             print(f"Warning: Unknown test result")
             Stats.test_other_results += 1
+        return False, None

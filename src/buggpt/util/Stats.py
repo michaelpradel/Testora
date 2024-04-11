@@ -20,7 +20,7 @@ test_other_results = 0
 
 def print_stats():
     print("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    print("Summary:")
+    print("Stats:")
     for k, v in globals().items():
         if k.startswith("__") or callable(v) or type(v) != int:
             continue

@@ -1,4 +1,5 @@
 import json
+from buggpt.evaluation.PotentialBug import PotentialBug
 from buggpt.util import Stats
 from buggpt.util.Defects4J import get_target_bugs
 from buggpt.util.PythonCodeUtil import add_call_to_test_function, is_parsable
@@ -23,7 +24,7 @@ def create_bug_hypotheses(code_context):
     return hypotheses
 
 
-def create_and_execute_test_case(code_context, hypothesis):
+def create_and_execute_test_case(code_context, hypothesis, project, id):
     print(f"Creating test case for hypothesis:\n{hypothesis}")
     executor = DockerExecutor()
     prompt = TestGenerationPrompt(code_context, hypothesis)
@@ -37,7 +38,10 @@ def create_and_execute_test_case(code_context, hypothesis):
     print(f"Parsable: {parses}")
     if parses:
         Stats.parsable_tests += 1
-        executor.execute_python_test(generated_test)
+        has_produced_failure, test_output = executor.execute_python_test(
+            generated_test)
+        if has_produced_failure:
+            return PotentialBug(project, id, hypothesis, generated_test, test_output)
     else:
         Stats.unparsable_tests += 1
 
@@ -45,7 +49,10 @@ def create_and_execute_test_case(code_context, hypothesis):
 # for testing on a single function:
 # target_bugs = [("scrapy", 29)]
 # for testing on tens of functions:
-target_bugs = get_target_bugs("./data/bugsInPy_manually_selected_target_bugs.csv")
+target_bugs = get_target_bugs(
+    "./data/bugsInPy_manually_selected_target_bugs.csv")
+
+potential_bugs = []
 
 for project, id in target_bugs:
     Stats.attempted_target_bugs += 1
@@ -60,4 +67,19 @@ for project, id in target_bugs:
         Stats.attempted_hypotheses += 1
         print(
             f"+++++++++++++++++++++++++++++++++++++++++\nGenerating test to validate hypothesis {idx}\n+++++++++++++++++++++++++++++++++++++++++\n")
-        create_and_execute_test_case(code_context, hypothesis)
+        potential_bug = create_and_execute_test_case(code_context, hypothesis, project, id)
+        if potential_bug:
+            potential_bugs.append(potential_bug)
+
+print(f"\n{len(potential_bugs)} potential bugs found\n")
+
+# detailed output
+for potential_bug in potential_bugs:
+    print("####################")
+    print(potential_bug)
+    print()
+
+# summary table
+print("Summary of potential bugs:")
+for potential_bug in potential_bugs:
+    print(f"{potential_bug.project} {potential_bug.id}")
