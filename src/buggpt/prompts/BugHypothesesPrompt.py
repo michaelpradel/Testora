@@ -4,26 +4,47 @@ class BugHypothesesPrompt:
 You are an experienced Python developer.
 """
 
-    instruction = """
-Do you see any bugs in this code?
-```python
-<CODE>
-```
-The code is extracted from a larger project.
-Assume that all necessary imports, other functions, and global variables are available.
-Focus on logic errors, incorrect assumptions, and missing corner cases.
-"""
-
-    output_instruction = """
-Provide your answer as an enumerated list, with one bug on each line.
-"""
-
     def __init__(self, code_context):
         self.code_context = code_context
 
     def create_prompt(self):
-        prompt = self.instruction.replace(
-            "<CODE>", self.code_context.fut) + self.output_instruction
+        prompt_template_code_part = """
+Do you see any bugs in this function?
+```python
+<CODE>
+```
+The function is extracted from a larger project.
+Assume that all necessary imports, other functions, and global variables are available.
+Focus on logic errors and missing corner cases.
+"""
+
+        prompt_template_tests_part = """
+As context, here are existing tests for the function:
+<TESTS>
+
+"""
+
+        prompt_template_class_part = """
+As context, here is the class that contains the function:
+<CLASS>
+
+"""
+
+        prompt_template_instruction = """
+Provide your answer as an enumerated list, with one bug on each line.
+"""
+
+        prompt_template = prompt_template_code_part
+        if self.code_context.tests:
+            prompt_template += prompt_template_tests_part
+        if self.code_context.surrounding_class:
+            prompt_template += prompt_template_class_part
+        prompt_template += prompt_template_instruction
+
+        prompt = prompt_template.replace(
+            "<CODE>", self.code_context.fut).replace(
+            "<TESTS>", self.code_context.tests).replace(
+            "<CLASS>", self.code_context.surrounding_class)
         return prompt
 
     def parse_answer(self, raw_answer):
