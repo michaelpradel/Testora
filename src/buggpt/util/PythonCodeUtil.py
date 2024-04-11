@@ -27,6 +27,38 @@ class CallExtractor(cst.CSTVisitor):
             raise ValueError("Unknown callee type")
 
 
+class SurroundingClassExtractor(cst.CSTVisitor):
+    METADATA_DEPENDENCIES = (cst.metadata.PositionProvider,
+                             cst.metadata.ParentNodeProvider,)
+
+    def __init__(self, patch_range):
+        self.target_line = (patch_range[0] + patch_range[1]) / 2
+        self.surrounding_class = None
+
+    def visit_FunctionDef(self, node: cst.FunctionDef) -> bool | None:
+        start_pos = self.get_metadata(
+            cst.metadata.PositionProvider, node).start
+        end_pos = self.get_metadata(cst.metadata.PositionProvider, node).end
+        if start_pos.line < self.target_line and self.target_line < end_pos.line:
+            if self.surrounding_class is not None:
+                raise ValueError(
+                    "Multiple functions found in the patch range")
+
+            # check if function has "self"
+            if len(node.params.params) > 0 and node.params.params[0].name.value == "self":
+                # try to find the surrounding class
+                parent = node
+                while not isinstance(parent, cst.Module):
+                    parent = self.get_metadata(
+                        cst.metadata.ParentNodeProvider, parent)
+                    if isinstance(parent, cst.ClassDef):
+                        self.surrounding_class = parent
+                        break
+
+    def test(self, foo):
+        ...
+
+
 def extract_target_function(code, patch_range):
     tree = cst.parse_module(code)
     wrapper = cst.metadata.MetadataWrapper(tree)
@@ -71,7 +103,16 @@ def get_name_of_defined_function(code: str) -> str:
 
 
 def get_surrounding_class(code, patch_range, function_name):
-    pass  # TODO implement
+    tree = cst.parse_module(code)
+    wrapper = cst.metadata.MetadataWrapper(tree)
+    extractor = SurroundingClassExtractor(patch_range)
+    wrapper.visit(extractor)
+
+    if extractor.surrounding_class is not None:
+        # return full class
+        module_with_class = cst.Module(body=[extractor.surrounding_class])
+        return module_with_class.code
+        # TODO: also return a simplified version of the class
 
 
 def extract_tests_of_fut(all_test_code, fut_name):
@@ -88,7 +129,8 @@ def extract_tests_of_fut(all_test_code, fut_name):
             module_with_node = cst.Module(body=[node])
             function_code = module_with_node.code
             test_functions.append(function_code)
-    return "\n\n".join(test_functions)
+    if test_functions:
+        return "\n\n".join(test_functions)
 
 
 class FunctionRemover(cst.CSTTransformer):
