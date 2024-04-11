@@ -45,7 +45,7 @@ def create_and_execute_test_case(code_context, hypothesis):
 # for testing on a single function:
 # target_bugs = [("scrapy", 29)]
 # for testing on tens of functions:
-target_bugs = get_target_bugs("./data/bugsInPy_manually_selected_target_bugs.csv")[7:]
+target_bugs = get_target_bugs("./data/bugsInPy_manually_selected_target_bugs.csv")[0:1]
 
 for project, id in target_bugs:
     Stats.attempted_target_bugs += 1

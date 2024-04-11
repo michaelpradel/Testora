@@ -130,7 +130,7 @@ def extract_tests_of_fut(all_test_code, fut_name):
             function_code = module_with_node.code
             test_functions.append(function_code)
     if test_functions:
-        return "\n\n".join(test_functions)
+        return "\n".join(test_functions)
 
 
 class FunctionRemover(cst.CSTTransformer):

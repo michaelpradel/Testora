@@ -18,5 +18,12 @@ def gather_code_context(project, id):
     fut_code = extract_target_function(code, patch_range)
     fut_name = get_name_of_defined_function(fut_code)
     tests = extract_tests_of_fut(all_test_code, fut_name)
+    
     surrounding_class = get_surrounding_class(code, patch_range, fut_name)
+    if surrounding_class:
+        surrounding_class_nb_lines = len(surrounding_class.split("\n"))
+        if surrounding_class_nb_lines > 30:
+            print(f"Surrounding class is too long ({surrounding_class_nb_lines} lines), omitting it")
+            surrounding_class = None
+    
     return CodeContext(fut_code, fut_name, surrounding_class, tests)

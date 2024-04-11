@@ -7,31 +7,6 @@ class TestGenerationPrompt:
 You are an experienced Python developer.
 """
 
-    instruction = """
-Consider this Python code:
-```python
-<CODE>
-```
-
-The code may have a bug:
-<HYPOTHESIS>
-
-Complete the following template into a complete, self-contained test case that exposes this bug:
-```python
-import unittest
-from my_module import <FUNCTION_NAME>
-# Any other required imports here
-
-# Any mocks or stubs here
-
-class MyTest(unittest.TestCase):
-    def test_bug(self):
-```
-
-Respond only with Python, i.e., no explanations.
-```python
-"""
-
     def __init__(self, code_context, hypothesis):
         self.code_context = code_context
         self.hypothesis = hypothesis
@@ -50,13 +25,17 @@ The function may have a bug:
 
         prompt_template_tests_part = """
 As context, here are existing tests for the function:
+```python
 <TESTS>
+```
 
 """
 
         prompt_template_class_part = """
 As context, here is the class that contains the function:
+```python
 <CLASS>
+```
 
 """
 
@@ -76,19 +55,18 @@ class MyTest(unittest.TestCase):
 Respond only with Python, i.e., no explanations.
 ```python
 """
-        prompt_template = prompt_template_code_part
-        if self.code_context.tests:
-            prompt_template += prompt_template_tests_part
-        if self.code_context.surrounding_class:
-            prompt_template += prompt_template_class_part
-        prompt_template += prompt_template_instruction_part
-
-        prompt = prompt_template.replace(
+        prompt = prompt_template_code_part.replace(
             "<CODE>", self.code_context.fut).replace(
-            "<HYPOTHESIS>", self.hypothesis).replace(
-            "<TESTS>", self.code_context.tests).replace(
-            "<CLASS>", self.code_context.surrounding_class).replace(
+            "<HYPOTHESIS>", self.hypothesis)
+        if self.code_context.tests:
+            prompt += prompt_template_tests_part.replace(
+                "<TESTS>", self.code_context.tests)
+        if self.code_context.surrounding_class:
+            prompt += prompt_template_class_part.replace(
+                "<CLASS>", self.code_context.surrounding_class)
+        prompt += prompt_template_instruction_part.replace(
             "<FUNCTION_NAME>", self.code_context.fut_name)
+
         return prompt
 
     def parse_answer(self, raw_answer):
