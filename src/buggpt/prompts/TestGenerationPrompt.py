@@ -75,7 +75,7 @@ Respond only with Python, i.e., no explanations.
         # extract code
         in_code = False
         for line in raw_answer.split("\n"):
-            if line.startswith("```"):
+            if line.strip() == "```":
                 break
             if in_code:
                 generated_test += line + "\n"

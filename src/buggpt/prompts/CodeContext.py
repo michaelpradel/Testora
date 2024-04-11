@@ -22,7 +22,7 @@ def gather_code_context(project, id):
     surrounding_class = get_surrounding_class(code, patch_range, fut_name)
     if surrounding_class:
         surrounding_class_nb_lines = len(surrounding_class.split("\n"))
-        if surrounding_class_nb_lines > 30:
+        if surrounding_class_nb_lines > 100:
             print(f"Surrounding class is too long ({surrounding_class_nb_lines} lines), omitting it")
             surrounding_class = None
     
