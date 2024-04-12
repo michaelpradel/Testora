@@ -48,9 +48,12 @@ def create_and_execute_test_case(code_context, hypothesis, project, id):
 
 # for testing on a single function:
 # target_bugs = [("scrapy", 29)]
-# for testing on tens of functions:
+# for testing on tens of manually selected functions:
+# target_bugs = get_target_bugs(
+#     "./data/bugsInPy_manually_selected_target_bugs.csv")
+# for testing on 15 automatically selected functions:
 target_bugs = get_target_bugs(
-    "./data/bugsInPy_manually_selected_target_bugs.csv")
+    "./data/bugsInPy_auto_selected_April_11_2024.csv")[4:]
 
 potential_bugs = []
 
@@ -67,7 +70,8 @@ for project, id in target_bugs:
         Stats.attempted_hypotheses += 1
         print(
             f"+++++++++++++++++++++++++++++++++++++++++\nGenerating test to validate hypothesis {idx}\n+++++++++++++++++++++++++++++++++++++++++\n")
-        potential_bug = create_and_execute_test_case(code_context, hypothesis, project, id)
+        potential_bug = create_and_execute_test_case(
+            code_context, hypothesis, project, id)
         if potential_bug:
             potential_bugs.append(potential_bug)
 

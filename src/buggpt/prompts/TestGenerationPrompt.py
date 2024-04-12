@@ -5,6 +5,7 @@ class TestGenerationPrompt:
     def __init__(self, code_context, hypothesis):
         self.code_context = code_context
         self.hypothesis = hypothesis
+        self.use_json_output = False
 
     def create_prompt(self):
         prompt_template_code_part = """

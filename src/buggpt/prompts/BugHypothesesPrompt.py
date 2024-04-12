@@ -1,6 +1,7 @@
 class BugHypothesesPrompt:
     def __init__(self, code_context):
         self.code_context = code_context
+        self.use_json_output = False
 
     def create_prompt(self):
         prompt_template_code_part = """

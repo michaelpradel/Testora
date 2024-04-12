@@ -3,8 +3,8 @@ from openai import OpenAI
 from buggpt.prompts.PromptCommon import system_message
 
 openai = OpenAI(api_key=getenv("OPENAI_KEY"))
-model = "gpt-3.5-turbo-0125"
-# model = "gpt-4-0125-preview"
+# model = "gpt-3.5-turbo-0125"
+model = "gpt-4-0125-preview"
 
 
 def query(prompt):

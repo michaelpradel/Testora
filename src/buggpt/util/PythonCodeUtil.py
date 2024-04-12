@@ -24,7 +24,7 @@ class CallExtractor(cst.CSTVisitor):
         elif isinstance(node.func, cst.Name):
             self.callees.append(node.func.value)
         else:
-            raise ValueError("Unknown callee type")
+            print(f"Warning: Unknown callee type {type(node.func)} -- ignoring this call")
 
 
 class SurroundingClassExtractor(cst.CSTVisitor):

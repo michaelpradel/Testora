@@ -10,7 +10,7 @@ with open(all_bugs_file, 'r') as f:
 
 print(f"Checking {len(bug_info_files)} bugs")
 
-candidates = ["Project, Id, Comment"]
+candidates = ["Project,Id,Comment"]
 for idx, bug_info_file in enumerate(bug_info_files):
     _, project, _, id, _ = bug_info_file.split("/")
 
@@ -38,6 +38,12 @@ for idx, bug_info_file in enumerate(bug_info_files):
             f"Ignoring {project} {id} because the target function could not be extracted")
         continue
 
+    nb_fut_lines = fut_code.count("\n") + 1
+    if nb_fut_lines > 80:
+        print(
+            f"Ignoring {project} {id} because the target function has {nb_fut_lines} lines")
+        continue
+
     if remove_based_on_undefined_references(fut_code):
         print(
             f"Ignoring {project} {id} because it has too many undefined references")
@@ -51,7 +57,7 @@ for idx, bug_info_file in enumerate(bug_info_files):
     print(f"=> Candidate function {project} {id}")
     print(fut_code)
     print()
-    candidates.append(f"{project}, {id}, ")
+    candidates.append(f"{project},{id},")
 
 with open("bugsInPy_candidates.csv", "w") as f:
     f.write("\n".join(candidates))
