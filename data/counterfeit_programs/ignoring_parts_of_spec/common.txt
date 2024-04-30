@@ -1,0 +1,138 @@
+# Prompt 1: Test generation without any further help
+
+Consider this Python function:
+
+def common(l1: list, l2: list):
+    """Return sorted unique common elements for two lists.
+    >>> common([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121])
+    [1, 5, 653]
+    >>> common([5, 3, 2, 8], [3, 2])
+    [2, 3]
+    """
+    return list(set(l1) & set(l2))
+
+Provide a test case for the function, by completing this code snippet:
+
+def test_common():
+  ...
+
+
+# Generated test:
+
+def test_common():
+    # Test case 1
+    l1 = [2, 4, 6, 8, 10]
+    l2 = [1, 2, 3, 4, 5]
+    expected_output = [2, 4]
+    assert common(
+        l1, l2) == expected_output, f"Test case 1 failed: {common(l1, l2)} != {expected_output}"
+
+    # Test case 2
+    l1 = [7, 8, 9, 10]
+    l2 = [11, 12, 13, 14]
+    expected_output = []
+    assert common(
+        l1, l2) == expected_output, f"Test case 2 failed: {common(l1, l2)} != {expected_output}"
+
+    # Test case 3
+    l1 = [15, 16, 17, 18]
+    l2 = [16, 17, 18, 19, 20]
+    expected_output = [16, 17, 18]
+    assert common(
+        l1, l2) == expected_output, f"Test case 3 failed: {common(l1, l2)} != {expected_output}"
+
+    # Test case 4
+    l1 = [1, 2, 2, 3, 3, 4]
+    l2 = [2, 2, 5, 5, 6]
+    expected_output = [2]
+    assert common(
+        l1, l2) == expected_output, f"Test case 4 failed: {common(l1, l2)} != {expected_output}"
+
+    # Test case 5
+    l1 = []
+    l2 = [1, 2, 3]
+    expected_output = []
+    assert common(
+        l1, l2) == expected_output, f"Test case 5 failed: {common(l1, l2)} != {expected_output}"
+
+    print("All test cases passed")
+
+--> Test succeeds, because all inputs are sorted!
+
+
+# Prompt 2: 
+
+Consider this Python function:
+
+def common(l1: list, l2: list):
+    """Return sorted unique common elements for two lists.
+    >>> common([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121])
+    [1, 5, 653]
+    >>> common([5, 3, 2, 8], [3, 2])
+    [2, 3]
+    """
+    return list(set(l1) & set(l2))
+
+Provide code that raises an exception if the function gets called with an incorrect input.
+Use the following template:
+
+if <someCondition>:
+    raise ValueError("Invalid input")
+
+
+# Prompt 3 (using function augmented with predicted pre-condition):
+
+Consider this Python function:
+
+def common(l1: list, l2: list):
+    """Return sorted unique common elements for two lists.
+    >>> common([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121])
+    [1, 5, 653]
+    >>> common([5, 3, 2, 8], [3, 2])
+    [2, 3]
+    """
+    if not isinstance(l1, list) or not isinstance(l2, list):
+        raise ValueError("Invalid input")
+    return list(set(l1) & set(l2))
+
+Do you see any bugs in this function?
+Focus on logic errors and missing corner cases.
+Provide your answer as an enumerated list, with one bug on each line.
+
+
+# Prompt 4 (second hypothesis is correct, so using it):
+
+Consider this Python function:
+
+def common(l1: list, l2: list):
+    """Return sorted unique common elements for two lists.
+    >>> common([1, 4, 3, 34, 653, 2, 5], [5, 7, 1, 5, 9, 653, 121])
+    [1, 5, 653]
+    >>> common([5, 3, 2, 8], [3, 2])
+    [2, 3]
+    """
+    if not isinstance(l1, list) or not isinstance(l2, list):
+        raise ValueError("Invalid input")
+    return list(set(l1) & set(l2))
+
+The function has a bug:
+Set intersection and sorting: The function returns a list created from the intersection of the sets of l1 and l2, but it doesn't sort the resulting list before returning it. The function's docstring specifies that the returned list should be sorted.
+
+Here is a test case that exposes this bug:
+
+# Generated test:
+
+def test_common():
+    # Test case with common elements that are not in order initially
+    l1 = [4, 3, 1, 9, 7, 2, 8, 5]
+    l2 = [2, 5, 7, 9, 3, 6, 8]
+    expected_output = [2, 3, 5, 7, 8, 9]
+    
+    # Call the function
+    output = common(l1, l2)
+    
+    # Check if the output matches the expected output
+    assert output == expected_output, f"Test failed: expected {expected_output}, got {output}"
+
+--> Test succeeds, because set(l1) implicitly sorts, and hence, intersection is sorted!
+--> Unclear why this solution is wrong.

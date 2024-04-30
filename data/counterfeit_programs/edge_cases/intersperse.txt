@@ -1,0 +1,24 @@
+# Prompt 1: Asking for a test without further help
+
+Consider this Python function:
+
+def intersperse(numbers: List[int], delimeter: int) -> List[int]:
+    """ Insert a number 'delimeter' between every two consecutive elements of input list 'numbers'
+    >>> intersperse([], 4)
+    []
+    >>> intersperse([1, 2, 3], 4)
+    [1, 4, 2, 4, 3]
+    """
+    result = []
+    for number in numbers[:-1]:
+        result.extend([number, delimeter])
+    result.append(numbers[-1])
+    return result
+
+Provide a test case for the function, by completing this code snippet:
+
+def test_intersperse():
+  ...
+
+
+--> Fails (because numbers[-1] crashes for empty list); easy to detect
