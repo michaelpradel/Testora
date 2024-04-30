@@ -1,7 +1,7 @@
 from os.path import join
 from unidiff import PatchSet
 
-from buggpt.util.BugsInPy import bugs_in_py_dir, all_bugs_file, get_code_and_patch_range
+from buggpt.util.BugsInPy import bugs_in_py_dir, all_bugs_file, get_code_and_patch_range, get_commit_url
 from buggpt.util.FunctionFilter import remove_based_on_undefined_references, remove_because_not_self_explanatory
 from buggpt.util.PythonCodeUtil import extract_target_function
 
@@ -44,20 +44,22 @@ for idx, bug_info_file in enumerate(bug_info_files):
             f"Ignoring {project} {id} because the target function has {nb_fut_lines} lines")
         continue
 
-    if remove_based_on_undefined_references(fut_code):
-        print(
-            f"Ignoring {project} {id} because it has too many undefined references")
-        continue
+    # if remove_based_on_undefined_references(fut_code):
+    #     print(
+    #         f"Ignoring {project} {id} because it has too many undefined references")
+    #     continue
 
-    if remove_because_not_self_explanatory(fut_code):
-        print(
-            f"Ignoring {project} {id} because it is not self-explanatory")
-        continue
+    # if remove_because_not_self_explanatory(fut_code):
+    #     print(
+    #         f"Ignoring {project} {id} because it is not self-explanatory")
+    #     continue
+
+    fix_commit = get_commit_url(project, id)
 
     print(f"=> Candidate function {project} {id}")
     print(fut_code)
     print()
-    candidates.append(f"{project},{id},")
+    candidates.append(f"{project},{id},{fix_commit}")
 
 with open("bugsInPy_candidates.csv", "w") as f:
     f.write("\n".join(candidates))
