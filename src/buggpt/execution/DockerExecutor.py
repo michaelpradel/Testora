@@ -7,12 +7,69 @@ from buggpt.util import Stats
 
 
 class DockerExecutor:
-    def __init__(self):
+    def __init__(self, container_name):
         client = docker.from_env()
-        self.container = client.containers.get("BugGPT_base")
+        self.container = client.containers.get(container_name)
         self.container.start()
 
-    def execute_python_test(self, code):
+    def install_project_under_test(self, python_project):
+        # create root dir for installed projects
+        exit_code, output = self.container.exec_run(
+            "mkdir -p /projects_under_test")
+        if exit_code != 0:
+            print(f"Error creating directory: {output}")
+            return False
+
+        # check if we've already installed the project
+        exit_code, output = self.container.exec_run(
+            f"if [ -d '/projects_under_test/{python_project.name}' ]; then echo 'yes' fi")
+        if exit_code == 0 and output == "yes":
+            print(f"Project {python_project.name} already installed")
+            return True
+
+        # clone the project
+        print(f"Cloning {python_project.name}")
+        exit_code, output = self.container.exec_run(
+            f"git clone {python_project.git_url}", workdir="/projects_under_test")
+        if exit_code != 0:
+            print(f"Error cloning project: {output}")
+            return False
+
+        # create virtualenv
+        exit_code, output = self.container.exec_run(
+            "python -m venv myenv", workdir=f"/projects_under_test/{python_project.name}")
+        if exit_code != 0:
+            print(f"Error creating virtualenv: {output}")
+            return False
+
+        # activate virtualenv
+        exit_code, output = self.container.exec_run(
+            "bash -c 'source myenv/bin/activate'", workdir=f"/projects_under_test/{python_project.name}")
+        if exit_code != 0:
+            print(f"Error activating virtualenv: {output}")
+            return False
+
+        # install project
+        for command in python_project.installation_commands:
+            full_command = f"bash -c 'source myenv/bin/activate && {command}'"
+            exit_code, output = self.container.exec_run(
+                full_command, workdir=f"/projects_under_test/{python_project.name}")
+            if exit_code != 0:
+                print(
+                    f"Error when running installation command {command}:\n{output}")
+                return False
+
+        return True
+
+    def checkout_commit(self, python_project, commit_hash):
+        exit_code, output = self.container.exec_run(
+            f"git checkout {commit_hash}", workdir=f"/projects_under_test/{python_project.name}")
+        if exit_code != 0:
+            print(f"Error checking out commit: {output}")
+            return False
+        return True
+
+    def execute_python_test(self, code, python_project=None, is_test=True):
         Stats.test_execution_attempts += 1
         # copy code into container (via tarfile)
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -31,9 +88,18 @@ class DockerExecutor:
             data = open(tar_file, "rb").read()
             self.container.put_archive("/tmp", data)
 
+        # prepare command
+        python_command = "python -m unittest /tmp/code.py" if is_test else "python /tmp/code.py"
+        
+        if not python_project:
+            command = python_command
+            workdir = None
+        else:
+            command = f"bash -c 'source myenv/bin/activate && {python_command}'"
+            workdir = f"/projects_under_test/{python_project.name}"
+
         # execute the code in the container
-        exec_result = self.container.exec_run(
-            "python -m unittest /tmp/code.py")
+        exec_result = self.container.exec_run(command, workdir=workdir)
         test_execution_output = exec_result.output.decode("utf-8")
         print(f"Command results in:\n{test_execution_output}")
         if "FAIL: " in test_execution_output:
@@ -49,3 +115,4 @@ class DockerExecutor:
             print(f"Warning: Unknown test result")
             Stats.test_other_results += 1
         return False, None
+

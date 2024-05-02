@@ -1,7 +1,10 @@
 from unidiff import PatchSet
 import urllib.request
-from github import Github
+from github import Github, Auth
+from buggpt.execution.DockerExecutor import DockerExecutor
+from buggpt.execution.RepoManager import ClonedRepo
 from buggpt.util.PythonCodeUtil import extract_target_function, get_name_of_defined_function
+from buggpt.execution import PythonProjects
 
 
 def pr_url_to_patch(pr_url):
@@ -65,7 +68,10 @@ def find_API_to_test(pr, github_repo):
         return False
     fct_name = get_name_of_defined_function(fct_code)
 
-    print(f"Changed function: {fct_name}")
+    module_name = modified_gh_file.filename.replace(
+        "/", ".").replace(".py", "")
+
+    return f"{module_name}.{fct_name}"
 
 
 def check_pr(pr, github_repo):
@@ -76,13 +82,15 @@ def check_pr(pr, github_repo):
     print(f"PR in scope: {pr.html_url}")
 
     # identify changed code and how to access it via public APIs
-    find_API_to_test(pr, github_repo)
+    qualified_function_name = find_API_to_test(pr, github_repo)
+    if qualified_function_name:
+        print(f"Found function to test: {qualified_function_name}")
 
 
 def get_recent_prs(github_repo):
     prs = github_repo.get_pulls(state="merged")
     pr_urls = []
-    for pr in prs[:10]:
+    for pr in prs[:30]:
         pr_urls.append(pr)
     return pr_urls
 
@@ -90,9 +98,31 @@ def get_recent_prs(github_repo):
 # testing
 # pr_url_1 = "https://github.com/pandas-dev/pandas/pull/58479"
 # check_pr(pr_url_1)
-project_id = "pandas-dev/pandas"
-github = Github()
-github_repo = github.get_repo(project_id)
-prs = get_recent_prs(github_repo)
-for pr in prs:
-    check_pr(pr, github_repo)
+
+# project = PythonProjects.pandas_project
+
+cloned_repo = ClonedRepo("./data/repos/pandas")
+cloned_repo.checkout("79067a76adc448d17210f2cf4a858b0eb853be4c")
+
+docker_executor = DockerExecutor("pandas-dev")
+# docker_executor.install_project_under_test(project)
+# docker_executor.checkout_commit(project, "79067a76adc448d17210f2cf4a858b0eb853be4c")  # just before the bug
+# docker_executor.checkout_commit(project, "0bdbc44babac09225bdde02b642252ce054723e3")  # introduces the bug
+
+test_code = """
+import pandas as pd
+
+i = pd.Index(['a', 'b', 'c', None], dtype='category')
+i.difference(['1', None])
+"""
+
+res = docker_executor.execute_python_test(test_code, is_test=False)
+print(res)
+
+# token = open(".github_token", "r").read().strip()
+# github = Github(auth=Auth.Token(token))
+
+# github_repo = github.get_repo(project.project_id)
+# prs = get_recent_prs(github_repo)
+# for pr in prs:
+#     check_pr(pr, github_repo)
