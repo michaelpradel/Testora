@@ -1,4 +1,5 @@
 import libcst as cst
+from buggpt.util.Logs import append_event, Event
 
 
 class FunctionExtractor(cst.CSTVisitor):
@@ -88,7 +89,6 @@ def extract_target_function_by_name(code, name):
     for node, start_line, end_line in extractor.nodes_and_lines:
         if node.name.value == name:
             if function_code is not None:
-                print(f"Multiple functions named {name}; cannot extract one")
                 return None
             module_with_node = cst.Module(body=[node])
             function_code = module_with_node.code
