@@ -24,7 +24,8 @@ class CallExtractor(cst.CSTVisitor):
         elif isinstance(node.func, cst.Name):
             self.callees.append(node.func.value)
         else:
-            print(f"Warning: Unknown callee type {type(node.func)} -- ignoring this call")
+            print(
+                f"Warning: Unknown callee type {type(node.func)} -- ignoring this call")
 
 
 class SurroundingClassExtractor(cst.CSTVisitor):
@@ -59,7 +60,7 @@ class SurroundingClassExtractor(cst.CSTVisitor):
         ...
 
 
-def extract_target_function(code, patch_range):
+def extract_target_function_by_range(code, patch_range):
     tree = cst.parse_module(code)
     wrapper = cst.metadata.MetadataWrapper(tree)
     extractor = FunctionExtractor()
@@ -71,6 +72,24 @@ def extract_target_function(code, patch_range):
         if start_line < target_line and target_line < end_line:
             if function_code is not None:
                 return None  # Multiple functions found in the patch range
+            module_with_node = cst.Module(body=[node])
+            function_code = module_with_node.code
+
+    return function_code
+
+
+def extract_target_function_by_name(code, name):
+    tree = cst.parse_module(code)
+    wrapper = cst.metadata.MetadataWrapper(tree)
+    extractor = FunctionExtractor()
+    wrapper.visit(extractor)
+
+    function_code = None
+    for node, start_line, end_line in extractor.nodes_and_lines:
+        if node.name.value == name:
+            if function_code is not None:
+                print(f"Multiple functions named {name}; cannot extract one")
+                return None
             module_with_node = cst.Module(body=[node])
             function_code = module_with_node.code
 

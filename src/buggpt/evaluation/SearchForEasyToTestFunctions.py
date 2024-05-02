@@ -3,7 +3,7 @@ from unidiff import PatchSet
 
 from buggpt.util.BugsInPy import bugs_in_py_dir, all_bugs_file, get_code_and_patch_range, get_commit_url
 from buggpt.util.FunctionFilter import remove_based_on_undefined_references, remove_because_not_self_explanatory
-from buggpt.util.PythonCodeUtil import extract_target_function
+from buggpt.util.PythonCodeUtil import extract_target_function_by_range
 
 with open(all_bugs_file, 'r') as f:
     bug_info_files = [line.strip() for line in f.readlines()]
@@ -32,7 +32,7 @@ for idx, bug_info_file in enumerate(bug_info_files):
 
     # check if we can extract a single function under test
     code, patch_range = get_code_and_patch_range(project, id)
-    fut_code = extract_target_function(code, patch_range)
+    fut_code = extract_target_function_by_range(code, patch_range)
     if fut_code is None:
         print(
             f"Ignoring {project} {id} because the target function could not be extracted")

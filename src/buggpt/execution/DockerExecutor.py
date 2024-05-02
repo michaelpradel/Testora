@@ -69,11 +69,12 @@ class DockerExecutor:
             return False
         return True
 
-    def execute_python_test(self, code, python_project=None, is_test=True):
-        Stats.test_execution_attempts += 1
-        # copy code into container (via tarfile)
+    def copy_code_to_container(self, code, target_file_path):
+        target_dir = target_file_path.rsplit("/", 1)[0]
+        target_file_name = target_file_path.rsplit("/", 1)[1]
+
         with tempfile.TemporaryDirectory() as tmp_dir:
-            code_file = join(tmp_dir, "code.py")
+            code_file = join(tmp_dir, target_file_name)
             with open(code_file, "w") as f:
                 f.write(code)
             tar_file = join(tmp_dir, "archive.tar")
@@ -81,16 +82,21 @@ class DockerExecutor:
                 wd = getcwd()
                 try:
                     chdir(tmp_dir)
-                    tar.add("code.py")
+                    tar.add(target_file_name)
                 finally:
                     chdir(wd)
 
             data = open(tar_file, "rb").read()
-            self.container.put_archive("/tmp", data)
+            self.container.put_archive(target_dir, data)
+
+    def execute_python_test(self, code, python_project=None, is_test=True):
+        Stats.test_execution_attempts += 1
+
+        self.copy_code_to_container(code, "/tmp/code.py")
 
         # prepare command
         python_command = "python -m unittest /tmp/code.py" if is_test else "python /tmp/code.py"
-        
+
         if not python_project:
             command = python_command
             workdir = None
@@ -114,5 +120,12 @@ class DockerExecutor:
         else:
             print(f"Warning: Unknown test result")
             Stats.test_other_results += 1
+
         return False, None
 
+    def execute_python_code(self, code):
+        self.copy_code_to_container(code, "/tmp/code.py")
+        command = "python /tmp/code.py"
+        exec_result = self.container.exec_run(command)
+        output = exec_result.output.decode("utf-8")
+        return output

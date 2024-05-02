@@ -4,6 +4,7 @@ class RegressionTestGeneratorPrompt:
         self.fut_qualified_name = fut_qualified_name
         self.old_function_code = old_function_code
         self.new_function_code = new_function_code
+        self.use_json_output = False
 
     def create_prompt(self):
         # TODO: for testing only
@@ -53,7 +54,7 @@ New version of the function:
 
 The usage examples may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported.
 
-Answer by giving five usage examples that cover normal usage scenarios and five usage examples that focus on corner cases.
+Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
 Each example must be an executable piece of Python code wrapped into
 ```python
 ```
@@ -64,6 +65,15 @@ Each example must be an executable piece of Python code wrapped into
                                old_function_code=self.old_function_code,
                                new_function_code=self.new_function_code)
 
+    def remove_unnecessary_indentation(self, code):
+        lines = code.split("\n")
+        if len(lines) > 0:
+            # find number of leading spaces in first line
+            num_spaces = len(lines[0]) - len(lines[0].lstrip())
+            if num_spaces > 0:
+                return "\n".join([line[num_spaces:] for line in lines])
+        return code
+
     def parse_answer(self, raw_answer):
         tests = []
 
@@ -73,11 +83,12 @@ Each example must be an executable piece of Python code wrapped into
             if line.strip() == "```":
                 in_code = False
                 if next_test:
+                    next_test = self.remove_unnecessary_indentation(next_test)
                     tests.append(next_test)
                     next_test = ""
             if in_code:
                 next_test += line + "\n"
-            if line == "```python":
+            if line.strip() == "```python":
                 in_code = True
 
         return tests

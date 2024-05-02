@@ -4,7 +4,7 @@ from os.path import join
 import subprocess
 from unidiff import PatchSet
 
-from buggpt.util.PythonCodeUtil import extract_target_function
+from buggpt.util.PythonCodeUtil import extract_target_function_by_range
 
 
 all_bugs_file = join(getcwd(), "data/bugsInPy_bugs_shuffled_March_14_2024.csv")
