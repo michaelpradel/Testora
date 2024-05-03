@@ -20,11 +20,13 @@ class ComparisonEvent(Event):
 class LLMEvent(Event):
     content: str
 
+
 events = []
 
 
 def append_event(evt):
     events.append(evt)
+    print(json.dumps(evt.dict(), indent=2))
 
 
 def store_logs():

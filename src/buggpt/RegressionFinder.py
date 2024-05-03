@@ -4,6 +4,7 @@ from github import Github, Auth
 from git import Repo
 import ast
 from buggpt.execution.DockerExecutor import DockerExecutor
+from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
 from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
@@ -91,24 +92,16 @@ def extract_fut_code(cloned_repo, commit, file_path, qualified_function_name):
     return function_code
 
 
-def execute_and_compare(pr, cloned_repo, code, pre_commit, post_commit):
+def execute_tests_on_commit(test_executions, commit):
     docker_executor = DockerExecutor("pandas-dev")
 
-    # old version
-    cloned_repo.git.checkout(pre_commit)
+    cloned_repo.git.checkout(commit)
     # to trigger pandas re-compilation
     docker_executor.execute_python_code("import pandas")
-    output_old = docker_executor.execute_python_code(code)
 
-    # new version
-    cloned_repo.git.checkout(post_commit)
-    # to trigger pandas re-compilation
-    docker_executor.execute_python_code("import pandas")
-    output_new = docker_executor.execute_python_code(code)
-
-    append_event(ComparisonEvent(pr_nb=pr.number,
-                                 message=f"{'Same' if output_old == output_new else 'Different'} outputs",
-                                 old_function_code=code, old_output=output_old, new_function_code=code, new_output=output_new))
+    for test_execution in test_executions:
+        output = docker_executor.execute_python_code(test_execution.code)
+        test_execution.output = output
 
 
 def get_ast_without_docstrings(code):
@@ -132,8 +125,6 @@ def check_pr(pr, github_repo, cloned_repo):
     if not pr_is_in_scope(pr):
         return
 
-    append_event(Event(pr_nb=pr.number, message="In scope for testing"))
-
     # identify changed code
     found_fut = find_fut(pr, github_repo)
     if not found_fut:
@@ -146,7 +137,8 @@ def check_pr(pr, github_repo, cloned_repo):
     post_commit = pr.merge_commit_sha
     parents = github_repo.get_commit(post_commit).parents
     if len(parents) != 1:
-        append_event(Event(pr_nb=pr.number, message=f"PR has != 1 parent"))
+        append_event(
+            Event(pr_nb=pr.number, message=f"Ignoring because PR has != 1 parent"))
         return
     pre_commit = parents[0].sha
 
@@ -156,7 +148,7 @@ def check_pr(pr, github_repo, cloned_repo):
         cloned_repo, post_commit, file_path, qualified_function_name)
     if old_fut_code is None or new_fut_code is None:
         append_event(
-            Event(pr_nb=pr.number, message=f"Couldn't find old or new function code"))
+            Event(pr_nb=pr.number, message=f"Ignoring because couldn't find old or new function code"))
         return
 
     # ignore if only difference is in comments
@@ -174,7 +166,7 @@ def check_pr(pr, github_repo, cloned_repo):
     generated_tests = prompt.parse_answer(raw_answer)
     for idx, test in enumerate(generated_tests):
         append_event(LLMEvent(pr_nb=pr.number,
-                     message=f"Generated test {idx}", content=test))
+                     message=f"Generated test {idx+1}", content=test))
 
     # make sure the tests import pandas
     updated_tests = []
@@ -185,8 +177,29 @@ def check_pr(pr, github_repo, cloned_repo):
             updated_tests.append(test)
 
     # execute tests
-    for test in generated_tests:
-        execute_and_compare(pr, cloned_repo, test, pre_commit, post_commit)
+    old_executions = [TestExecution(t) for t in generated_tests]
+    new_executions = [TestExecution(t) for t in generated_tests]
+
+    execute_tests_on_commit(old_executions, pre_commit)
+    execute_tests_on_commit(new_executions, post_commit)
+
+    for (old_execution, new_execution) in zip(old_executions, new_executions):
+        difference_found = old_execution.output != new_execution.output
+        append_event(ComparisonEvent(pr_nb=pr.number,
+                                     message=f"{'Different' if difference_found else 'Same'} outputs",
+                                     old_function_code=old_execution.code, old_output=old_execution.output,
+                                     new_function_code=new_execution.code, new_output=new_execution))
+
+        # if difference found, classify regression
+        if difference_found:
+            prompt = RegressionClassificationPrompt(
+                github_repo.name, pr, qualified_function_name, test, old_execution.output, new_execution.output)
+            raw_answer = llm.query(prompt)
+            append_event(LLMEvent(pr_nb=pr.number,
+                                  message="Raw answer", content=raw_answer))
+            classification = prompt.parse_answer(raw_answer)
+            append_event(Event(pr_nb=pr.number,
+                               message=f"Classification: {classification}"))
 
 
 def get_recent_prs(github_repo, nb=50):
@@ -210,13 +223,13 @@ project = PythonProjects.pandas_project
 github_repo = github.get_repo(project.project_id)
 
 # testing with motivating example
-# pr = github_repo.get_pull(55108)
-# check_pr(pr, github_repo, cloned_repo)
+pr = github_repo.get_pull(55108)
+check_pr(pr, github_repo, cloned_repo)
 
 # testing on recent PRs
-prs = get_recent_prs(github_repo, nb=30)
-for pr in prs:
-    check_pr(pr, github_repo, cloned_repo)
+# prs = get_recent_prs(github_repo, nb=100)
+# for pr in prs[30:]:
+#     check_pr(pr, github_repo, cloned_repo)
 
 
 # cloned_repo = ClonedRepo("./data/repos/pandas")

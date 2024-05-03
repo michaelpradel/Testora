@@ -70,8 +70,6 @@ The verdict should be a single word: "intended" or "unintended".
     def parse_answer(self, raw_answer):
         in_verdict = False
         for line in raw_answer.split("\n"):
-            if line.strip() == "<VERDICT>":
-                in_verdict = True
             if in_verdict:
                 if line.strip() == "intended":
                     return "intended"
@@ -81,5 +79,7 @@ The verdict should be a single word: "intended" or "unintended".
                     return "unclear"
             if line.strip() == "</VERDICT>":
                 in_verdict = False
+            if line.strip() == "<VERDICT>":
+                in_verdict = True
 
         return "unclear"
