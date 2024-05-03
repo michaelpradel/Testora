@@ -4,3 +4,4 @@ data/repos
 .vscode/launch.json
 /tmp
 .github_token
+logs_*.json

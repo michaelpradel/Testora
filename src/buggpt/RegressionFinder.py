@@ -11,7 +11,7 @@ from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGenerator
 from buggpt.util.PythonCodeUtil import extract_target_function_by_name, extract_target_function_by_range, get_name_of_defined_function
 from buggpt.execution import PythonProjects
 import buggpt.llms.OpenAIGPT as uncached_llm
-from buggpt.util.Logs import append_event, Event, ComparisonEvent, LLMEvent
+from buggpt.util.Logs import TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
 llm = LLMCache(uncached_llm)
 
 
@@ -92,7 +92,7 @@ def extract_fut_code(cloned_repo, commit, file_path, qualified_function_name):
     return function_code
 
 
-def execute_tests_on_commit(test_executions, commit):
+def execute_tests_on_commit(pr, test_executions, commit):
     docker_executor = DockerExecutor("pandas-dev")
 
     cloned_repo.git.checkout(commit)
@@ -102,6 +102,10 @@ def execute_tests_on_commit(test_executions, commit):
     for test_execution in test_executions:
         output = docker_executor.execute_python_code(test_execution.code)
         test_execution.output = output
+        append_event(TestExecutionEvent(pr_nb=pr.number,
+                                        message="Test execution",
+                                        code=test_execution.code,
+                                        output=output))
 
 
 def get_ast_without_docstrings(code):
@@ -180,15 +184,15 @@ def check_pr(pr, github_repo, cloned_repo):
     old_executions = [TestExecution(t) for t in generated_tests]
     new_executions = [TestExecution(t) for t in generated_tests]
 
-    execute_tests_on_commit(old_executions, pre_commit)
-    execute_tests_on_commit(new_executions, post_commit)
+    execute_tests_on_commit(pr, old_executions, pre_commit)
+    execute_tests_on_commit(pr, new_executions, post_commit)
 
     for (old_execution, new_execution) in zip(old_executions, new_executions):
         difference_found = old_execution.output != new_execution.output
         append_event(ComparisonEvent(pr_nb=pr.number,
                                      message=f"{'Different' if difference_found else 'Same'} outputs",
                                      old_function_code=old_execution.code, old_output=old_execution.output,
-                                     new_function_code=new_execution.code, new_output=new_execution))
+                                     new_function_code=new_execution.code, new_output=new_execution.output))
 
         # if difference found, classify regression
         if difference_found:
@@ -223,13 +227,13 @@ project = PythonProjects.pandas_project
 github_repo = github.get_repo(project.project_id)
 
 # testing with motivating example
-pr = github_repo.get_pull(55108)
-check_pr(pr, github_repo, cloned_repo)
+# pr = github_repo.get_pull(55108)
+# check_pr(pr, github_repo, cloned_repo)
 
 # testing on recent PRs
-# prs = get_recent_prs(github_repo, nb=100)
-# for pr in prs[30:]:
-#     check_pr(pr, github_repo, cloned_repo)
+prs = get_recent_prs(github_repo, nb=200)
+for pr in prs:
+    check_pr(pr, github_repo, cloned_repo)
 
 
 # cloned_repo = ClonedRepo("./data/repos/pandas")

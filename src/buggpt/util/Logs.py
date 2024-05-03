@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import atexit
 from pydantic import BaseModel
 
@@ -8,6 +8,11 @@ class Event(BaseModel):
     timestamp: str = datetime.now().isoformat()
     pr_nb: int
     message: str
+
+
+class TestExecutionEvent(Event):
+    code: str
+    output: str
 
 
 class ComparisonEvent(Event):
@@ -22,11 +27,18 @@ class LLMEvent(Event):
 
 
 events = []
+last_time_stored = datetime.now()
 
 
 def append_event(evt):
+    global last_time_stored
+
     events.append(evt)
     print(json.dumps(evt.dict(), indent=2))
+
+    if datetime.now() - last_time_stored > timedelta(minutes=5):
+        store_logs()
+        last_time_stored = datetime.now()
 
 
 def store_logs():
