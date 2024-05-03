@@ -55,7 +55,7 @@ New version of the function:
 The usage examples may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported.
 
 Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
-Each example must be an executable piece of Python code wrapped into
+Each example must be an executable piece of Python code, including all necessary imports, wrapped into
 ```python
 ```
 """

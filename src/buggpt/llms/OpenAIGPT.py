@@ -9,9 +9,9 @@ model = "gpt-4-0125-preview"
 
 
 def query(prompt):
-
-    append_event(LLMEvent(
-        content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+    append_event(LLMEvent(pr_nb=-1,
+                          message=f"Querying {model}",
+                          content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
 
     if prompt.use_json_output:
         completion = openai.chat.completions.create(

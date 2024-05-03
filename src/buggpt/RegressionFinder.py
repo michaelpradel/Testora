@@ -2,8 +2,10 @@ from unidiff import PatchSet
 import urllib.request
 from github import Github, Auth
 from git import Repo
+import ast
 from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.llms.LLMCache import LLMCache
+from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.util.PythonCodeUtil import extract_target_function_by_name, extract_target_function_by_range, get_name_of_defined_function
 from buggpt.execution import PythonProjects
@@ -94,15 +96,35 @@ def execute_and_compare(pr, cloned_repo, code, pre_commit, post_commit):
 
     # old version
     cloned_repo.git.checkout(pre_commit)
+    # to trigger pandas re-compilation
+    docker_executor.execute_python_code("import pandas")
     output_old = docker_executor.execute_python_code(code)
 
     # new version
     cloned_repo.git.checkout(post_commit)
+    # to trigger pandas re-compilation
+    docker_executor.execute_python_code("import pandas")
     output_new = docker_executor.execute_python_code(code)
 
     append_event(ComparisonEvent(pr_nb=pr.number,
                                  message=f"{'Same' if output_old == output_new else 'Different'} outputs",
                                  old_function_code=code, old_output=output_old, new_function_code=code, new_output=output_new))
+
+
+def get_ast_without_docstrings(code):
+    tree = ast.parse(code)
+    for node in ast.walk(tree):
+        # Remove docstrings
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
+            node.body = [n for n in node.body if not (
+                isinstance(n, ast.Expr) and isinstance(n.value, ast.Str))]
+    return tree
+
+
+def equal_modulo_docstrings(code1, code2):
+    ast1 = get_ast_without_docstrings(code1)
+    ast2 = get_ast_without_docstrings(code2)
+    return ast.dump(ast1) == ast.dump(ast2)
 
 
 def check_pr(pr, github_repo, cloned_repo):
@@ -137,6 +159,12 @@ def check_pr(pr, github_repo, cloned_repo):
             Event(pr_nb=pr.number, message=f"Couldn't find old or new function code"))
         return
 
+    # ignore if only difference is in comments
+    if equal_modulo_docstrings(old_fut_code, new_fut_code):
+        append_event(Event(
+            pr_nb=pr.number, message="Ignoring because old and new functions are the same modulo comments"))
+        return
+
     # generate tests via LLM
     prompt = RegressionTestGeneratorPrompt(
         github_repo.name, qualified_function_name, old_fut_code, new_fut_code)
@@ -148,12 +176,20 @@ def check_pr(pr, github_repo, cloned_repo):
         append_event(LLMEvent(pr_nb=pr.number,
                      message=f"Generated test {idx}", content=test))
 
+    # make sure the tests import pandas
+    updated_tests = []
+    for test in generated_tests:
+        if "import pandas" not in test:
+            updated_tests.append("import pandas as pd\n" + test)
+        else:
+            updated_tests.append(test)
+
     # execute tests
     for test in generated_tests:
         execute_and_compare(pr, cloned_repo, test, pre_commit, post_commit)
 
 
-def get_recent_prs(github_repo, nb=30):
+def get_recent_prs(github_repo, nb=50):
     all_prs = github_repo.get_pulls(state="closed")
     merged_prs = []
     for pr in all_prs:
@@ -178,7 +214,7 @@ github_repo = github.get_repo(project.project_id)
 # check_pr(pr, github_repo, cloned_repo)
 
 # testing on recent PRs
-prs = get_recent_prs(github_repo, nb=20)
+prs = get_recent_prs(github_repo, nb=30)
 for pr in prs:
     check_pr(pr, github_repo, cloned_repo)
 
@@ -206,3 +242,13 @@ for pr in prs:
 # prs = get_recent_prs(github_repo)
 # for pr in prs:
 #     check_pr(pr, github_repo)
+
+
+# testing for PR detail extractor
+# prs = get_recent_prs(github_repo, nb=30)
+# for pr in prs:
+#     details = RegressionClassificationPrompt(
+#         "pandas", pr, "", "", "", "").extract_pr_details()
+#     print("======================")
+#     print(f"PR {pr.number}: {pr.title}\n")
+#     print(details)
