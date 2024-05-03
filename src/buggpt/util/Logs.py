@@ -10,6 +10,11 @@ class Event(BaseModel):
     message: str
 
 
+class PREvent(Event):
+    title: str
+    url: str
+
+
 class TestExecutionEvent(Event):
     code: str
     output: str

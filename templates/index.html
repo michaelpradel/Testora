@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyzed Pull Requests</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pull Requests</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>PR</th>
+                <th>Title</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pr_info in data %}
+            <tr style="background-color: {{ color_mapping[pr_info.status] | default('#FFFFFF') }}">
+                <td><a href="{{ pr_info.url }}">{{ pr_info.number }}</a></td>
+                <td>{{ pr_info.title }}</td>
+                <td><a href="/pr{{ pr_info.number }}">{{ pr_info.status }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

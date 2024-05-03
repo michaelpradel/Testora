@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pull Request Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .info {
+            margin-bottom: 20px;
+        }
+
+        .entries {
+            font-size: 11pt;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="info">
+        <h1><a href="{{ pr_info.url }}">PR{{ pr_info.number }}</a>: {{ pr_info.title }}</h1>
+        <h2>Status: {{ pr_info.status }}</h2>
+    </div>
+    {% for entry in pr_info.entries %}
+    <div class="entries">
+        <table>
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in entry.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value | nl2br | safe }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</body>
+
+</html>

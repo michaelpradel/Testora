@@ -11,7 +11,7 @@ from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGenerator
 from buggpt.util.PythonCodeUtil import extract_target_function_by_name, extract_target_function_by_range, get_name_of_defined_function
 from buggpt.execution import PythonProjects
 import buggpt.llms.OpenAIGPT as uncached_llm
-from buggpt.util.Logs import TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
+from buggpt.util.Logs import PREvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
 llm = LLMCache(uncached_llm)
 
 
@@ -231,9 +231,15 @@ github_repo = github.get_repo(project.project_id)
 # check_pr(pr, github_repo, cloned_repo)
 
 # testing on recent PRs
-prs = get_recent_prs(github_repo, nb=200)
-for pr in prs:
+prs = get_recent_prs(github_repo, nb=400)
+for pr in prs[200:]:
+    append_event(PREvent(pr_nb=pr.number,
+                         message="Starting to check PR",
+                         title=pr.title, url=pr.html_url))
     check_pr(pr, github_repo, cloned_repo)
+    append_event(PREvent(pr_nb=pr.number,
+                         message="Done with PR",
+                         title=pr.title, url=pr.html_url))
 
 
 # cloned_repo = ClonedRepo("./data/repos/pandas")
