@@ -92,6 +92,24 @@ def extract_fut_code(cloned_repo, commit, file_path, qualified_function_name):
     return function_code
 
 
+def clean_output(output):
+    # pandas-specific cleaning (to remove build output)
+    result = []
+    for line in output.split("\n"):
+        if line == "+ /usr/local/bin/ninja":
+            continue
+        # check if line starts with "[1/1]", "[2/4]", etc.
+        if line.startswith("[") and \
+                line[1].isdigit() and \
+                line[2] == "/" and \
+                line[3].isdigit() and \
+                line[4] == "]" and \
+                line[5] == " ":
+            continue
+        result.append(line)
+    return "\n".join(result)
+
+
 def execute_tests_on_commit(pr, test_executions, commit):
     docker_executor = DockerExecutor("pandas-dev")
 
@@ -101,7 +119,7 @@ def execute_tests_on_commit(pr, test_executions, commit):
 
     for test_execution in test_executions:
         output = docker_executor.execute_python_code(test_execution.code)
-        test_execution.output = output
+        test_execution.output = clean_output(output)
         append_event(TestExecutionEvent(pr_nb=pr.number,
                                         message="Test execution",
                                         code=test_execution.code,
@@ -122,6 +140,10 @@ def equal_modulo_docstrings(code1, code2):
     ast1 = get_ast_without_docstrings(code1)
     ast2 = get_ast_without_docstrings(code2)
     return ast.dump(ast1) == ast.dump(ast2)
+
+
+def is_crash(output):
+    return "Traceback (most recent call last)" in output
 
 
 def check_pr(pr, github_repo, cloned_repo):
@@ -191,19 +213,25 @@ def check_pr(pr, github_repo, cloned_repo):
         difference_found = old_execution.output != new_execution.output
         append_event(ComparisonEvent(pr_nb=pr.number,
                                      message=f"{'Different' if difference_found else 'Same'} outputs",
-                                     old_function_code=old_execution.code, old_output=old_execution.output,
-                                     new_function_code=new_execution.code, new_output=new_execution.output))
+                                     test_code=old_execution.code, old_output=old_execution.output,
+                                     new_output=new_execution.output))
 
         # if difference found, classify regression
         if difference_found:
+            assert old_execution.test_code == new_execution.test_code
             prompt = RegressionClassificationPrompt(
-                github_repo.name, pr, qualified_function_name, test, old_execution.output, new_execution.output)
+                github_repo.name, pr, qualified_function_name, old_execution.test_code, old_execution.output, new_execution.output)
             raw_answer = llm.query(prompt)
             append_event(LLMEvent(pr_nb=pr.number,
                                   message="Raw answer", content=raw_answer))
-            classification = prompt.parse_answer(raw_answer)
+            is_relevant_change, is_regression_bug = prompt.parse_answer(
+                raw_answer)
             append_event(Event(pr_nb=pr.number,
-                               message=f"Classification: {classification}"))
+                               message="Classification",
+                               is_relevant_change=is_relevant_change,
+                               is_regression_bug=is_regression_bug,
+                               old_is_crash=is_crash(old_execution.output),
+                               new_is_crash=is_crash(new_execution.output)))
 
 
 def get_recent_prs(github_repo, nb=50):
@@ -231,8 +259,20 @@ github_repo = github.get_repo(project.project_id)
 # check_pr(pr, github_repo, cloned_repo)
 
 # testing on recent PRs
-prs = get_recent_prs(github_repo, nb=400)
-for pr in prs[200:]:
+# prs = get_recent_prs(github_repo, nb=400)
+# for pr in prs:
+#     append_event(PREvent(pr_nb=pr.number,
+#                          message="Starting to check PR",
+#                          title=pr.title, url=pr.html_url))
+#     check_pr(pr, github_repo, cloned_repo)
+#     append_event(PREvent(pr_nb=pr.number,
+#                          message="Done with PR",
+#                          title=pr.title, url=pr.html_url))
+
+# testing on specific PRs
+interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
+prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
+for pr in prs:
     append_event(PREvent(pr_nb=pr.number,
                          message="Starting to check PR",
                          title=pr.title, url=pr.html_url))
@@ -240,7 +280,6 @@ for pr in prs[200:]:
     append_event(PREvent(pr_nb=pr.number,
                          message="Done with PR",
                          title=pr.title, url=pr.html_url))
-
 
 # cloned_repo = ClonedRepo("./data/repos/pandas")
 # # cloned_repo.checkout("79067a76adc448d17210f2cf4a858b0eb853be4c")  # just before the bug

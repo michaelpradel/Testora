@@ -26,6 +26,7 @@
             <tr>
                 <th>PR</th>
                 <th>Title</th>
+                <th>Summary</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -34,6 +35,7 @@
             <tr style="background-color: {{ color_mapping[pr_info.status] | default('#FFFFFF') }}">
                 <td><a href="{{ pr_info.url }}">{{ pr_info.number }}</a></td>
                 <td>{{ pr_info.title }}</td>
+                <td>{{ pr_info.summary }}</td>
                 <td><a href="/pr{{ pr_info.number }}">{{ pr_info.status }}</a></td>
             </tr>
             {% endfor %}

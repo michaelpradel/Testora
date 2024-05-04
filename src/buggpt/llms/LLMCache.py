@@ -2,6 +2,8 @@ import json
 from os import makedirs
 from os.path import join, exists
 import atexit
+from buggpt.prompts.PromptCommon import system_message
+from buggpt.util.Logs import append_event, LLMEvent
 
 cache_base_dir = "./data/llm_cache/"
 if not exists(cache_base_dir):
@@ -39,6 +41,10 @@ class LLMCache:
         prompt_str = prompt.create_prompt()
         result = self.cache.get(prompt_str)
         if result is not None:
+            append_event(LLMEvent(pr_nb=-1,
+                                  message=f"Cached result for querying {self.llm_module.model}",
+                                  content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+
             self.nb_hits += 1
             print(f"Prompt:\n{prompt_str}\nReturning cached result\n")
             return result

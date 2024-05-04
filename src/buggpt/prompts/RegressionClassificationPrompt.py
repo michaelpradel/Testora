@@ -31,12 +31,12 @@ class RegressionClassificationPrompt:
 
     def create_prompt(self):
         template = """
-The pull request "{pr_title}" of the {project_name} project changes the behavior of the {fut_qualified_name} function. Your task is to determine whether this change is intended or unintended.
+The pull request "{pr_title}" of the {project_name} project changes the {fut_qualified_name} function. Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
 
 # Details about the pull request
 {pr_details}
 
-# Usage example that changes its behavior:
+# Usage example that changes its behavior
 ```python
 {test_code}
 ```
@@ -48,15 +48,19 @@ The pull request "{pr_title}" of the {project_name} project changes the behavior
 {new_output}
 
 # Task
-You should answer the question "Is this behavioral change intended?".
-Explain your reasoning and then give your verdict in the following format:
+You should explain your reasoning and then answer two questions:
+1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
+2) Is the different output surprising given the intent of the pull request, i.e., is this a potential regression bug? Answer either "expected" or "surprising".
+Explain your reasoning and then give your answers in the following format:
 <THOUGHTS>
 ...
 </THOUGHTS>
-<VERDICT>
+<ANSWER1>
 ...
-</VERDICT>
-The verdict should be a single word: "intended" or "unintended".
+</ANSWER1>
+<ANSWER2>
+...
+</ANSWER2>
 """
 
         return template.format(project_name=self.project_name,
@@ -68,18 +72,26 @@ The verdict should be a single word: "intended" or "unintended".
                                new_output=self.new_output)
 
     def parse_answer(self, raw_answer):
-        in_verdict = False
+        in_answer = 0
+        is_relevant_change = None
+        is_regression_bug = None
         for line in raw_answer.split("\n"):
-            if in_verdict:
-                if line.strip() == "intended":
-                    return "intended"
-                elif line.strip() == "unintended":
-                    return "unintended"
-                else:
-                    return "unclear"
-            if line.strip() == "</VERDICT>":
-                in_verdict = False
-            if line.strip() == "<VERDICT>":
-                in_verdict = True
+            if in_answer == 1:
+                if line.strip() == "noteworthy":
+                    is_relevant_change = True
+                elif line.strip() == "minor":
+                    is_relevant_change = False
+            elif in_answer == 2:
+                if line.strip() == "surprising":
+                    is_regression_bug = True
+                elif line.strip() == "expected":
+                    is_regression_bug = False
 
-        return "unclear"
+            if line.strip() == "</ANSWER1>" or line.strip() == "</ANSWER2>":
+                in_answer = 0
+            if line.strip() == "<ANSWER1>":
+                in_answer = 1
+            if line.strip() == "<ANSWER2>":
+                in_answer = 2
+
+        return is_relevant_change, is_regression_bug

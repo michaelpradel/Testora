@@ -21,10 +21,16 @@ class TestExecutionEvent(Event):
 
 
 class ComparisonEvent(Event):
-    old_function_code: str
+    test_code: str
     old_output: str
-    new_function_code: str
     new_output: str
+
+
+class ClassificationEvent(Event):
+    is_relevant_change: bool
+    is_regression_bug: bool
+    old_is_crash: bool
+    new_is_crash: bool
 
 
 class LLMEvent(Event):
