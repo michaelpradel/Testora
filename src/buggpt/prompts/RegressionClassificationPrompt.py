@@ -1,8 +1,8 @@
 class RegressionClassificationPrompt:
-    def __init__(self, project_name, pr, fut_qualified_name, test_code, old_output, new_output):
+    def __init__(self, project_name, pr, fut_qualified_names, test_code, old_output, new_output):
         self.project_name = project_name
         self.pr = pr
-        self.fut_qualified_name = fut_qualified_name
+        self.fut_qualified_names = fut_qualified_names
         self.test_code = test_code
         self.old_output = old_output
         self.new_output = new_output
@@ -31,7 +31,7 @@ class RegressionClassificationPrompt:
 
     def create_prompt(self):
         template = """
-The pull request "{pr_title}" of the {project_name} project changes the {fut_qualified_name} function. Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
+The pull request "{pr_title}" of the {project_name} project changes the {fut_qualified_names} function(s). Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
 
 # Details about the pull request
 {pr_details}
@@ -65,7 +65,8 @@ Explain your reasoning and then give your answers in the following format:
 
         return template.format(project_name=self.project_name,
                                pr_title=self.pr.title,
-                               fut_qualified_name=self.fut_qualified_name,
+                               fut_qualified_names=", ".join(
+                                   self.fut_qualified_name),
                                pr_details=self.extract_pr_details(),
                                test_code=self.test_code,
                                old_output=self.old_output,

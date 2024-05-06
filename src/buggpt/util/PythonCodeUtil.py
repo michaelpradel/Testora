@@ -1,5 +1,6 @@
 import libcst as cst
 from buggpt.util.Logs import append_event, Event
+import ast
 
 
 class FunctionExtractor(cst.CSTVisitor):
@@ -184,3 +185,19 @@ def remove_function_with_name(code: str, function_name: str) -> str:
 def add_call_to_test_function(code: str):
     function_name = get_name_of_defined_function(code)
     return code + f"\n\n{function_name}()"
+
+
+def get_ast_without_docstrings(code):
+    tree = ast.parse(code)
+    for node in ast.walk(tree):
+        # Remove docstrings
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Module)):
+            node.body = [n for n in node.body if not (
+                isinstance(n, ast.Expr) and isinstance(n.value, ast.Str))]
+    return tree
+
+
+def equal_modulo_docstrings(code1, code2):
+    ast1 = get_ast_without_docstrings(code1)
+    ast2 = get_ast_without_docstrings(code2)
+    return ast.dump(ast1) == ast.dump(ast2)

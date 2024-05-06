@@ -1,9 +1,8 @@
 class RegressionTestGeneratorPrompt:
-    def __init__(self, project_name, fut_qualified_name, old_function_code, new_function_code):
+    def __init__(self, project_name, fut_qualified_names, diff):
         self.project_name = project_name
-        self.fut_qualified_name = fut_qualified_name
-        self.old_function_code = old_function_code
-        self.new_function_code = new_function_code
+        self.fut_qualified_names = fut_qualified_names
+        self.diff = diff
         self.use_json_output = False
 
     def create_prompt(self):
@@ -40,19 +39,13 @@ class RegressionTestGeneratorPrompt:
         # """
 
         template = """
-Your task is to generate usage examples of the {project_name} project that expose behavioral differences between two versions of the {fut_qualified_name} Python function.
+Your task is to generate usage examples of the {project_name} project that expose behavioral differences introduced by the following diff:
 
-Old version of the function:
-```python
-{old_function_code}
-```
+{diff}
 
-New version of the function:
-```python
-{new_function_code}
-```
+The diff affects the following functions: {fut_qualified_names}.
 
-The usage examples may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported. Do NOT use any randomly generated data in your examples, but instead use fixed data that you provide in the examples.
+The usage examples you create may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported. Do NOT use any randomly generated data in your examples, but instead use fixed or deterministically created data that you provide in the examples.
 
 Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
 Each example must be an executable piece of Python code, including all necessary imports, wrapped into
@@ -61,9 +54,9 @@ Each example must be an executable piece of Python code, including all necessary
 """
 
         return template.format(project_name=self.project_name,
-                               fut_qualified_name=self.fut_qualified_name,
-                               old_function_code=self.old_function_code,
-                               new_function_code=self.new_function_code)
+                               fut_qualified_name=", ".join(
+                                   self.fut_qualified_names),
+                               diff=self.diff)
 
     def remove_unnecessary_indentation(self, code):
         lines = code.split("\n")
