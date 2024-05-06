@@ -1,13 +1,24 @@
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Dict, List
 from flask import Flask, render_template
 import json
 import glob
+import argparse
 
 app = Flask("BugGPT Web UI")
 
 
-def latest_log_file():
+parser = argparse.ArgumentParser(description="Web UI for BugGPT")
+parser.add_argument("file", help="Log file to process", type=str)
+
+
+def get_log_file():
+    # Use log file passed as argument
+    args = parser.parse_args()
+    if args.file:
+        return args.file
+
     # Get the latest log file
     logs = glob.glob('logs_*.json')
     logs.sort()
@@ -31,7 +42,7 @@ def compute_pr_number_to_info():
     if len(pr_number_to_info) != 0:
         return
 
-    with open(latest_log_file(), "r") as f:
+    with open(get_log_file(), "r") as f:
         entries = json.load(f)
 
     previous_pr_number = 0
@@ -74,6 +85,13 @@ def fill_details():
                 break
 
 
+def summarize_status():
+    summary = Counter()
+    for pr_info in pr_number_to_info.values():
+        summary[pr_info.status] += 1
+    return summary
+
+
 status_colors = {
     "regression bug": "#FFCCCC",
     "intended difference": "#CCFFCC",
@@ -94,9 +112,8 @@ app.jinja_env.filters["nl2br"] = nl2br
 @app.route('/')
 def main_page():
     compute_pr_number_to_info()
-
-    # Pass the data to the template
-    return render_template("index.html", data=pr_number_to_info.values(), color_mapping=status_colors)
+    summary = summarize_status()
+    return render_template("index.html", summary=summary, data=pr_number_to_info.values(), color_mapping=status_colors)
 
 
 @app.route('/pr<int:number>')
@@ -108,4 +125,5 @@ def pr_page(number):
 
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     app.run(debug=True)

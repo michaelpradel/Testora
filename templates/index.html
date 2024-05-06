@@ -17,9 +17,31 @@
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+        .compact-table {
+        width: auto;
+        border: 1px solid black;
+    }
     </style>
 </head>
 <body>
+    <h1>Summary</h1>
+    <table class="compact-table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for status, nb in summary.items() %}
+            <tr style="background-color: {{ color_mapping[status] | default('#FFFFFF') }}">
+                <td>{{ status }}</td>
+                <td>{{ nb }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
     <h1>Pull Requests</h1>
     <table>
         <thead>
