@@ -1,11 +1,12 @@
 import json
 from datetime import datetime, timedelta
 import atexit
+from typing import Optional
 from pydantic import BaseModel
 
 
 class Event(BaseModel):
-    timestamp: str = datetime.now().isoformat()
+    timestamp: str = ""
     pr_nb: int
     message: str
 
@@ -27,8 +28,8 @@ class ComparisonEvent(Event):
 
 
 class ClassificationEvent(Event):
-    is_relevant_change: bool
-    is_regression_bug: bool
+    is_relevant_change: Optional[bool]
+    is_regression_bug: Optional[bool]
     old_is_crash: bool
     new_is_crash: bool
 
@@ -44,6 +45,7 @@ last_time_stored = datetime.now()
 def append_event(evt):
     global last_time_stored
 
+    evt.timestamp = datetime.now().isoformat()
     events.append(evt)
     print(json.dumps(evt.dict(), indent=2))
 

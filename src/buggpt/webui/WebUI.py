@@ -48,23 +48,36 @@ def compute_pr_number_to_info():
         pr_number_to_info[pr_number] = pr_info
         previous_pr_number = pr_number
 
-    determine_status()
+    fill_details()
 
 
-def determine_status():
+def fill_details():
     for pr_info in pr_number_to_info.values():
         for entry in pr_info.entries:
+            if entry["message"].startswith("Starting to check PR"):
+                pr_info.title = entry["title"]
+
+            if entry["message"].startswith("Ignoring"):
+                pr_info.status = "ignored"
+                pr_info.summary = entry["message"]
+                break
+
+            if entry["message"] == "Test execution":
+                pr_info.status = "tests executed"
+
             if entry["message"] == "Classification":
                 if entry["is_relevant_change"] and entry["is_regression_bug"]:
                     pr_info.status = "regression bug"
                 else:
                     pr_info.status = "intended difference"
                 pr_info.summary = f"is_relevant_change={entry['is_relevant_change']}, is_regression_bug={entry['is_regression_bug']}, old_is_crash={entry['old_is_crash']}, new_is_crash={entry['new_is_crash']}"
+                break
 
 
 status_colors = {
-    "regression bug": "#CCFFCC",
-    "intended difference": "#FFCCCC",
+    "regression bug": "#FFCCCC",
+    "intended difference": "#CCFFCC",
+    "tests executed": "#D3D3D3",
 }
 
 

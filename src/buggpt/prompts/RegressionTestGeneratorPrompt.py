@@ -52,7 +52,7 @@ New version of the function:
 {new_function_code}
 ```
 
-The usage examples may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported.
+The usage examples may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported. Do NOT use any randomly generated data in your examples, but instead use fixed data that you provide in the examples.
 
 Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
 Each example must be an executable piece of Python code, including all necessary imports, wrapped into

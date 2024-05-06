@@ -1,3 +1,5 @@
+import glob
+import json
 from unidiff import PatchSet
 import urllib.request
 from github import Github, Auth
@@ -11,7 +13,7 @@ from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGenerator
 from buggpt.util.PythonCodeUtil import extract_target_function_by_name, extract_target_function_by_range, get_name_of_defined_function
 from buggpt.execution import PythonProjects
 import buggpt.llms.OpenAIGPT as uncached_llm
-from buggpt.util.Logs import PREvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
+from buggpt.util.Logs import ClassificationEvent, PREvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
 llm = LLMCache(uncached_llm)
 
 
@@ -99,7 +101,7 @@ def clean_output(output):
         if line == "+ /usr/local/bin/ninja":
             continue
         # check if line starts with "[1/1]", "[2/4]", etc.
-        if line.startswith("[") and \
+        if len(line) >= 6 and line.startswith("[") and \
                 line[1].isdigit() and \
                 line[2] == "/" and \
                 line[3].isdigit() and \
@@ -218,20 +220,21 @@ def check_pr(pr, github_repo, cloned_repo):
 
         # if difference found, classify regression
         if difference_found:
-            assert old_execution.test_code == new_execution.test_code
+            assert old_execution.code == new_execution.code
             prompt = RegressionClassificationPrompt(
-                github_repo.name, pr, qualified_function_name, old_execution.test_code, old_execution.output, new_execution.output)
+                github_repo.name, pr, qualified_function_name, old_execution.code, old_execution.output, new_execution.output)
             raw_answer = llm.query(prompt)
             append_event(LLMEvent(pr_nb=pr.number,
                                   message="Raw answer", content=raw_answer))
             is_relevant_change, is_regression_bug = prompt.parse_answer(
                 raw_answer)
-            append_event(Event(pr_nb=pr.number,
-                               message="Classification",
-                               is_relevant_change=is_relevant_change,
-                               is_regression_bug=is_regression_bug,
-                               old_is_crash=is_crash(old_execution.output),
-                               new_is_crash=is_crash(new_execution.output)))
+            append_event(ClassificationEvent(pr_nb=pr.number,
+                                             message="Classification",
+                                             is_relevant_change=is_relevant_change,
+                                             is_regression_bug=is_regression_bug,
+                                             old_is_crash=is_crash(
+                                                 old_execution.output),
+                                             new_is_crash=is_crash(new_execution.output)))
 
 
 def get_recent_prs(github_repo, nb=50):
@@ -243,6 +246,19 @@ def get_recent_prs(github_repo, nb=50):
         if len(merged_prs) >= nb:
             break
     return merged_prs
+
+
+def find_prs_checked_in_past():
+    done_prs = set()
+
+    logs = glob.glob('logs_*.json')
+    for log in logs:
+        with open(log, "r") as f:
+            entries = json.load(f)
+        for entry in entries:
+            done_prs.add(entry["pr_nb"])
+
+    return done_prs
 
 
 # setup for testing on pandas
@@ -258,8 +274,25 @@ github_repo = github.get_repo(project.project_id)
 # pr = github_repo.get_pull(55108)
 # check_pr(pr, github_repo, cloned_repo)
 
-# testing on recent PRs
-# prs = get_recent_prs(github_repo, nb=400)
+done_pr_numbers = find_prs_checked_in_past()
+
+prs = get_recent_prs(github_repo, nb=1000)
+for pr in prs:
+    if pr.number in done_pr_numbers:
+        print(f"Skipping PR {pr.number} because already analyzed")
+        continue
+
+    append_event(PREvent(pr_nb=pr.number,
+                         message="Starting to check PR",
+                         title=pr.title, url=pr.html_url))
+    check_pr(pr, github_repo, cloned_repo)
+    append_event(PREvent(pr_nb=pr.number,
+                         message="Done with PR",
+                         title=pr.title, url=pr.html_url))
+
+# testing on specific PRs
+# interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
+# prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
 # for pr in prs:
 #     append_event(PREvent(pr_nb=pr.number,
 #                          message="Starting to check PR",
@@ -268,18 +301,6 @@ github_repo = github.get_repo(project.project_id)
 #     append_event(PREvent(pr_nb=pr.number,
 #                          message="Done with PR",
 #                          title=pr.title, url=pr.html_url))
-
-# testing on specific PRs
-interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
-prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
-for pr in prs:
-    append_event(PREvent(pr_nb=pr.number,
-                         message="Starting to check PR",
-                         title=pr.title, url=pr.html_url))
-    check_pr(pr, github_repo, cloned_repo)
-    append_event(PREvent(pr_nb=pr.number,
-                         message="Done with PR",
-                         title=pr.title, url=pr.html_url))
 
 # cloned_repo = ClonedRepo("./data/repos/pandas")
 # # cloned_repo.checkout("79067a76adc448d17210f2cf4a858b0eb853be4c")  # just before the bug
