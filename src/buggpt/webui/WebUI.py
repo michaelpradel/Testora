@@ -88,6 +88,7 @@ def fill_details():
 def summarize_status():
     summary = Counter()
     for pr_info in pr_number_to_info.values():
+        summary["total"] += 1
         summary[pr_info.status] += 1
     return summary
 
