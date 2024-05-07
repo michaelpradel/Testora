@@ -9,6 +9,12 @@ model = "gpt-4-0125-preview"
 
 
 def query(prompt):
+    if len(prompt) > 10000:
+        append_event(LLMEvent(pr_nb=-1,
+                              message=f"Query too long",
+                              content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+        return ""
+
     append_event(LLMEvent(pr_nb=-1,
                           message=f"Querying {model}",
                           content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
@@ -20,6 +26,7 @@ def query(prompt):
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt.create_prompt()}
             ],
+            max_tokens=10000,
             response_format={"type": "json_object"}
         )
     else:
@@ -28,7 +35,8 @@ def query(prompt):
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": prompt.create_prompt()}
-            ]
+            ],
+            max_tokens=10000
         )
 
     answer = completion.choices[0].message.content
