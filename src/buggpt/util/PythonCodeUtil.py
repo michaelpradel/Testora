@@ -63,7 +63,11 @@ class SurroundingClassExtractor(cst.CSTVisitor):
 
 
 def extract_target_function_by_range(code, patch_range):
-    tree = cst.parse_module(code)
+    try:
+        tree = cst.parse_module(code)
+    except cst.ParserSyntaxError:
+        return None
+    
     wrapper = cst.metadata.MetadataWrapper(tree)
     extractor = FunctionExtractor()
     wrapper.visit(extractor)
@@ -107,7 +111,11 @@ def is_parsable(code: str) -> bool:
 
 
 def get_name_of_defined_function(code: str) -> str:
-    tree = cst.parse_module(code)
+    try:
+        tree = cst.parse_module(code)
+    except cst.ParserSyntaxError:
+        return None
+    
     wrapper = cst.metadata.MetadataWrapper(tree)
     extractor = FunctionExtractor()
     wrapper.visit(extractor)

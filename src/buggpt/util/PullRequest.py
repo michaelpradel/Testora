@@ -77,6 +77,7 @@ class PullRequest:
                         new_file_content, patch_range)
                     if fct_code is not None:
                         fct_name = get_name_of_defined_function(fct_code)
-                        result.add(f"{module_name}.{fct_name}")
+                        if fct_name:
+                            result.add(f"{module_name}.{fct_name}")
         
         return result
