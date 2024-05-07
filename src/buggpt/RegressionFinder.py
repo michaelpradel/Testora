@@ -175,15 +175,30 @@ github_repo = github.get_repo(project.project_id)
 # check_pr(pr, github_repo, cloned_repo)
 
 # run on recent PRs, excluding those we've already checked
-done_pr_numbers = find_prs_checked_in_past()
-github_prs = get_recent_prs(github_repo, nb=20)
+# done_pr_numbers = find_prs_checked_in_past()
+# github_prs = get_recent_prs(github_repo, nb=20)
+# prs = [PullRequest(github_pr, github_repo, cloned_repo)
+#        for github_pr in github_prs]
+# for pr in prs:
+#     if pr.number in done_pr_numbers:
+#         print(f"Skipping PR {pr.number} because already analyzed")
+#         continue
+
+#     append_event(PREvent(pr_nb=pr.number,
+#                          message="Starting to check PR",
+#                          title=pr.github_pr.title, url=pr.github_pr.html_url))
+#     check_pr(pr)
+#     append_event(PREvent(pr_nb=pr.number,
+#                          message="Done with PR",
+#                          title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+# testing on specific PRs
+# interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
+interesting_pr_numbers = [55108, 56841]  # known regression bugs
+github_prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
 prs = [PullRequest(github_pr, github_repo, cloned_repo)
        for github_pr in github_prs]
 for pr in prs:
-    if pr.number in done_pr_numbers:
-        print(f"Skipping PR {pr.number} because already analyzed")
-        continue
-
     append_event(PREvent(pr_nb=pr.number,
                          message="Starting to check PR",
                          title=pr.github_pr.title, url=pr.github_pr.html_url))
@@ -191,16 +206,3 @@ for pr in prs:
     append_event(PREvent(pr_nb=pr.number,
                          message="Done with PR",
                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-
-# testing on specific PRs
-# interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
-# interesting_pr_numbers = [55108, 56841]  # known regression bugs
-# prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
-# for pr in prs:
-#     append_event(PREvent(pr_nb=pr.number,
-#                          message="Starting to check PR",
-#                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-#     check_pr(pr, github_repo, cloned_repo)
-#     append_event(PREvent(pr_nb=pr.number,
-#                          message="Done with PR",
-#                          title=pr.github_pr.title, url=pr.github_pr.html_url))

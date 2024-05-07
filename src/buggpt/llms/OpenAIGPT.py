@@ -9,22 +9,23 @@ model = "gpt-4-0125-preview"
 
 
 def query(prompt):
-    if len(prompt) > 10000:
+    user_message = prompt.create_prompt()
+    if len(user_message) > 10000:
         append_event(LLMEvent(pr_nb=-1,
                               message=f"Query too long",
-                              content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+                              content=f"System message:\n{system_message}\nUser message:\n{user_message}"))
         return ""
 
     append_event(LLMEvent(pr_nb=-1,
                           message=f"Querying {model}",
-                          content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+                          content=f"System message:\n{system_message}\nUser message:\n{user_message}"))
 
     if prompt.use_json_output:
         completion = openai.chat.completions.create(
             model=model,
             messages=[
                 {"role": "system", "content": system_message},
-                {"role": "user", "content": prompt.create_prompt()}
+                {"role": "user", "content": user_message}
             ],
             max_tokens=10000,
             response_format={"type": "json_object"}
@@ -34,7 +35,7 @@ def query(prompt):
             model=model,
             messages=[
                 {"role": "system", "content": system_message},
-                {"role": "user", "content": prompt.create_prompt()}
+                {"role": "user", "content": user_message}
             ],
             max_tokens=10000
         )
