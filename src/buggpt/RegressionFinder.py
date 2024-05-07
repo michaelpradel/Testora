@@ -174,12 +174,8 @@ github_repo = github.get_repo(project.project_id)
 # pr = github_repo.get_pull(55108)
 # check_pr(pr, github_repo, cloned_repo)
 
-pr = github_repo.get_pull(57157)
-check_pr(PullRequest(pr, github_repo, cloned_repo))
-
 # run on recent PRs, excluding those we've already checked
 # done_pr_numbers = find_prs_checked_in_past()
-
 # prs = get_recent_prs(github_repo, nb=1000)
 # for pr in prs:
 #     if pr.number in done_pr_numbers:
@@ -206,36 +202,3 @@ check_pr(PullRequest(pr, github_repo, cloned_repo))
 #                          message="Done with PR",
 #                          title=pr.title, url=pr.html_url))
 
-# cloned_repo = ClonedRepo("./data/repos/pandas")
-# # cloned_repo.checkout("79067a76adc448d17210f2cf4a858b0eb853be4c")  # just before the bug
-# cloned_repo.checkout("0bdbc44babac09225bdde02b642252ce054723e3")  # introduces the bug
-
-# docker_executor = DockerExecutor("pandas-dev")
-
-# test_code = """
-# import pandas as pd
-
-# i = pd.Index(['a', 'b', 'c', None], dtype='category')
-# i.difference(['1', None])
-# """
-
-# res = docker_executor.execute_python_test(test_code, is_test=False)
-# print(res)
-
-# token = open(".github_token", "r").read().strip()
-# github = Github(auth=Auth.Token(token))
-
-# github_repo = github.get_repo(project.project_id)
-# prs = get_recent_prs(github_repo)
-# for pr in prs:
-#     check_pr(pr, github_repo)
-
-
-# testing for PR detail extractor
-# prs = get_recent_prs(github_repo, nb=30)
-# for pr in prs:
-#     details = RegressionClassificationPrompt(
-#         "pandas", pr, "", "", "", "").extract_pr_details()
-#     print("======================")
-#     print(f"PR {pr.number}: {pr.title}\n")
-#     print(details)
