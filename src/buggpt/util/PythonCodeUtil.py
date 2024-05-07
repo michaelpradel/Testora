@@ -198,6 +198,10 @@ def get_ast_without_docstrings(code):
 
 
 def equal_modulo_docstrings(code1, code2):
-    ast1 = get_ast_without_docstrings(code1)
-    ast2 = get_ast_without_docstrings(code2)
+    try:
+        ast1 = get_ast_without_docstrings(code1)
+        ast2 = get_ast_without_docstrings(code2)
+    except SyntaxError:
+        # cannot parse code (e.g., .pyx files) -- just compare the strings
+        return code1 == code2
     return ast.dump(ast1) == ast.dump(ast2)
