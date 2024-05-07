@@ -27,7 +27,7 @@ def query(prompt):
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=10000,
+            max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
             response_format={"type": "json_object"}
         )
     else:
@@ -37,7 +37,7 @@ def query(prompt):
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=4096 # 4096 is the maximum token limit for gpt-4-0125-preview
+            max_tokens=4096  # 4096 is the maximum token limit for gpt-4-0125-preview
         )
 
     answer = completion.choices[0].message.content

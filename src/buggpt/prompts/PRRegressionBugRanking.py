@@ -3,8 +3,8 @@ from buggpt.util.Logs import LLMEvent, append_event
 
 
 class PRRegressionBugRanking:
-    def __init__(self, prs):
-        self.prs = prs
+    def __init__(self, github_prs):
+        self.github_prs = github_prs
         self.use_json_output = True
 
     def create_prompt(self):
@@ -35,7 +35,7 @@ Provide your answer using this JSON format:
 ```
 Make sure to include ALL the given pull requests into the output.
 """
-        pr_titles = [pr.github_pr.title for pr in self.prs]
+        pr_titles = [github_pr.title for github_pr in self.github_prs]
         return template.replace("<pr_titles>", "\n".join(pr_titles))
 
     def parse_answer(self, r):
@@ -57,16 +57,16 @@ Make sure to include ALL the given pull requests into the output.
         high_risk_prs = []
         medium_risk_prs = []
         low_risk_prs = []
-        for pr in self.prs:
-            if pr.github_pr.title in high_risk_titles:
-                high_risk_prs.append(pr)
-            elif pr.github_pr.title in medium_risk_titles:
-                medium_risk_prs.append(pr)
-            elif pr.github_pr.title in low_risk_titles:
-                low_risk_prs.append(pr)
+        for github_pr in self.github_prs:
+            if github_pr.title in high_risk_titles:
+                high_risk_prs.append(github_pr)
+            elif github_pr.title in medium_risk_titles:
+                medium_risk_prs.append(github_pr)
+            elif github_pr.title in low_risk_titles:
+                low_risk_prs.append(github_pr)
             else:
                 append_event(LLMEvent(
-                    pr_nb=pr.number, message=f"PRRegressionBugRanking omitted a PR title; assuming it's medium-risk", content=pr.github_pr.title))
-                medium_risk_prs.append(pr)
+                    pr_nb=github_pr.number, message=f"PRRegressionBugRanking omitted a PR title; assuming it's medium-risk", content=github_pr.title))
+                medium_risk_prs.append(github_pr)
 
         return high_risk_prs, medium_risk_prs, low_risk_prs
