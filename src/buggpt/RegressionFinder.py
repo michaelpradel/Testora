@@ -175,13 +175,14 @@ github_repo = github.get_repo(project.project_id)
 # check_pr(pr, github_repo, cloned_repo)
 
 # run on recent PRs, excluding those we've already checked
-# done_pr_numbers = find_prs_checked_in_past()
+done_pr_numbers = find_prs_checked_in_past()
 github_prs = get_recent_prs(github_repo, nb=20)
-prs = [PullRequest(github_pr, github_repo, cloned_repo) for github_pr in github_prs]
+prs = [PullRequest(github_pr, github_repo, cloned_repo)
+       for github_pr in github_prs]
 for pr in prs:
-    # if pr.number in done_pr_numbers:
-    #     print(f"Skipping PR {pr.number} because already analyzed")
-    #     continue
+    if pr.number in done_pr_numbers:
+        print(f"Skipping PR {pr.number} because already analyzed")
+        continue
 
     append_event(PREvent(pr_nb=pr.number,
                          message="Starting to check PR",
@@ -203,4 +204,3 @@ for pr in prs:
 #     append_event(PREvent(pr_nb=pr.number,
 #                          message="Done with PR",
 #                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-

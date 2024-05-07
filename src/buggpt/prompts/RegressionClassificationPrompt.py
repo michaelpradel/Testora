@@ -66,7 +66,7 @@ Explain your reasoning and then give your answers in the following format:
         return template.format(project_name=self.project_name,
                                pr_title=self.pr.github_pr.title,
                                fut_qualified_names=", ".join(
-                                   self.fut_qualified_name),
+                                   self.fut_qualified_names),
                                pr_details=self.extract_pr_details(),
                                test_code=self.test_code,
                                old_output=self.old_output,

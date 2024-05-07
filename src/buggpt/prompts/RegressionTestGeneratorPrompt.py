@@ -86,8 +86,3 @@ Each example must be an executable piece of Python code, including all necessary
 
         return tests
 
-
-if __name__ == "__main__":
-    prompt = RegressionTestGeneratorPrompt(
-        "pandas", "pandas.core.indexes.base._difference")
-    print(prompt.create_prompt())
