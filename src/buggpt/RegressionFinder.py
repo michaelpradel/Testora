@@ -6,6 +6,7 @@ from git import Repo
 from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
+from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
 from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.util.PullRequest import PullRequest
@@ -161,6 +162,33 @@ def find_prs_checked_in_past():
     return done_prs
 
 
+def filter_prs_by_risk(prs):
+    # split into chunks of 50
+    chunks = [prs[i:i + 50] for i in range(0, len(prs), 50)]
+
+    # ask LLM to rank PRs by risk of introducing a regression bug
+    result = []
+    for chunk in chunks:
+        prompt = PRRegressionBugRanking(prs)
+        raw_answer = llm.query(prompt)
+        append_event(LLMEvent(pr_nb=0,
+                              message="Raw answer", content=raw_answer))
+        ranking_result = prompt.parse_answer(raw_answer)
+        if ranking_result is None:
+            append_event(Event(pr_nb=0,
+                               message="Failed to parse ranking result; keeping them all"))
+            result.extend(chunk)
+        else:
+            high_risk_prs, medium_risk, _ = ranking_result
+            result.extend(high_risk_prs)
+            result.extend(medium_risk)
+
+    append_event(Event(
+        pr_nb=0, message=f"Keeping {len(high_risk_prs)} high-risk and {len(medium_risk)} medium-risk PRs out of {len(prs)} total PRs"))
+
+    return result
+
+
 # setup for testing on pandas
 cloned_repo = Repo("./data/repos/pandas")
 cloned_repo.git.checkout("main")
@@ -176,29 +204,15 @@ github_repo = github.get_repo(project.project_id)
 
 # run on recent PRs, excluding those we've already checked
 # done_pr_numbers = find_prs_checked_in_past()
-# github_prs = get_recent_prs(github_repo, nb=20)
-# prs = [PullRequest(github_pr, github_repo, cloned_repo)
-#        for github_pr in github_prs]
-# for pr in prs:
-#     if pr.number in done_pr_numbers:
-#         print(f"Skipping PR {pr.number} because already analyzed")
-#         continue
-
-#     append_event(PREvent(pr_nb=pr.number,
-#                          message="Starting to check PR",
-#                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-#     check_pr(pr)
-#     append_event(PREvent(pr_nb=pr.number,
-#                          message="Done with PR",
-#                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-
-# testing on specific PRs
-# interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
-interesting_pr_numbers = [55108, 56841]  # known regression bugs
-github_prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
+github_prs = get_recent_prs(github_repo, nb=1000)
 prs = [PullRequest(github_pr, github_repo, cloned_repo)
        for github_pr in github_prs]
+prs = filter_prs_by_risk(prs)
 for pr in prs:
+    # if pr.number in done_pr_numbers:
+    #     print(f"Skipping PR {pr.number} because already analyzed")
+    #     continue
+
     append_event(PREvent(pr_nb=pr.number,
                          message="Starting to check PR",
                          title=pr.github_pr.title, url=pr.github_pr.html_url))
@@ -206,3 +220,18 @@ for pr in prs:
     append_event(PREvent(pr_nb=pr.number,
                          message="Done with PR",
                          title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+# testing on specific PRs
+# interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
+# interesting_pr_numbers = [55108, 56841]  # known regression bugs
+# github_prs = [github_repo.get_pull(pr_nb) for pr_nb in interesting_pr_numbers]
+# prs = [PullRequest(github_pr, github_repo, cloned_repo)
+#        for github_pr in github_prs]
+# for pr in prs:
+#     append_event(PREvent(pr_nb=pr.number,
+#                          message="Starting to check PR",
+#                          title=pr.github_pr.title, url=pr.github_pr.html_url))
+#     check_pr(pr)
+#     append_event(PREvent(pr_nb=pr.number,
+#                          message="Done with PR",
+#                          title=pr.github_pr.title, url=pr.github_pr.html_url))

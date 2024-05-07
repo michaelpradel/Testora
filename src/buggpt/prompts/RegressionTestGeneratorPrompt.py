@@ -6,38 +6,6 @@ class RegressionTestGeneratorPrompt:
         self.use_json_output = False
 
     def create_prompt(self):
-        # TODO: for testing only
-        #         old_function_code = """
-        #     def _difference(self, other, sort):
-        #         # overridden by RangeIndex
-
-        #         this = self.unique()
-
-        #         indexer = this.get_indexer_for(other)
-        #         indexer = indexer.take((indexer != -1).nonzero()[0])
-
-        #         label_diff = np.setdiff1d(np.arange(this.size), indexer, assume_unique=True)
-
-        #         the_diff: MultiIndex | ArrayLike
-        #         if isinstance(this, ABCMultiIndex):
-        #             the_diff = this.take(label_diff)
-        #         else:
-        #             the_diff = this._values.take(label_diff)
-        #         the_diff = _maybe_try_sort(the_diff, sort)
-
-        #         return the_diff
-        # """
-
-        #         new_function_code = """
-        #     def _difference(self, other, sort):
-        #         # overridden by RangeIndex
-        #         other = other.unique()
-        #         the_diff = self[other.get_indexer_for(self) == -1]
-        #         the_diff = the_diff if self.is_unique else the_diff.unique()
-        #         the_diff = _maybe_try_sort(the_diff, sort)
-        #         return the_diff
-        # """
-
         template = """
 Your task is to generate usage examples of the {project_name} project that expose behavioral differences introduced by the following diff:
 
@@ -45,7 +13,7 @@ Your task is to generate usage examples of the {project_name} project that expos
 
 The diff affects the following functions: {fut_qualified_names}.
 
-The usage examples you create may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported. Do NOT use any randomly generated data in your examples, but instead use fixed or deterministically created data that you provide in the examples.
+The usage examples you create may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported. Do NOT use any randomly generated data or timestamps in your examples; instead use fixed or deterministically created inputs. Create usage examples that are diverse and cover a wide range of scenarios, e.g., by (not) passing optional parameters or using different APIs to achieve the same purpose.
 
 Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
 Each example must be an executable piece of Python code, including all necessary imports, wrapped into
