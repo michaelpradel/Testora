@@ -10,7 +10,7 @@ app = Flask("BugGPT Web UI")
 
 
 parser = argparse.ArgumentParser(description="Web UI for BugGPT")
-parser.add_argument("file", help="Log file to process", type=str)
+parser.add_argument("--file", help="Log file to process", type=str, required=False)
 
 
 def get_log_file():

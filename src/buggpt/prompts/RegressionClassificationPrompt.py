@@ -12,19 +12,19 @@ class RegressionClassificationPrompt:
         result = ""
 
         result += "## Comments\n"
-        result += f"Comment by {self.pr.user.login}:\n"
-        result += f"{self.pr.body}\n\n"
-        for comment in self.pr.get_issue_comments():
+        result += f"Comment by {self.pr.github_pr.user.login}:\n"
+        result += f"{self.pr.github_pr.body}\n\n"
+        for comment in self.pr.github_pr.get_issue_comments():
             result += f"Comment by {comment.user.login}:\n"
             result += f"{comment.body}\n\n"
 
         result += "## Review comments\n"
-        for comment in self.pr.get_comments():
+        for comment in self.pr.github_pr.get_comments():
             result += f"Comment by {comment.user.login}:\n"
             result += f"{comment.body}\n\n"
 
         result += "## Commit messages\n"
-        for commit in self.pr.get_commits():
+        for commit in self.pr.github_pr.get_commits():
             result += f"{commit.commit.message}\n\n"
 
         return result
@@ -64,7 +64,7 @@ Explain your reasoning and then give your answers in the following format:
 """
 
         return template.format(project_name=self.project_name,
-                               pr_title=self.pr.title,
+                               pr_title=self.pr.github_pr.title,
                                fut_qualified_names=", ".join(
                                    self.fut_qualified_name),
                                pr_details=self.extract_pr_details(),

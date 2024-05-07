@@ -54,7 +54,7 @@ Each example must be an executable piece of Python code, including all necessary
 """
 
         return template.format(project_name=self.project_name,
-                               fut_qualified_name=", ".join(
+                               fut_qualified_names=", ".join(
                                    self.fut_qualified_names),
                                diff=self.diff)
 
