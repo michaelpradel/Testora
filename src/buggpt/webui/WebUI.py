@@ -10,19 +10,25 @@ app = Flask("BugGPT Web UI")
 
 
 parser = argparse.ArgumentParser(description="Web UI for BugGPT")
-parser.add_argument("--file", help="Log file to process", type=str, required=False)
+parser.add_argument("--file", help="Log file to process",
+                    type=str, required=False)
+parser.add_argument("--all", help="Use all log files", action="store_true")
 
 
-def get_log_file():
+def get_log_files():
     # Use log file passed as argument
     args = parser.parse_args()
     if args.file:
-        return args.file
+        return [args.file]
+
+    logs = glob.glob('logs_*.json')
+
+    if args.all:
+        return logs
 
     # Get the latest log file
-    logs = glob.glob('logs_*.json')
     logs.sort()
-    return logs[-1]
+    return [logs[-1]]
 
 
 @dataclass
@@ -42,8 +48,10 @@ def compute_pr_number_to_info():
     if len(pr_number_to_info) != 0:
         return
 
-    with open(get_log_file(), "r") as f:
-        entries = json.load(f)
+    entries = []
+    for log_file in get_log_files():
+        with open(log_file, "r") as f:
+            entries.extend(json.load(f))
 
     previous_pr_number = 0
     for entry in entries:
@@ -79,8 +87,10 @@ def fill_details():
             if entry["message"] == "Classification":
                 if entry["is_relevant_change"] and entry["is_regression_bug"]:
                     pr_info.status = "regression bug"
+                    entry["message"] = "Classification: Regression"
                 else:
                     pr_info.status = "intended difference"
+                    entry["message"] = "Classification: Intended"
                 pr_info.summary = f"is_relevant_change={entry['is_relevant_change']}, is_regression_bug={entry['is_regression_bug']}, old_is_crash={entry['old_is_crash']}, new_is_crash={entry['new_is_crash']}"
                 break
 
