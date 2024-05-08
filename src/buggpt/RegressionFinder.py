@@ -171,11 +171,12 @@ def check_pr(pr):
             raw_answer = gpt4.query(prompt)
             append_event(LLMEvent(pr_nb=pr.number,
                                   message="Raw answer", content=raw_answer))
-            is_relevant_change, is_regression_bug = prompt.parse_answer(
+            is_relevant_change, is_deterministic, is_regression_bug = prompt.parse_answer(
                 raw_answer)
             append_event(ClassificationEvent(pr_nb=pr.number,
                                              message="Classification",
                                              is_relevant_change=is_relevant_change,
+                                             is_deterministic=is_deterministic,
                                              is_regression_bug=is_regression_bug,
                                              old_is_crash=is_crash(
                                                  old_execution.output),

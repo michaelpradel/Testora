@@ -85,13 +85,13 @@ def fill_details():
                 pr_info.status = "tests executed"
 
             if entry["message"] == "Classification":
-                if entry["is_relevant_change"] and entry["is_regression_bug"]:
+                if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_regression_bug"]:
                     pr_info.status = "regression bug"
                     entry["message"] = "Classification: Regression"
                 else:
                     pr_info.status = "intended difference"
                     entry["message"] = "Classification: Intended"
-                pr_info.summary = f"is_relevant_change={entry['is_relevant_change']}, is_regression_bug={entry['is_regression_bug']}, old_is_crash={entry['old_is_crash']}, new_is_crash={entry['new_is_crash']}"
+                pr_info.summary = f"is_relevant_change={entry['is_relevant_change']}, is_deterministic={entry['is_deterministic']}, is_regression_bug={entry['is_regression_bug']}, old_is_crash={entry['old_is_crash']}, new_is_crash={entry['new_is_crash']}"
                 break
 
 

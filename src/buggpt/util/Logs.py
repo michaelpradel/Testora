@@ -29,6 +29,7 @@ class ComparisonEvent(Event):
 
 class ClassificationEvent(Event):
     is_relevant_change: Optional[bool]
+    is_deterministic: Optional[bool]
     is_regression_bug: Optional[bool]
     old_is_crash: bool
     new_is_crash: bool
