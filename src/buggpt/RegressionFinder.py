@@ -158,11 +158,11 @@ def reduce_test(pr, old_execution, new_execution):
     reduced_old_execution = old_execution
     reduced_new_execution = new_execution
     assert reduced_old_execution.output != reduced_new_execution.output
-    for (reduced_old_execution, reduced_new_execution) in zip(old_executions, new_executions):
-        if reduced_old_execution.output == reduced_new_execution.output:
+    for (reduced_old_execution_candidate, reduced_new_execution_candidate) in zip(old_executions, new_executions):
+        if reduced_old_execution_candidate.output == reduced_new_execution_candidate.output:
             break
-        reduced_old_execution = reduced_old_execution
-        reduced_new_execution = reduced_new_execution
+        reduced_old_execution = reduced_old_execution_candidate
+        reduced_new_execution = reduced_new_execution_candidate
         assert reduced_old_execution.output != reduced_new_execution.output
         append_event(ComparisonEvent(pr_nb=pr.number,
                                      message="Different outputs (also after test reduction)",
@@ -213,6 +213,7 @@ def check_pr(pr):
             updated_tests.append("import pandas as pd\n" + test)
         else:
             updated_tests.append(test)
+    generated_tests = updated_tests
 
     # execute tests
     old_executions = [TestExecution(t) for t in generated_tests]
