@@ -67,7 +67,7 @@ def extract_target_function_by_range(code, patch_range):
         tree = cst.parse_module(code)
     except cst.ParserSyntaxError:
         return None
-    
+
     wrapper = cst.metadata.MetadataWrapper(tree)
     extractor = FunctionExtractor()
     wrapper.visit(extractor)
@@ -115,7 +115,7 @@ def get_name_of_defined_function(code: str) -> str:
         tree = cst.parse_module(code)
     except cst.ParserSyntaxError:
         return None
-    
+
     wrapper = cst.metadata.MetadataWrapper(tree)
     extractor = FunctionExtractor()
     wrapper.visit(extractor)
@@ -158,6 +158,16 @@ def extract_tests_of_fut(all_test_code, fut_name):
             test_functions.append(function_code)
     if test_functions:
         return "\n".join(test_functions)
+
+
+def has_private_calls(code):
+    tree = cst.parse_module(code)
+    call_extractor = CallExtractor()
+    tree.visit(call_extractor)
+    for callee in call_extractor.callees:
+        if callee.startswith("_"):
+            return True
+    return False
 
 
 class FunctionRemover(cst.CSTTransformer):
