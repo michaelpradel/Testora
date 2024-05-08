@@ -75,6 +75,9 @@ def fill_details():
     nb_test_generated_pattern = r"^Generated (\d+) tests"
 
     for pr_info in pr_number_to_info.values():
+        is_regression = False
+        is_intended_difference = False
+        nb_observed_differences = 0
         for entry in pr_info.entries:
             if entry["message"].startswith("Starting to check PR"):
                 pr_info.title = entry["title"]
@@ -89,13 +92,19 @@ def fill_details():
 
             if entry["message"] == "Classification":
                 if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_regression_bug"]:
-                    pr_info.status = "regression bug"
                     entry["message"] = "Classification: Regression"
+                    is_regression = True
                 else:
-                    pr_info.status = "intended difference"
                     entry["message"] = "Classification: Intended"
-                pr_info.summary = f"is_relevant_change={entry['is_relevant_change']}, is_deterministic={entry['is_deterministic']}, is_regression_bug={entry['is_regression_bug']}, old_is_crash={entry['old_is_crash']}, new_is_crash={entry['new_is_crash']}"
-                break
+                    is_intended_difference = True
+                nb_observed_differences += 1
+
+        if is_regression:
+            pr_info.status = "regression bug"
+            pr_info.summary = f"{nb_observed_differences} observed differences"
+        elif is_intended_difference:
+            pr_info.status = "intended difference"
+            pr_info.summary = f"{nb_observed_differences} observed differences"
 
         if pr_info.status == "tests executed":
             nb_generated_tests = 0
