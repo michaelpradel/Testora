@@ -124,6 +124,17 @@ def generate_tests(pr, github_repo, changed_functions):
     return all_tests
 
 
+def validate_output_difference(pr, old_execution, new_execution):
+    # re-execute test on old and new version and ignore flaky differences
+    old_execution_repeated = TestExecution(old_execution.code)
+    execute_tests_on_commit(
+        pr.number, [old_execution_repeated], pr.pre_commit)
+    new_execution_repeated = TestExecution(new_execution.code)
+    execute_tests_on_commit(
+        pr.number, [new_execution_repeated], pr.post_commit)
+    return old_execution.output == old_execution_repeated.output and new_execution.output == new_execution_repeated.output and old_execution.output != new_execution.output
+
+
 def check_pr(pr):
     # ignore if too few or too many files changed
     if len(pr.non_test_modified_python_files) == 0:
@@ -174,6 +185,11 @@ def check_pr(pr):
 
     for (old_execution, new_execution) in zip(old_executions, new_executions):
         difference_found = old_execution.output != new_execution.output
+        if difference_found:
+            difference_found_again = validate_output_difference(
+                pr, old_execution, new_execution)
+            if not difference_found_again:
+                difference_found = False
         append_event(ComparisonEvent(pr_nb=pr.number,
                                      message=f"{'Different' if difference_found else 'Same'} outputs",
                                      test_code=old_execution.code, old_output=old_execution.output,
