@@ -45,6 +45,10 @@ class OpenAIGPT:
                 max_tokens=4096  # 4096 is the maximum token limit for gpt-4-0125-preview
             )
 
+        append_event(LLMEvent(pr_nb=-1,
+                              message=f"Token usage",
+                              content=f"prompt={completion.usage.prompt_tokens}, completion={completion.usage.completion_tokens}"))
+
         answer = completion.choices[0].message.content
 
         return answer
