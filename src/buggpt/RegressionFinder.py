@@ -157,11 +157,18 @@ def reduce_test(pr, old_execution, new_execution):
     # find the last test that still shows a difference
     reduced_old_execution = old_execution
     reduced_new_execution = new_execution
+    assert reduced_old_execution.output != reduced_new_execution.output
     for (reduced_old_execution, reduced_new_execution) in zip(old_executions, new_executions):
         if reduced_old_execution.output == reduced_new_execution.output:
             break
         reduced_old_execution = reduced_old_execution
         reduced_new_execution = reduced_new_execution
+        assert reduced_old_execution.output != reduced_new_execution.output
+        append_event(ComparisonEvent(pr_nb=pr.number,
+                                     message="Different outputs (also after test reduction)",
+                                     test_code=reduced_old_execution.code,
+                                     old_output=reduced_old_execution.output,
+                                     new_output=reduced_new_execution.output))
 
     return reduced_old_execution, reduced_new_execution
 
@@ -231,15 +238,9 @@ def check_pr(pr):
             continue
 
         # if difference found, reduce the test while still observing a difference
-        reduced_old_execution, reduced_new_execution = reduce_test(
+        old_execution, new_execution = reduce_test(
             pr, old_execution, new_execution)
-        append_event(ComparisonEvent(pr_nb=pr.number,
-                                     message="Different outputs (also after test reduction)",
-                                     test_code=reduced_old_execution.code,
-                                     old_output=reduced_old_execution.output,
-                                     new_output=reduced_new_execution.output))
-        old_execution = reduced_old_execution
-        new_execution = reduced_new_execution
+        assert old_execution.output != new_execution.output
 
         # if difference found, classify regression
         assert old_execution.code == new_execution.code
