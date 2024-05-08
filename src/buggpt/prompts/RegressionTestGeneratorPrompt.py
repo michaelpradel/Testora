@@ -16,7 +16,8 @@ The diff affects the following functions: {fut_qualified_names}.
 The usage examples you create may use only the public API of the {project_name} project. You can assume that the project is installed and ready to be imported. Do NOT use any randomly generated data or timestamps in your examples; instead use fixed or deterministically created inputs. Create usage examples that are diverse and cover a wide range of scenarios, e.g., by (not) passing optional parameters or using different APIs to achieve the same purpose.
 
 Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
-Each example must be an executable piece of Python code, including all necessary imports, wrapped into
+Each example must be an executable piece of Python code, including all necessary imports.
+Wrap each example separately into
 ```python
 ```
 """

@@ -46,20 +46,27 @@ class PullRequest:
 
         return len(self.files_with_non_comment_changes) > 0
 
-    def get_diff(self):
+    def get_filtered_diff(self):
         pre_commit = self.cloned_repo.commit(self.pre_commit)
         post_commit = self.cloned_repo.commit(self.post_commit)
 
         diff_parts = []
         for file_path in self.files_with_non_comment_changes:
-            raw_diff = self.cloned_repo.git.diff(pre_commit, post_commit, file_path)
+            raw_diff = self.cloned_repo.git.diff(
+                pre_commit, post_commit, file_path)
             diff_parts.append(raw_diff)
-            
+
         return "\n\n".join(diff_parts)
+
+    def get_full_diff(self):
+        pre_commit = self.cloned_repo.commit(self.pre_commit)
+        post_commit = self.cloned_repo.commit(self.post_commit)
+
+        return self.cloned_repo.git.diff(pre_commit, post_commit)
 
     def get_changed_function_names(self):
         result = set()
-        
+
         for modified_file in self.patch.modified_files:
             if modified_file.path in self.files_with_non_comment_changes:
                 post_commit = self.cloned_repo.commit(self.post_commit)
@@ -67,7 +74,8 @@ class PullRequest:
                 with open(f"{self.cloned_repo.working_dir}/{modified_file.path}", "r") as f:
                     new_file_content = f.read()
 
-                module_name = modified_file.path.replace("/", ".").replace(".pyx", "").replace(".py", "")
+                module_name = modified_file.path.replace(
+                    "/", ".").replace(".pyx", "").replace(".py", "")
 
                 for hunk in modified_file:
                     start_line = hunk.target_start
@@ -79,5 +87,5 @@ class PullRequest:
                         fct_name = get_name_of_defined_function(fct_code)
                         if fct_name:
                             result.add(f"{module_name}.{fct_name}")
-        
+
         return result
