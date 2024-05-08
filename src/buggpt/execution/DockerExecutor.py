@@ -127,6 +127,6 @@ class DockerExecutor:
         self.copy_code_to_container(code, "/tmp/code.py")
         command = "python /tmp/code.py"
         exec_result = self.container.exec_run(command, demux=True)
-        stdout_output = exec_result.output[0].decode("utf-8")
-        stderr_output = exec_result.output[1].decode("utf-8")
+        stdout_output = exec_result.output[0].decode("utf-8") if exec_result.output[0] else ""
+        stderr_output = exec_result.output[1].decode("utf-8") if exec_result.output[1] else ""
         return stdout_output, stderr_output

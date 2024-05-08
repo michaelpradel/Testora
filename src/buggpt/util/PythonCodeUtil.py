@@ -160,13 +160,18 @@ def extract_tests_of_fut(all_test_code, fut_name):
         return "\n".join(test_functions)
 
 
-def has_private_calls(code):
-    tree = cst.parse_module(code)
+def has_private_calls_or_fails_to_parse(code):
+    try:
+        tree = cst.parse_module(code)
+    except cst.ParserSyntaxError:
+        return True
+
     call_extractor = CallExtractor()
     tree.visit(call_extractor)
     for callee in call_extractor.callees:
         if callee.startswith("_"):
             return True
+
     return False
 
 
