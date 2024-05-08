@@ -52,7 +52,9 @@ def execute_tests_on_commit(pr_number, test_executions, commit):
         Event(pr_nb=pr_number, message=f"Done with compiling pandas at commit {commit}"))
 
     for test_execution in test_executions:
-        output = docker_executor.execute_python_code(test_execution.code)
+        stdout_output, stderr_output = docker_executor.execute_python_code(
+            test_execution.code)
+        output = stdout_output + "\n" + stderr_output
         test_execution.output = clean_output(output)
         append_event(TestExecutionEvent(pr_nb=pr_number,
                                         message="Test execution",
