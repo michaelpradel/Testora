@@ -36,6 +36,9 @@ The pull request "{pr_title}" of the {project_name} project changes the {fut_qua
 # Details about the pull request
 {pr_details}
 
+# Diff of the pull request
+{diff}
+
 # Usage example that changes its behavior
 ```python
 {test_code}
@@ -72,6 +75,7 @@ Explain your reasoning and then give your answers in the following format:
                                fut_qualified_names=", ".join(
                                    self.fut_qualified_names),
                                pr_details=self.extract_pr_details(),
+                               diff=self.pr.get_full_diff(),
                                test_code=self.test_code,
                                old_output=self.old_output,
                                new_output=self.new_output)
