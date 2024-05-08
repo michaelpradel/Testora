@@ -5,6 +5,7 @@ from flask import Flask, render_template
 import json
 import glob
 import argparse
+import re
 
 app = Flask("BugGPT Web UI")
 
@@ -71,6 +72,8 @@ def compute_pr_number_to_info():
 
 
 def fill_details():
+    nb_test_generated_pattern = r"^Generated (\d+) tests"
+
     for pr_info in pr_number_to_info.values():
         for entry in pr_info.entries:
             if entry["message"].startswith("Starting to check PR"):
@@ -93,6 +96,18 @@ def fill_details():
                     entry["message"] = "Classification: Intended"
                 pr_info.summary = f"is_relevant_change={entry['is_relevant_change']}, is_deterministic={entry['is_deterministic']}, is_regression_bug={entry['is_regression_bug']}, old_is_crash={entry['old_is_crash']}, new_is_crash={entry['new_is_crash']}"
                 break
+
+        if pr_info.status == "tests executed":
+            nb_generated_tests = 0
+            for entry in pr_info.entries:
+                match = re.search(nb_test_generated_pattern, entry["message"])
+                if match:
+                    nb_generated_tests += int(match.group(1))
+
+            nb_test_executions = len(
+                [e for e in pr_info.entries if entry["message"] == "Test execution"])
+
+            pr_info.summary = f"{nb_generated_tests} tests generated, {nb_test_executions} test executions"
 
 
 def summarize_status():
