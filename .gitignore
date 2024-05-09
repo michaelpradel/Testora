@@ -1,5 +1,5 @@
 __pycache__
-data/llm_cache
+data/llm_cache*
 data/repos
 .vscode/launch.json
 /tmp

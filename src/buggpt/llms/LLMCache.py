@@ -41,6 +41,8 @@ class LLMCache:
 
     def query(self, prompt):
         prompt_str = prompt.create_prompt()
+
+        # check for cached answer
         result = self.cache.get(prompt_str)
         if result is not None:
             append_event(LLMEvent(pr_nb=-1,
@@ -51,14 +53,16 @@ class LLMCache:
             print(f"Prompt:\n{prompt_str}\nReturning cached result\n")
             return result
 
+        # no cached answer, query LLM
+        self.nb_misses += 1
         result = self.llm_module.query(prompt)
 
-        # update cache
-        self.cache[prompt_str] = result
-        self.nb_misses += 1
+        # update cache (only if answer is non-empty)
+        if result:
+            self.cache[prompt_str] = result
+            self.nb_unwritten_updates += 1
 
         # write cache every 10 updates
-        self.nb_unwritten_updates += 1
         if self.nb_unwritten_updates > 10:
             self.write_cache()
             self.nb_unwritten_updates = 0

@@ -10,6 +10,8 @@ def analyze_llm_cache(file_path):
     for query, answer in cache.items():
         query_sizes.append(len(query))
         answer_sizes.append(len(answer))
+        if len(answer) == 0:
+            print(f"Warning: empty answer found!")
 
     # plot histogram of query sizes
     plt.hist(query_sizes, bins=50)
@@ -24,6 +26,8 @@ def analyze_llm_cache(file_path):
     plt.xlabel("Size")
     plt.ylabel("Frequency")
     plt.show()
+
+
 
     
 
