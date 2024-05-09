@@ -35,6 +35,10 @@ class ClassificationEvent(Event):
     new_is_crash: bool
 
 
+class SelectBehaviorEvent(Event):
+    expected_output: int
+
+
 class LLMEvent(Event):
     content: str
 

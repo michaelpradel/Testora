@@ -9,10 +9,11 @@ from buggpt.llms.LLMCache import LLMCache
 from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
 from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
+from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4_model, gpt35_model
-from buggpt.util.Logs import ClassificationEvent, PREvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
+from buggpt.util.Logs import ClassificationEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
 from buggpt.util.PythonCodeUtil import has_private_calls_or_fails_to_parse
 
 
@@ -179,6 +180,37 @@ def check_if_present_in_main(pr, new_execution):
     return main_execution.output == new_execution.output
 
 
+def classify_regression(project_name, pr, changed_functions, old_execution, new_execution):
+    prompt = RegressionClassificationPrompt(
+        project_name, pr, changed_functions, old_execution.code, old_execution.output, new_execution.output)
+    raw_answer = gpt4.query(prompt)
+    append_event(LLMEvent(pr_nb=pr.number,
+                          message="Raw answer", content=raw_answer))
+    is_relevant_change, is_deterministic, is_regression_bug = prompt.parse_answer(
+        raw_answer)
+    append_event(ClassificationEvent(pr_nb=pr.number,
+                                     message="Classification",
+                                     is_relevant_change=is_relevant_change,
+                                     is_deterministic=is_deterministic,
+                                     is_regression_bug=is_regression_bug,
+                                     old_is_crash=is_crash(
+                                         old_execution.output),
+                                     new_is_crash=is_crash(new_execution.output)))
+    return is_regression_bug
+
+
+def select_expected_behavior(project_name, pr, old_output, new_output):
+    prompt = SelectExpectedBehaviorPrompt(project_name, old_output, new_output)
+    raw_answer = gpt4.query(prompt)
+    append_event(LLMEvent(pr_nb=pr.number,
+                          message="Raw answer", content=raw_answer))
+    expected_behavior = prompt.parse_answer(raw_answer)
+    append_event(SelectBehaviorEvent(pr_nb=pr.number,
+                                     message="Selected expected behavior",
+                                     expected_output=expected_behavior))
+    return expected_behavior
+
+
 def check_pr(pr):
     # ignore if too few or too many files changed
     if len(pr.non_test_modified_python_files) == 0:
@@ -257,21 +289,13 @@ def check_pr(pr):
 
         # if difference found, classify regression
         assert old_execution.code == new_execution.code
-        prompt = RegressionClassificationPrompt(
-            github_repo.name, pr, changed_functions, old_execution.code, old_execution.output, new_execution.output)
-        raw_answer = gpt4.query(prompt)
-        append_event(LLMEvent(pr_nb=pr.number,
-                              message="Raw answer", content=raw_answer))
-        is_relevant_change, is_deterministic, is_regression_bug = prompt.parse_answer(
-            raw_answer)
-        append_event(ClassificationEvent(pr_nb=pr.number,
-                                         message="Classification",
-                                         is_relevant_change=is_relevant_change,
-                                         is_deterministic=is_deterministic,
-                                         is_regression_bug=is_regression_bug,
-                                         old_is_crash=is_crash(
-                                             old_execution.output),
-                                         new_is_crash=is_crash(new_execution.output)))
+        is_regression_bug = classify_regression(
+            github_repo.name, pr, changed_functions, old_execution, new_execution)
+
+        # if classified as regression bug, ask LLM which behavior is expected (to handle coincidental bug fixes)
+        if is_regression_bug:
+            selected_behavior = select_expected_behavior(
+                github_repo.name, pr, old_execution.output, new_execution.output)
 
 
 def get_recent_prs(github_repo, nb=50):
@@ -372,7 +396,7 @@ if __name__ == "__main__":
     # testing on specific PRs
     # interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
     # interesting_pr_numbers = [55108, 56841]  # known regression bugs
-    interesting_pr_numbers = [57595]
+    interesting_pr_numbers = [57205]
     github_prs = [github_repo.get_pull(pr_nb)
                   for pr_nb in interesting_pr_numbers]
     prs = [PullRequest(github_pr, github_repo, cloned_repo)
