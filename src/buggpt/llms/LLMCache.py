@@ -29,9 +29,11 @@ class LLMCache:
         self.nb_hits = 0
         self.nb_misses = 0
 
-        atexit.register(lambda: self.finalize())
+        self.nb_unwritten_updates = 0
 
-    def finalize(self):
+        atexit.register(lambda: self.write_cache())
+
+    def write_cache(self):
         with open(self.cache_file, "w") as f:
             json.dump(self.cache, f)
         print(
@@ -50,6 +52,15 @@ class LLMCache:
             return result
 
         result = self.llm_module.query(prompt)
+
+        # update cache
         self.cache[prompt_str] = result
         self.nb_misses += 1
+
+        # write cache every 10 updates
+        self.nb_unwritten_updates += 1
+        if self.nb_unwritten_updates > 10:
+            self.write_cache()
+            self.nb_unwritten_updates = 0
+
         return result
