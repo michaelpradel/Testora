@@ -70,15 +70,40 @@ Explain your reasoning and then give your answers in the following format:
 </ANSWER3>
 """
 
-        return template.format(project_name=self.project_name,
-                               pr_title=self.pr.github_pr.title,
-                               fut_qualified_names=", ".join(
-                                   self.fut_qualified_names),
-                               pr_details=self.extract_pr_details(),
-                               diff=self.pr.get_full_diff(),
-                               test_code=self.test_code,
-                               old_output=self.old_output,
-                               new_output=self.new_output)
+        query = template.format(project_name=self.project_name,
+                                pr_title=self.pr.github_pr.title,
+                                fut_qualified_names=", ".join(
+                                    self.fut_qualified_names),
+                                pr_details=self.extract_pr_details(),
+                                diff=self.pr.get_full_diff(),
+                                test_code=self.test_code,
+                                old_output=self.old_output,
+                                new_output=self.new_output)
+        if len(query) < 10000:
+            return query
+
+        query = template.format(project_name=self.project_name,
+                                pr_title=self.pr.github_pr.title,
+                                fut_qualified_names=", ".join(
+                                    self.fut_qualified_names),
+                                pr_details=self.extract_pr_details(),
+                                diff=self.pr.get_filtered_diff(),
+                                test_code=self.test_code,
+                                old_output=self.old_output,
+                                new_output=self.new_output)
+        if len(query) < 10000:
+            return query
+
+        query = template.format(project_name=self.project_name,
+                                pr_title=self.pr.github_pr.title,
+                                fut_qualified_names=", ".join(
+                                    self.fut_qualified_names),
+                                pr_details=self.extract_pr_details(),
+                                diff="(omitted due to length)",
+                                test_code=self.test_code,
+                                old_output=self.old_output,
+                                new_output=self.new_output)
+        return query
 
     def parse_answer(self, raw_answer):
         in_answer = 0
