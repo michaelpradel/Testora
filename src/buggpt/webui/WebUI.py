@@ -78,6 +78,7 @@ def fill_details():
         is_regression = False
         is_intended_difference = False
         is_unclear = False
+        is_not_in_main = None
         nb_observed_differences = 0
         for entry in pr_info.entries:
             if entry["message"].startswith("Starting to check PR"):
@@ -98,14 +99,19 @@ def fill_details():
                 elif entry["is_regression_bug"] == False:
                     entry["message"] = "Classification: Intended"
                     is_intended_difference = True
-                else: 
+                else:
                     entry["message"] = "Classification: Unclear"
                     is_unclear = True
                 nb_observed_differences += 1
 
+            if entry["message"] == "Difference not present in main anymore":
+                is_not_in_main = True
+
         if is_regression:
             pr_info.status = "regression bug"
             pr_info.summary = f"{nb_observed_differences} observed differences"
+            if is_not_in_main:
+                pr_info.summary += ", not in main"
         elif is_intended_difference:
             pr_info.status = "intended difference"
             pr_info.summary = f"{nb_observed_differences} observed differences"

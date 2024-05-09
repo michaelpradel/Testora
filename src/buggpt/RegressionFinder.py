@@ -173,6 +173,12 @@ def reduce_test(pr, old_execution, new_execution):
     return reduced_old_execution, reduced_new_execution
 
 
+def check_if_present_in_main(pr, new_execution):
+    main_execution = TestExecution(new_execution.code)
+    execute_tests_on_commit(pr.number, [main_execution], "main")
+    return main_execution.output == new_execution.output
+
+
 def check_pr(pr):
     # ignore if too few or too many files changed
     if len(pr.non_test_modified_python_files) == 0:
@@ -242,6 +248,12 @@ def check_pr(pr):
         old_execution, new_execution = reduce_test(
             pr, old_execution, new_execution)
         assert old_execution.output != new_execution.output
+
+        # check if new output is still present in head of current main branch
+        if not check_if_present_in_main(pr, new_execution):
+            append_event(Event(pr_nb=pr.number,
+                               message="Difference not present in main anymore"))
+            return
 
         # if difference found, classify regression
         assert old_execution.code == new_execution.code
