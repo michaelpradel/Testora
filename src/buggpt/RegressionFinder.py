@@ -117,7 +117,7 @@ def generate_tests(pr, github_repo, changed_functions):
 
     # de-dup tests
     nb_tests_before_dedup_and_cleaning = len(all_tests)
-    all_tests = list(set(all_tests))
+    all_tests = list(dict.fromkeys(all_tests))
 
     # clean tests
     all_tests = remove_tests_with_private_call(all_tests)

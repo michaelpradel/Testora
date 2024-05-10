@@ -18,7 +18,7 @@ class ClonedRepoManager:
         self.usage_order: List[str] = [f"clone{i}" for i in range(
             1, self.nb_clones + 1)]  # last = last used
 
-        self._hard_reset_all_clones()
+        self._reset_and_clean_all_clones()
 
     def _read_clone_state(self):
         if not exists(self.clone_state_file):
@@ -36,11 +36,12 @@ class ClonedRepoManager:
         with open(self.clone_state_file, "w") as f:
             json.dump(self.clone_id_to_state, f)
 
-    def _hard_reset_all_clones(self):
+    def _reset_and_clean_all_clones(self):
         for clone_id, _ in self.clone_id_to_state.items():
             cloned_repo_dir = f"{self.pool_dir}/{clone_id}/{self.repo_name}"
             cloned_repo = Repo(cloned_repo_dir)
             cloned_repo.git.reset('--hard')
+            cloned_repo.git.clean('-f', '-d', '-x')
 
     def _get_least_recently_used_clone_id(self) -> str:
         return self.usage_order[0]
@@ -68,5 +69,6 @@ class ClonedRepoManager:
         state["commit"] = commit
         self.clone_id_to_state[clone_id] = state
         self._write_clone_state()
+        self._have_used_clone_id(clone_id)
 
         return cloned_repo, state["container_name"]

@@ -37,7 +37,7 @@ class LLMCache:
         with open(self.cache_file, "w") as f:
             json.dump(self.cache, f)
         print(
-            f"LLMCache with {len(self.cache)} entries saved. {self.nb_hits} hits, {self.nb_misses} misses.")
+            f"LLMCache of {self.llm_module.model} with {len(self.cache)} entries saved. {self.nb_hits} hits, {self.nb_misses} misses.")
 
     def query(self, prompt):
         prompt_str = prompt.create_prompt()

@@ -57,17 +57,16 @@ def compute_pr_number_to_info():
 
     previous_pr_number = 0
     for entry in entries:
-        pr_number = entry["pr_nb"]
-        if pr_number == -1:
-            pr_number = previous_pr_number
-        pr_info = pr_number_to_info.get(pr_number,
+        if entry["pr_nb"] == -1:
+            entry["pr_nb"] = previous_pr_number
+        pr_info = pr_number_to_info.get(entry["pr_nb"],
                                         PRInfo(
-                                            number=pr_number,
-                                            url=f"https://github.com/pandas-dev/pandas/pull/{pr_number}"
-                                        ))
+                                            number=entry["pr_nb"],
+                                            url=f"https://github.com/pandas-dev/pandas/pull/{entry['pr_nb']}"
+        ))
         pr_info.entries.append(entry)
-        pr_number_to_info[pr_number] = pr_info
-        previous_pr_number = pr_number
+        pr_number_to_info[entry["pr_nb"]] = pr_info
+        previous_pr_number = entry["pr_nb"]
 
     fill_details()
 
