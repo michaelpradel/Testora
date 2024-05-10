@@ -61,14 +61,6 @@ class DockerExecutor:
 
         return True
 
-    def checkout_commit(self, python_project, commit_hash):
-        exit_code, output = self.container.exec_run(
-            f"git checkout {commit_hash}", workdir=f"/projects_under_test/{python_project.name}")
-        if exit_code != 0:
-            print(f"Error checking out commit: {output}")
-            return False
-        return True
-
     def copy_code_to_container(self, code, target_file_path):
         target_dir = target_file_path.rsplit("/", 1)[0]
         target_file_name = target_file_path.rsplit("/", 1)[1]
@@ -127,6 +119,8 @@ class DockerExecutor:
         self.copy_code_to_container(code, "/tmp/code.py")
         command = "python /tmp/code.py"
         exec_result = self.container.exec_run(command, demux=True)
-        stdout_output = exec_result.output[0].decode("utf-8") if exec_result.output[0] else ""
-        stderr_output = exec_result.output[1].decode("utf-8") if exec_result.output[1] else ""
+        stdout_output = exec_result.output[0].decode(
+            "utf-8") if exec_result.output[0] else ""
+        stderr_output = exec_result.output[1].decode(
+            "utf-8") if exec_result.output[1] else ""
         return stdout_output, stderr_output

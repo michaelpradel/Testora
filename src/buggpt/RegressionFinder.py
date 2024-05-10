@@ -10,6 +10,7 @@ from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
 from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
+from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4_model, gpt35_model
@@ -39,13 +40,14 @@ def clean_output(output):
     return "\n".join(result)
 
 
-def execute_tests_on_commit(pr_number, test_executions, commit):
-    docker_executor = DockerExecutor("pandas-dev")
+def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, commit):
+    _, container_name = cloned_repo_manager.get_cloned_repo_and_container(
+        commit)
+    docker_executor = DockerExecutor(container_name)
 
     append_event(
-        Event(pr_nb=pr_number, message=f"Compiling pandas at commit {commit}"))
+        Event(pr_nb=-1, message=f"Compiling pandas at commit {commit}"))
 
-    cloned_repo.git.checkout(commit)
     # to trigger pandas re-compilation
     docker_executor.execute_python_code("import pandas")
 
@@ -125,18 +127,18 @@ def generate_tests(pr, github_repo, changed_functions):
     return all_tests
 
 
-def validate_output_difference(pr, old_execution, new_execution):
+def validate_output_difference(cloned_repo_manager, pr, old_execution, new_execution):
     # re-execute test on old and new version and ignore flaky differences
     old_execution_repeated = TestExecution(old_execution.code)
-    execute_tests_on_commit(
-        pr.number, [old_execution_repeated], pr.pre_commit)
+    execute_tests_on_commit(cloned_repo_manager,
+                            pr.number, [old_execution_repeated], pr.pre_commit)
     new_execution_repeated = TestExecution(new_execution.code)
-    execute_tests_on_commit(
-        pr.number, [new_execution_repeated], pr.post_commit)
+    execute_tests_on_commit(cloned_repo_manager,
+                            pr.number, [new_execution_repeated], pr.post_commit)
     return old_execution.output == old_execution_repeated.output and new_execution.output == new_execution_repeated.output and old_execution.output != new_execution.output
 
 
-def reduce_test(pr, old_execution, new_execution):
+def reduce_test(cloned_repo_manager, pr, old_execution, new_execution):
     assert (old_execution.code == new_execution.code)
     assert (old_execution.output != new_execution.output)
 
@@ -152,8 +154,10 @@ def reduce_test(pr, old_execution, new_execution):
     # execute all variants
     old_executions = [TestExecution(t) for t in increasingly_smaller_tests]
     new_executions = [TestExecution(t) for t in increasingly_smaller_tests]
-    execute_tests_on_commit(pr.number, old_executions, pr.pre_commit)
-    execute_tests_on_commit(pr.number, new_executions, pr.post_commit)
+    execute_tests_on_commit(cloned_repo_manager, pr.number,
+                            old_executions, pr.pre_commit)
+    execute_tests_on_commit(cloned_repo_manager, pr.number,
+                            new_executions, pr.post_commit)
 
     # find the last test that still shows a difference
     reduced_old_execution = old_execution
@@ -174,9 +178,10 @@ def reduce_test(pr, old_execution, new_execution):
     return reduced_old_execution, reduced_new_execution
 
 
-def check_if_present_in_main(pr, new_execution):
+def check_if_present_in_main(cloned_repo_manager, pr, new_execution):
     main_execution = TestExecution(new_execution.code)
-    execute_tests_on_commit(pr.number, [main_execution], "main")
+    execute_tests_on_commit(cloned_repo_manager, pr.number, [
+                            main_execution], "main")
     return main_execution.output == new_execution.output
 
 
@@ -213,7 +218,7 @@ def select_expected_behavior(project_name, pr, old_execution, new_execution):
     return expected_behavior
 
 
-def check_pr(pr):
+def check_pr(cloned_repo_manager, pr):
     # ignore if too few or too many files changed
     if len(pr.non_test_modified_python_files) == 0:
         append_event(Event(
@@ -259,15 +264,17 @@ def check_pr(pr):
     old_executions = [TestExecution(t) for t in generated_tests]
     new_executions = [TestExecution(t) for t in generated_tests]
 
-    execute_tests_on_commit(pr.number, old_executions, pr.pre_commit)
-    execute_tests_on_commit(pr.number, new_executions, pr.post_commit)
+    execute_tests_on_commit(cloned_repo_manager, pr.number,
+                            old_executions, pr.pre_commit)
+    execute_tests_on_commit(cloned_repo_manager, pr.number,
+                            new_executions, pr.post_commit)
 
     for (old_execution, new_execution) in zip(old_executions, new_executions):
         # check and validate that outputs are different
         difference_found = old_execution.output != new_execution.output
         if difference_found:
-            difference_found_again = validate_output_difference(
-                pr, old_execution, new_execution)
+            difference_found_again = validate_output_difference(cloned_repo_manager,
+                                                                pr, old_execution, new_execution)
             if not difference_found_again:
                 difference_found = False
         append_event(ComparisonEvent(pr_nb=pr.number,
@@ -279,12 +286,12 @@ def check_pr(pr):
             continue
 
         # if difference found, reduce the test while still observing a difference
-        old_execution, new_execution = reduce_test(
-            pr, old_execution, new_execution)
+        old_execution, new_execution = reduce_test(cloned_repo_manager,
+                                                   pr, old_execution, new_execution)
         assert old_execution.output != new_execution.output
 
         # check if new output is still present in head of current main branch
-        if not check_if_present_in_main(pr, new_execution):
+        if not check_if_present_in_main(cloned_repo_manager, pr, new_execution):
             append_event(Event(pr_nb=pr.number,
                                message="Difference not present in main anymore"))
 
@@ -355,8 +362,9 @@ def filter_and_sort_prs_by_risk(github_prs):
 if __name__ == "__main__":
 
     # setup for testing on pandas
-    cloned_repo = Repo("./data/repos/pandas")
-    cloned_repo.git.checkout("main")
+    cloned_repo_manager = ClonedRepoManager(
+        "./data/repos/pandas_pool", "pandas", "pandas-dev")
+    cloned_repo, _ = cloned_repo_manager.get_cloned_repo_and_container("main")
     cloned_repo.git.pull()
     token = open(".github_token", "r").read().strip()
     github = Github(auth=Auth.Token(token))
@@ -384,12 +392,12 @@ if __name__ == "__main__":
     #     #     print(f"Skipping PR {github_pr.number} because already analyzed")
     #     #     continue
 
-    #     pr = PullRequest(github_pr, github_repo, cloned_repo)
+    #     pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 
     #     append_event(PREvent(pr_nb=pr.number,
     #                          message="Starting to check PR",
     #                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-    #     check_pr(pr)
+    #     check_pr(cloned_repo_manager, pr)
     #     append_event(PREvent(pr_nb=pr.number,
     #                          message="Done with PR",
     #                          title=pr.github_pr.title, url=pr.github_pr.html_url))
@@ -400,13 +408,13 @@ if __name__ == "__main__":
     interesting_pr_numbers = [56782]
     github_prs = [github_repo.get_pull(pr_nb)
                   for pr_nb in interesting_pr_numbers]
-    prs = [PullRequest(github_pr, github_repo, cloned_repo)
+    prs = [PullRequest(github_pr, github_repo, cloned_repo_manager)
            for github_pr in github_prs]
     for pr in prs:
         append_event(PREvent(pr_nb=pr.number,
                              message="Starting to check PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
-        check_pr(pr)
+        check_pr(cloned_repo_manager, pr)
         append_event(PREvent(pr_nb=pr.number,
                              message="Done with PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
