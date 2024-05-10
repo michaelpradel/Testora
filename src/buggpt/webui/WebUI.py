@@ -164,7 +164,33 @@ def compute_stats():
     total_compile_time = timedelta(0)
     compile_start_time = None
     nb_compilations = 0
+
+    total_test_execution_time = timedelta(0)
+    test_execution_start_time = None
+    nb_test_executions = 0
+
+    querying__time = timedelta(0)
+    querying_start_time = None
+    nb_querying = 0
+
+    message_prefix_to_timedelta = {}
+    previous_timestamp = None
+    previous_message_prefix = None
+
     for entry in entries:
+        # update overall stats
+        if previous_timestamp is None:
+            previous_timestamp = entry["timestamp"]
+            previous_message_prefix = entry["message"].split(" ")[0]
+        else:
+            current_timestamp = entry["timestamp"]
+            current_message_prefix = entry["message"].split(" ")[0]
+            message_prefix_to_timedelta[previous_message_prefix] = message_prefix_to_timedelta.get(
+                previous_message_prefix, timedelta(0)) + (datetime.strptime(current_timestamp, format_str) - datetime.strptime(previous_timestamp, format_str))
+            previous_timestamp = current_timestamp
+            previous_message_prefix = current_message_prefix
+
+        # update compile time stats
         if entry["message"].startswith("Compiling"):
             compile_start_time = datetime.strptime(
                 entry["timestamp"], format_str)
@@ -174,11 +200,42 @@ def compute_stats():
                 entry["timestamp"], format_str) - compile_start_time
             compile_start_time = None
 
-    return {"Events": len(entries),
-            "Total time": str(total_time),
-            "Compile time": str(total_compile_time),
-            "Nb compilations": nb_compilations,
-            "Avg. compile time": str(total_compile_time / nb_compilations) if nb_compilations > 0 else "n/a"}
+        # update test execution time stats
+        if entry["message"] == "Test execution":
+            test_execution_start_time = datetime.strptime(
+                entry["timestamp"], format_str)
+            nb_test_executions += 1
+        elif test_execution_start_time is not None:
+            total_test_execution_time += datetime.strptime(
+                entry["timestamp"], format_str) - test_execution_start_time
+            test_execution_start_time = None
+
+        # update LLM querying time stats
+        if entry["message"].startswith("Querying"):
+            querying_start_time = datetime.strptime(
+                entry["timestamp"], format_str)
+            nb_querying += 1
+        elif querying_start_time is not None:
+            querying__time += datetime.strptime(
+                entry["timestamp"], format_str) - querying_start_time
+            querying_start_time = None
+
+    result = {"Events": len(entries),
+              "Total time": str(total_time),
+              "Compile time": str(total_compile_time),
+              "Nb compilations": nb_compilations,
+              "Avg. compile time": str(total_compile_time / nb_compilations) if nb_compilations > 0 else "n/a",
+              "Test execution time": str(total_test_execution_time),
+              "Nb test executions": nb_test_executions,
+              "Avg. test execution time": str(total_test_execution_time / nb_test_executions) if nb_test_executions > 0 else "n/a",
+              "LLM querying time": str(querying__time),
+              "Nb LLM queries": nb_querying,
+              "Avg. LLM querying time": str(querying__time / nb_querying) if nb_querying > 0 else "n/a"
+              }
+
+    result.update(message_prefix_to_timedelta)
+
+    return result
 
 
 status_colors = {
