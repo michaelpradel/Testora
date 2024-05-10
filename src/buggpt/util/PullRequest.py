@@ -35,15 +35,17 @@ class PullRequest:
         post_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.post_commit)
 
-        self.files_with_non_comment_changes = set()
+        self.files_with_non_comment_changes = []
         for modified_file in self.non_test_modified_python_files:
             with open(f"{pre_commit_cloned_repo.working_dir}/{modified_file.path}", "r") as f:
                 old_file_content = f.read()
             with open(f"{post_commit_cloned_repo.working_dir}/{modified_file.path}", "r") as f:
                 new_file_content = f.read()
             if not equal_modulo_docstrings(old_file_content, new_file_content):
-                self.files_with_non_comment_changes.add(modified_file.path)
+                self.files_with_non_comment_changes.append(modified_file.path)
 
+        self.files_with_non_comment_changes = list(dict.fromkeys(
+            self.files_with_non_comment_changes))  # turn into set while preserving order
         return len(self.files_with_non_comment_changes) > 0
 
     def get_filtered_diff(self):
@@ -65,7 +67,7 @@ class PullRequest:
         return post_commit_cloned_repo.git.diff(self.pre_commit, self.post_commit)
 
     def get_changed_function_names(self):
-        result = set()
+        result = []
 
         post_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.post_commit)
@@ -87,6 +89,7 @@ class PullRequest:
                     if fct_code is not None:
                         fct_name = get_name_of_defined_function(fct_code)
                         if fct_name:
-                            result.add(f"{module_name}.{fct_name}")
-
+                            result.append(f"{module_name}.{fct_name}")
+        
+        result = list(dict.fromkeys(result))
         return result
