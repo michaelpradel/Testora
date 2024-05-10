@@ -224,15 +224,15 @@ def compute_stats():
               "Total time": str(total_time),
               "Compile time": str(total_compile_time),
               "Nb compilations": nb_compilations,
-              "Avg. compile time": str(total_compile_time / nb_compilations) if nb_compilations > 0 else "n/a",
               "Test execution time": str(total_test_execution_time),
               "Nb test executions": nb_test_executions,
-              "Avg. test execution time": str(total_test_execution_time / nb_test_executions) if nb_test_executions > 0 else "n/a",
               "LLM querying time": str(querying__time),
               "Nb LLM queries": nb_querying,
-              "Avg. LLM querying time": str(querying__time / nb_querying) if nb_querying > 0 else "n/a"
               }
 
+    # sort by time
+    message_prefix_to_timedelta = dict(
+        sorted(message_prefix_to_timedelta.items(), key=lambda item: item[1], reverse=True))
     result.update(message_prefix_to_timedelta)
 
     return result
