@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,20 +10,25 @@
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #dddddd;
             text-align: left;
             padding: 8px;
         }
+
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
+
         .compact-table {
-        width: auto;
-        border: 1px solid black;
-    }
+            width: auto;
+            border: 1px solid black;
+        }
     </style>
 </head>
+
 <body>
     <h1>Summary</h1>
     <table class="compact-table">
@@ -41,7 +47,25 @@
             {% endfor %}
         </tbody>
     </table>
-    
+
+    <h1>Stats</h1>
+    <table class="compact-table">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for metric, value in stats.items() %}
+            <tr>
+                <td>{{ metric }}</td>
+                <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
     <h1>Pull Requests</h1>
     <table>
         <thead>
@@ -64,4 +88,5 @@
         </tbody>
     </table>
 </body>
+
 </html>

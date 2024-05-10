@@ -6,6 +6,7 @@ import json
 import glob
 import argparse
 import re
+from datetime import datetime, timedelta
 
 app = Flask("BugGPT Web UI")
 
@@ -79,7 +80,10 @@ def fill_details():
         is_intended_difference = False
         is_unclear = False
         is_not_in_main = None
+        nb_generated_tests = 0
+        nb_test_executions = 0
         nb_observed_differences = 0
+        selected_behavior = 0
         for entry in pr_info.entries:
             if entry["message"].startswith("Starting to check PR"):
                 pr_info.title = entry["title"]
@@ -89,8 +93,13 @@ def fill_details():
                 pr_info.summary = entry["message"]
                 break
 
+            nb_generated_tests_match = re.search(
+                nb_test_generated_pattern, entry["message"])
+            if nb_generated_tests_match:
+                nb_generated_tests += int(nb_generated_tests_match.group(1))
+
             if entry["message"] == "Test execution":
-                pr_info.status = "tests executed"
+                nb_test_executions += 1
 
             if entry["message"] == "Classification":
                 if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_regression_bug"]:
@@ -107,29 +116,28 @@ def fill_details():
             if entry["message"] == "Difference not present in main anymore":
                 is_not_in_main = True
 
+            if entry["message"] == "Selected expected behavior":
+                selected_behavior = int(entry["expected_output"])
+
+        if nb_test_executions > 0:
+            pr_info.status = "tests executed"
+            pr_info.summary = f"{nb_generated_tests} generated tests, {nb_test_executions} test executions"
+
         if is_regression:
-            pr_info.status = "regression bug"
-            pr_info.summary = f"{nb_observed_differences} observed differences"
-            if is_not_in_main:
-                pr_info.summary += ", not in main"
+            if selected_behavior == 1:
+                pr_info.status = "regression bug"
+                pr_info.summary += f", {nb_observed_differences} differences"
+                if is_not_in_main:
+                    pr_info.summary += ", not in main"
+            else:
+                pr_info.status = "maybe intended difference"
+                pr_info.summary += f", {nb_observed_differences} differences"
         elif is_intended_difference:
             pr_info.status = "intended difference"
-            pr_info.summary = f"{nb_observed_differences} observed differences"
+            pr_info.summary += f", {nb_observed_differences} differences"
         elif is_unclear:
             pr_info.status = "unclear classification"
-            pr_info.summary = f"{nb_observed_differences} observed differences"
-
-        if pr_info.status == "tests executed":
-            nb_generated_tests = 0
-            for entry in pr_info.entries:
-                match = re.search(nb_test_generated_pattern, entry["message"])
-                if match:
-                    nb_generated_tests += int(match.group(1))
-
-            nb_test_executions = len(
-                [e for e in pr_info.entries if entry["message"] == "Test execution"])
-
-            pr_info.summary = f"{nb_generated_tests} tests generated, {nb_test_executions} test executions"
+            pr_info.summary += f", {nb_observed_differences} differences"
 
 
 def summarize_status():
@@ -140,10 +148,45 @@ def summarize_status():
     return summary
 
 
+def compute_stats():
+    format_str = "%Y-%m-%dT%H:%M:%S.%f"
+
+    entries = []
+    for log_file in get_log_files():
+        with open(log_file, "r") as f:
+            entries.extend(json.load(f))
+
+    if len(entries) < 2:
+        return {}
+
+    total_time = datetime.strptime(entries[-1]["timestamp"], format_str) - \
+        datetime.strptime(entries[0]["timestamp"], format_str)
+
+    total_compile_time = timedelta(0)
+    compile_start_time = None
+    nb_compilations = 0
+    for entry in entries:
+        if entry["message"].startswith("Compiling"):
+            compile_start_time = datetime.strptime(
+                entry["timestamp"], format_str)
+            nb_compilations += 1
+        elif compile_start_time is not None:
+            total_compile_time += datetime.strptime(
+                entry["timestamp"], format_str) - compile_start_time
+            compile_start_time = None
+
+    return {"Events": len(entries),
+            "Total time": str(total_time),
+            "Compile time": str(total_compile_time),
+            "Nb compilations": nb_compilations,
+            "Avg. compile time": str(total_compile_time / nb_compilations) if nb_compilations > 0 else "n/a"}
+
+
 status_colors = {
     "regression bug": "#FFCCCC",
+    "maybe intended difference": "#FED8B1",
     "intended difference": "#CCFFCC",
-    "unclear classification": "#FFFF00",
+    "unclear classification": "#FFFFE0",
     "tests executed": "#D3D3D3",
 }
 
@@ -162,7 +205,8 @@ app.jinja_env.filters["nl2br"] = nl2br
 def main_page():
     compute_pr_number_to_info()
     summary = summarize_status()
-    return render_template("index.html", summary=summary, data=pr_number_to_info.values(), color_mapping=status_colors)
+    stats = compute_stats()
+    return render_template("index.html", summary=summary, data=pr_number_to_info.values(), stats=stats, color_mapping=status_colors)
 
 
 @app.route('/pr<int:number>')

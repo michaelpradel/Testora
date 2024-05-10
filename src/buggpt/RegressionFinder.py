@@ -199,8 +199,10 @@ def classify_regression(project_name, pr, changed_functions, old_execution, new_
     return is_regression_bug
 
 
-def select_expected_behavior(project_name, pr, old_output, new_output):
-    prompt = SelectExpectedBehaviorPrompt(project_name, old_output, new_output)
+def select_expected_behavior(project_name, pr, old_execution, new_execution):
+    """Ask LLM which of two possible outputs is the expected behavior."""
+    prompt = SelectExpectedBehaviorPrompt(
+        project_name, old_execution.code, old_execution.output, new_execution.output)
     raw_answer = gpt4.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content=raw_answer))
@@ -285,7 +287,6 @@ def check_pr(pr):
         if not check_if_present_in_main(pr, new_execution):
             append_event(Event(pr_nb=pr.number,
                                message="Difference not present in main anymore"))
-            return
 
         # if difference found, classify regression
         assert old_execution.code == new_execution.code
@@ -295,7 +296,7 @@ def check_pr(pr):
         # if classified as regression bug, ask LLM which behavior is expected (to handle coincidental bug fixes)
         if is_regression_bug:
             selected_behavior = select_expected_behavior(
-                github_repo.name, pr, old_execution.output, new_execution.output)
+                github_repo.name, pr, old_execution, new_execution)
 
 
 def get_recent_prs(github_repo, nb=50):
@@ -396,7 +397,7 @@ if __name__ == "__main__":
     # testing on specific PRs
     # interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
     # interesting_pr_numbers = [55108, 56841]  # known regression bugs
-    interesting_pr_numbers = [57205]
+    interesting_pr_numbers = [56782]
     github_prs = [github_repo.get_pull(pr_nb)
                   for pr_nb in interesting_pr_numbers]
     prs = [PullRequest(github_pr, github_repo, cloned_repo)

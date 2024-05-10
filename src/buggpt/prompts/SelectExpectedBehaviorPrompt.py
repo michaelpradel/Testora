@@ -1,6 +1,6 @@
 import re
 
-answer_pattern = re.compile(r"<ANSWER>(.*)</ANSWER>")
+answer_pattern = re.compile(r"<ANSWER>(.*?)</ANSWER>", re.DOTALL)
 
 
 class SelectExpectedBehaviorPrompt:
@@ -9,6 +9,7 @@ class SelectExpectedBehaviorPrompt:
         self.test_code = test_code
         self.output1 = output1
         self.output2 = output2
+        self.use_json_output = False
 
     def create_prompt(self):
         template = """
