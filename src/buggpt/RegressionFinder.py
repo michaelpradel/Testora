@@ -46,7 +46,7 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
     docker_executor = DockerExecutor(container_name)
 
     append_event(
-        Event(pr_nb=-1, message=f"Compiling pandas at commit {commit}"))
+        Event(pr_nb=-1, message=f"Compiling pandas at commit {commit} in container {container_name}"))
 
     # to trigger pandas re-compilation
     docker_executor.execute_python_code("import pandas")

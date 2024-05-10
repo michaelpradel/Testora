@@ -41,7 +41,7 @@ class ClonedRepoManager:
             cloned_repo_dir = f"{self.pool_dir}/{clone_id}/{self.repo_name}"
             cloned_repo = Repo(cloned_repo_dir)
             cloned_repo.git.reset('--hard')
-            cloned_repo.git.clean('-f', '-d', '-x')
+            cloned_repo.git.clean('-f', '-d')
 
     def _get_least_recently_used_clone_id(self) -> str:
         return self.usage_order[0]
