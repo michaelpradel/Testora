@@ -7,7 +7,12 @@ def merge_programs(programs):
     function_def_snippets = []
     for program_idx, program in enumerate(programs):
         # Parse the snippet into an AST node
-        parsed_snippet = ast.parse(dedent(program))
+        try:
+            parsed_snippet = ast.parse(dedent(program))
+        except Exception as _:
+            function_def_snippets.append(
+                f"def program_{program_idx}():\n    pass # Couldn't parse generated test")
+            continue
 
         # Create a function definition for the parsed snippet
         function_def = ast.FunctionDef(

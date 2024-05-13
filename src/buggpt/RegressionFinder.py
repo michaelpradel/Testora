@@ -4,6 +4,7 @@ import re
 from github import Github, Auth
 from git import Repo
 from buggpt.execution.DockerExecutor import DockerExecutor
+from buggpt.execution.ProgramMerger import merge_programs, separate_outputs
 from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
 from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
@@ -54,11 +55,13 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
     append_event(
         Event(pr_nb=pr_number, message=f"Done with compiling pandas at commit {commit}"))
 
-    for test_execution in test_executions:
-        stdout_output, stderr_output = docker_executor.execute_python_code(
-            test_execution.code)
-        output = stdout_output + "\n" + stderr_output
-        test_execution.output = clean_output(output)
+    # merge all tests into a single program (for efficiency, to avoid repeated imports and Python engine startup)
+    merged_code = merge_programs([test.code for test in test_executions])
+    merged_outputs = docker_executor.execute_python_code(merged_code)
+    merged_outputs = clean_output(merged_outputs)
+    outputs = separate_outputs(merged_outputs)
+    for output, test_execution in zip(outputs, test_executions):
+        test_execution.output = output
         append_event(TestExecutionEvent(pr_nb=pr_number,
                                         message="Test execution",
                                         code=test_execution.code,
