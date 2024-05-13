@@ -42,8 +42,9 @@ def clean_output(output):
 
 
 def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, commit):
-    _, container_name = cloned_repo_manager.get_cloned_repo_and_container(
+    cloned_repo = cloned_repo_manager.get_cloned_repo_and_container(
         commit)
+    container_name = cloned_repo.container_name
     docker_executor = DockerExecutor(container_name)
 
     append_event(
@@ -367,8 +368,8 @@ if __name__ == "__main__":
     # setup for testing on pandas
     cloned_repo_manager = ClonedRepoManager(
         "./data/repos/pandas_pool", "pandas", "pandas-dev")
-    cloned_repo, _ = cloned_repo_manager.get_cloned_repo_and_container("main")
-    cloned_repo.git.pull()
+    cloned_repo = cloned_repo_manager.get_cloned_repo_and_container("main")
+    cloned_repo.repo.git.pull()
     token = open(".github_token", "r").read().strip()
     github = Github(auth=Auth.Token(token))
     project = PythonProjects.pandas_project

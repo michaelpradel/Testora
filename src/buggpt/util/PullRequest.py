@@ -30,16 +30,16 @@ class PullRequest:
         return non_test_modified_python_files
 
     def has_non_comment_change(self):
-        pre_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
+        pre_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.pre_commit)
-        post_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.post_commit)
 
         self.files_with_non_comment_changes = []
         for modified_file in self.non_test_modified_python_files:
-            with open(f"{pre_commit_cloned_repo.working_dir}/{modified_file.path}", "r") as f:
+            with open(f"{pre_commit_cloned_repo.repo.working_dir}/{modified_file.path}", "r") as f:
                 old_file_content = f.read()
-            with open(f"{post_commit_cloned_repo.working_dir}/{modified_file.path}", "r") as f:
+            with open(f"{post_commit_cloned_repo.repo.working_dir}/{modified_file.path}", "r") as f:
                 new_file_content = f.read()
             if not equal_modulo_docstrings(old_file_content, new_file_content):
                 self.files_with_non_comment_changes.append(modified_file.path)
@@ -49,32 +49,32 @@ class PullRequest:
         return len(self.files_with_non_comment_changes) > 0
 
     def get_filtered_diff(self):
-        post_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.post_commit)
 
         diff_parts = []
         for file_path in self.files_with_non_comment_changes:
-            raw_diff = post_commit_cloned_repo.git.diff(
+            raw_diff = post_commit_cloned_repo.repo.git.diff(
                 self.pre_commit, self.post_commit, file_path)
             diff_parts.append(raw_diff)
 
         return "\n\n".join(diff_parts)
 
     def get_full_diff(self):
-        post_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.post_commit)
 
-        return post_commit_cloned_repo.git.diff(self.pre_commit, self.post_commit)
+        return post_commit_cloned_repo.repo.git.diff(self.pre_commit, self.post_commit)
 
     def get_changed_function_names(self):
         result = []
 
-        post_commit_cloned_repo, _ = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
             self.post_commit)
 
         for modified_file in self.patch.modified_files:
             if modified_file.path in self.files_with_non_comment_changes:
-                with open(f"{post_commit_cloned_repo.working_dir}/{modified_file.path}", "r") as f:
+                with open(f"{post_commit_cloned_repo.repo.working_dir}/{modified_file.path}", "r") as f:
                     new_file_content = f.read()
 
                 module_name = modified_file.path.replace(
@@ -90,6 +90,6 @@ class PullRequest:
                         fct_name = get_name_of_defined_function(fct_code)
                         if fct_name:
                             result.append(f"{module_name}.{fct_name}")
-        
+
         result = list(dict.fromkeys(result))
         return result

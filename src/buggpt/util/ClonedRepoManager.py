@@ -1,7 +1,17 @@
+from dataclasses import dataclass
 import json
 from os.path import exists
 from typing import List
 from git import Repo
+
+from buggpt.util.PythonLanguageServer import PythonLanguageServer
+
+
+@dataclass
+class ClonedRepo:
+    repo: Repo
+    container_name: str
+    language_server: PythonLanguageServer
 
 
 class ClonedRepoManager:
@@ -19,6 +29,13 @@ class ClonedRepoManager:
             1, self.nb_clones + 1)]  # last = last used
 
         self._reset_and_clean_all_clones()
+
+        # start one language server for each clone
+        self.clone_id_to_language_server = {}
+        for i in range(1, self.nb_clones + 1):
+            server = PythonLanguageServer(
+                f"{self.pool_dir}/clone{i}/{self.repo_name}")
+            self.clone_id_to_language_server[f"clone{i}"] = server
 
     def _read_clone_state(self):
         if not exists(self.clone_state_file):
@@ -50,13 +67,16 @@ class ClonedRepoManager:
         self.usage_order.remove(clone_id)
         self.usage_order.append(clone_id)
 
-    def get_cloned_repo_and_container(self, commit):
+    def get_cloned_repo(self, commit) -> ClonedRepo:
         # reuse existing clone if possible
         for clone_id, state in self.clone_id_to_state.items():
             if state["commit"] == commit:
                 self._have_used_clone_id(clone_id)
                 cloned_repo_dir = f"{self.pool_dir}/{clone_id}/{self.repo_name}"
-                return Repo(cloned_repo_dir), state["container_name"]
+
+                return ClonedRepo(Repo(cloned_repo_dir),
+                                  state["container_name"],
+                                  self.clone_id_to_language_server[clone_id])
 
         # checkout desired commit
         clone_id = self._get_least_recently_used_clone_id()
@@ -71,4 +91,6 @@ class ClonedRepoManager:
         self._write_clone_state()
         self._have_used_clone_id(clone_id)
 
-        return cloned_repo, state["container_name"]
+        return ClonedRepo(cloned_repo,
+                          state["container_name"],
+                          self.clone_id_to_language_server)
