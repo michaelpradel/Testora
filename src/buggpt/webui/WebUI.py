@@ -147,7 +147,7 @@ def summarize_status():
     return summary
 
 
-def compute_stats():
+def compute_perf_stats():
     format_str = "%Y-%m-%dT%H:%M:%S.%f"
 
     entries = []
@@ -155,30 +155,15 @@ def compute_stats():
         with open(log_file, "r") as f:
             entries.extend(json.load(f))
 
-    if len(entries) < 2:
-        return {}
-
     total_time = datetime.strptime(entries[-1]["timestamp"], format_str) - \
         datetime.strptime(entries[0]["timestamp"], format_str)
 
-    total_compile_time = timedelta(0)
-    compile_start_time = None
-    nb_compilations = 0
-
-    total_test_execution_time = timedelta(0)
-    test_execution_start_time = None
-    nb_test_executions = 0
-
-    querying__time = timedelta(0)
-    querying_start_time = None
-    nb_querying = 0
-
     message_prefix_to_timedelta = {}
+    message_prefix_to_nb = Counter()
     previous_timestamp = None
     previous_message_prefix = None
 
     for entry in entries:
-        # update overall stats
         if previous_timestamp is None:
             previous_timestamp = entry["timestamp"]
             previous_message_prefix = entry["message"].split(" ")[0]
@@ -187,53 +172,20 @@ def compute_stats():
             current_message_prefix = entry["message"].split(" ")[0]
             message_prefix_to_timedelta[previous_message_prefix] = message_prefix_to_timedelta.get(
                 previous_message_prefix, timedelta(0)) + (datetime.strptime(current_timestamp, format_str) - datetime.strptime(previous_timestamp, format_str))
+            message_prefix_to_nb[previous_message_prefix] += 1
             previous_timestamp = current_timestamp
             previous_message_prefix = current_message_prefix
 
-        # update compile time stats
-        if entry["message"].startswith("Compiling"):
-            compile_start_time = datetime.strptime(
-                entry["timestamp"], format_str)
-            nb_compilations += 1
-        elif compile_start_time is not None:
-            total_compile_time += datetime.strptime(
-                entry["timestamp"], format_str) - compile_start_time
-            compile_start_time = None
-
-        # update test execution time stats
-        if entry["message"] == "Test execution":
-            test_execution_start_time = datetime.strptime(
-                entry["timestamp"], format_str)
-            nb_test_executions += 1
-        elif test_execution_start_time is not None:
-            total_test_execution_time += datetime.strptime(
-                entry["timestamp"], format_str) - test_execution_start_time
-            test_execution_start_time = None
-
-        # update LLM querying time stats
-        if entry["message"].startswith("Querying"):
-            querying_start_time = datetime.strptime(
-                entry["timestamp"], format_str)
-            nb_querying += 1
-        elif querying_start_time is not None:
-            querying__time += datetime.strptime(
-                entry["timestamp"], format_str) - querying_start_time
-            querying_start_time = None
-
-    result = {"Events": len(entries),
-              "Total time": str(total_time),
-              "Compile time": str(total_compile_time),
-              "Nb compilations": nb_compilations,
-              "Test execution time": str(total_test_execution_time),
-              "Nb test executions": nb_test_executions,
-              "LLM querying time": str(querying__time),
-              "Nb LLM queries": nb_querying,
-              }
-
-    # sort by time
+    # sort by time and keep only top-k
     message_prefix_to_timedelta = dict(
-        sorted(message_prefix_to_timedelta.items(), key=lambda item: item[1], reverse=True))
-    result.update(message_prefix_to_timedelta)
+        sorted(message_prefix_to_timedelta.items(), key=lambda item: item[1], reverse=True)[:6])
+
+    result = [["All", len(entries), total_time, total_time / len(entries)]]
+    for message_prefix, time in message_prefix_to_timedelta.items():
+        if message_prefix in ["Done", "Starting"]:
+            continue
+        result.append([message_prefix, message_prefix_to_nb[message_prefix], time,
+                       time / message_prefix_to_nb[message_prefix]])
 
     return result
 
@@ -261,8 +213,8 @@ app.jinja_env.filters["nl2br"] = nl2br
 def main_page():
     compute_pr_number_to_info()
     summary = summarize_status()
-    stats = compute_stats()
-    return render_template("index.html", summary=summary, data=pr_number_to_info.values(), stats=stats, color_mapping=status_colors)
+    perf_stats = compute_perf_stats()
+    return render_template("index.html", summary=summary, data=pr_number_to_info.values(), perf_stats=perf_stats, color_mapping=status_colors)
 
 
 @app.route('/pr<int:number>')

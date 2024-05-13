@@ -52,15 +52,19 @@
     <table class="compact-table">
         <thead>
             <tr>
-                <th>Metric</th>
-                <th>Value</th>
+                <th>Event</th>
+                <th>Count</th>
+                <th>Time (total)</th>
+                <th>Time (avg)</th>
             </tr>
         </thead>
         <tbody>
-            {% for metric, value in stats.items() %}
+            {% for event, count, total_time, avg_time in perf_stats %}
             <tr>
-                <td>{{ metric }}</td>
-                <td>{{ value }}</td>
+                <td>{{ event }}</td>
+                <td>{{ count }}</td>
+                <td>{{ total_time }}</td>
+                <td>{{ avg_time }}</td>
             </tr>
             {% endfor %}
         </tbody>
