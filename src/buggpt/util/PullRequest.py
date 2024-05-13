@@ -30,9 +30,9 @@ class PullRequest:
         return non_test_modified_python_files
 
     def has_non_comment_change(self):
-        pre_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
+        pre_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.pre_commit)
-        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.post_commit)
 
         self.files_with_non_comment_changes = []
@@ -49,7 +49,7 @@ class PullRequest:
         return len(self.files_with_non_comment_changes) > 0
 
     def get_filtered_diff(self):
-        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.post_commit)
 
         diff_parts = []
@@ -61,7 +61,7 @@ class PullRequest:
         return "\n\n".join(diff_parts)
 
     def get_full_diff(self):
-        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.post_commit)
 
         return post_commit_cloned_repo.repo.git.diff(self.pre_commit, self.post_commit)
@@ -69,7 +69,7 @@ class PullRequest:
     def get_changed_function_names(self):
         result = []
 
-        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo_and_container(
+        post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.post_commit)
 
         for modified_file in self.patch.modified_files:
