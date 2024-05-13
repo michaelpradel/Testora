@@ -1,6 +1,10 @@
+import builtins
 import libcst as cst
-from buggpt.util.Logs import append_event, Event
 import ast
+
+
+builtin_functions = [func for func in dir(
+    builtins) if callable(getattr(builtins, func))]
 
 
 class FunctionExtractor(cst.CSTVisitor):
@@ -25,6 +29,25 @@ class CallExtractor(cst.CSTVisitor):
             self.callees.append(node.func.attr.value)
         elif isinstance(node.func, cst.Name):
             self.callees.append(node.func.value)
+        else:
+            print(
+                f"Warning: Unknown callee type {type(node.func)} -- ignoring this call")
+
+
+class CallLocationExtractor(cst.CSTVisitor):
+    METADATA_DEPENDENCIES = (cst.metadata.PositionProvider,)
+
+    def __init__(self):
+        self.call_site_locations = []
+
+    def visit_Call(self, node: cst.Call) -> bool | None:
+        if isinstance(node.func, cst.Attribute):
+            self.call_site_locations.append(
+                self.get_metadata(cst.metadata.PositionProvider, node.func.attr))
+        elif isinstance(node.func, cst.Name):
+            if node.func.value not in builtin_functions:
+                self.call_site_locations.append(
+                    self.get_metadata(cst.metadata.PositionProvider, node.func))
         else:
             print(
                 f"Warning: Unknown callee type {type(node.func)} -- ignoring this call")
@@ -228,3 +251,29 @@ def equal_modulo_docstrings(code1, code2):
         # cannot parse code (e.g., .pyx files) -- just compare the strings
         return code1 == code2
     return ast.dump(ast1) == ast.dump(ast2)
+
+
+def get_locations_of_calls(code):
+    tree = cst.parse_module(code)
+    wrapper = cst.metadata.MetadataWrapper(tree)
+    call_location_extractor = CallLocationExtractor()
+    wrapper.visit(call_location_extractor)
+    return call_location_extractor.call_site_locations
+
+
+# for testing
+if __name__ == "__main__":
+    code = """import pandas as pd
+
+series_complex = pd.Series([complex(1,2), complex(3,4)])
+# This will result in an error as rounding is not applicable to complex numbers
+try:
+    rounded_complex = series_complex.round(2)
+    print(rounded_complex)
+except TypeError as e:
+    print(f"Error: {e}")
+"""
+
+    result = get_locations_of_calls(code)
+    for r in result:
+        print(r)
