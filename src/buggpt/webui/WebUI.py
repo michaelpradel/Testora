@@ -128,8 +128,11 @@ def fill_details():
                 pr_info.summary += f", {nb_observed_differences} differences"
                 if is_not_in_main:
                     pr_info.summary += ", not in main"
+            elif selected_behavior == 2:
+                pr_info.status = "coincidental fix"
+                pr_info.summary += f", {nb_observed_differences} differences"
             else:
-                pr_info.status = "maybe intended difference"
+                pr_info.status = "unclear classification"
                 pr_info.summary += f", {nb_observed_differences} differences"
         elif is_intended_difference:
             pr_info.status = "intended difference"
@@ -192,7 +195,7 @@ def compute_perf_stats():
 
 status_colors = {
     "regression bug": "#FFCCCC",
-    "maybe intended difference": "#FED8B1",
+    "coincidental fix": "#CBC3E3",
     "intended difference": "#CCFFCC",
     "unclear classification": "#FFFFE0",
     "tests executed": "#D3D3D3",
