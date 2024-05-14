@@ -1,0 +1,6 @@
+{
+    "mypy.runUsingActiveInterpreter": true,
+    "mypy.targets": [
+        "src"
+    ]
+}
