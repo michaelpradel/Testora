@@ -50,21 +50,24 @@ etc.
         return code
 
     def parse_answer(self, raw_answer):
+        assert type(raw_answer) == list
+
         tests = []
 
-        in_code = False
-        next_test = ""
-        for line in raw_answer.split("\n"):
-            if line.strip() == "```":
-                in_code = False
-                if next_test:
-                    next_test = self.remove_unnecessary_indentation(next_test)
-                    tests.append(next_test)
-                    next_test = ""
-            if in_code:
-                next_test += line + "\n"
-            if line.strip() == "```python":
-                in_code = True
+        for answer in raw_answer:
+            in_code = False
+            next_test = ""
+            for line in answer.split("\n"):
+                if line.strip() == "```":
+                    in_code = False
+                    if next_test:
+                        next_test = self.remove_unnecessary_indentation(
+                            next_test)
+                        tests.append(next_test)
+                        next_test = ""
+                if in_code:
+                    next_test += line + "\n"
+                if line.strip() == "```python":
+                    in_code = True
 
         return tests
-

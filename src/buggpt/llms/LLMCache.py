@@ -39,19 +39,25 @@ class LLMCache:
         print(
             f"LLMCache of {self.llm_module.model} with {len(self.cache)} entries saved. {self.nb_hits} hits, {self.nb_misses} misses.")
 
-    def query(self, prompt):
+    def query(self, prompt, nb_samples=1):
         prompt_str = prompt.create_prompt()
 
         # check for cached answer
         result = self.cache.get(prompt_str)
         if result is not None:
-            append_event(LLMEvent(pr_nb=-1,
-                                  message=f"Cached result for querying {self.llm_module.model}",
-                                  content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+            cached_answers = []
+            if type(result) == str:
+                cached_answers.append(result)
+            elif type(result) == list:
+                cached_answers = result
 
-            self.nb_hits += 1
-            print(f"Prompt:\n{prompt_str}\nReturning cached result\n")
-            return result
+            if nb_samples <= len(cached_answers):
+                append_event(LLMEvent(pr_nb=-1,
+                                      message=f"Cached result for querying {self.llm_module.model}",
+                                      content=f"System message:\n{system_message}\nUser message:\n{prompt.create_prompt()}"))
+                self.nb_hits += 1
+                print(f"Prompt:\n{prompt_str}\nReturning cached result\n")
+                return cached_answers[:nb_samples]
 
         # no cached answer, query LLM
         self.nb_misses += 1

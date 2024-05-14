@@ -13,7 +13,7 @@ class OpenAIGPT:
     def __init__(self, model):
         self.model = model
 
-    def query(self, prompt):
+    def query(self, prompt, nb_samples=1):
         user_message = prompt.create_prompt()
         if len(user_message) > 10000:
             append_event(LLMEvent(pr_nb=-1,
@@ -33,6 +33,7 @@ class OpenAIGPT:
                     {"role": "user", "content": user_message}
                 ],
                 max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
+                n=nb_samples,
                 response_format={"type": "json_object"}
             )
         else:
@@ -42,13 +43,15 @@ class OpenAIGPT:
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_message}
                 ],
-                max_tokens=4096  # 4096 is the maximum token limit for gpt-4-0125-preview
+                max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
+                n=nb_samples
             )
 
         append_event(LLMEvent(pr_nb=-1,
                               message=f"Token usage",
                               content=f"prompt={completion.usage.prompt_tokens}, completion={completion.usage.completion_tokens}"))
 
-        answer = completion.choices[0].message.content
-
-        return answer
+        answers = []
+        for choice in completion.choices:
+            answers.append(choice.message.content)
+        return answers

@@ -12,6 +12,7 @@ from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificati
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.ClonedRepoManager import ClonedRepoManager
+from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4_model, gpt35_model
@@ -73,10 +74,11 @@ def is_crash(output):
     return "Traceback (most recent call last)" in output
 
 
-def generate_tests_with_prompt(prompt, model):
-    raw_answer = model.query(prompt)
+def generate_tests_with_prompt(prompt, model, nb_samples=1):
+    raw_answer = model.query(prompt, nb_samples)
     append_event(LLMEvent(pr_nb=pr.number,
                  message="Raw answer", content=raw_answer))
+
     generated_tests = prompt.parse_answer(raw_answer)
     for idx, test in enumerate(generated_tests):
         append_event(LLMEvent(pr_nb=pr.number,
@@ -106,7 +108,8 @@ def generate_tests(pr, github_repo, changed_functions):
         all_tests.extend(generate_tests_with_prompt(prompt_full_diff, gpt4))
 
         # full diff with GPT3.5
-        all_tests.extend(generate_tests_with_prompt(prompt_full_diff, gpt35))
+        all_tests.extend(generate_tests_with_prompt(
+            prompt_full_diff, gpt35, nb_samples=10))
 
     if len(filtered_diff.split("\n")) <= 200 and filtered_diff != full_diff:
         # filtered diff with GPT4
@@ -117,7 +120,7 @@ def generate_tests(pr, github_repo, changed_functions):
 
         # filtered diff with GPT3.5
         all_tests.extend(generate_tests_with_prompt(
-            prompt_filtered_diff, gpt35))
+            prompt_filtered_diff, gpt35, nb_samples=10))
 
     # de-dup tests
     nb_tests_before_dedup_and_cleaning = len(all_tests)
@@ -208,10 +211,10 @@ def classify_regression(project_name, pr, changed_functions, old_execution, new_
     return is_regression_bug
 
 
-def select_expected_behavior(project_name, pr, old_execution, new_execution):
+def select_expected_behavior(project_name, pr, old_execution, new_execution, docstrings):
     """Ask LLM which of two possible outputs is the expected behavior."""
     prompt = SelectExpectedBehaviorPrompt(
-        project_name, old_execution.code, old_execution.output, new_execution.output)
+        project_name, old_execution.code, old_execution.output, new_execution.output, docstrings)
     raw_answer = gpt4.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content=raw_answer))
@@ -305,9 +308,13 @@ def check_pr(cloned_repo_manager, pr):
             github_repo.name, pr, changed_functions, old_execution, new_execution)
 
         # if classified as regression bug, ask LLM which behavior is expected (to handle coincidental bug fixes)
+        cloned_repo_of_new_commit = cloned_repo_manager.get_cloned_repo(
+            pr.post_commit)
+        docstrings = retrieve_relevant_docstrings(
+            cloned_repo_of_new_commit, new_execution.code)
         if is_regression_bug:
-            selected_behavior = select_expected_behavior(
-                github_repo.name, pr, old_execution, new_execution)
+            select_expected_behavior(
+                github_repo.name, pr, old_execution, new_execution, docstrings)
 
 
 def get_recent_prs(github_repo, nb=50):

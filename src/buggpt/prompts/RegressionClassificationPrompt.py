@@ -106,6 +106,11 @@ Explain your reasoning and then give your answers in the following format:
         return query
 
     def parse_answer(self, raw_answer):
+        assert type(raw_answer) == list
+        assert len(raw_answer) == 1
+
+        raw_answer = raw_answer[0]
+
         in_answer = 0
         is_relevant_change = None
         is_deterministic = None

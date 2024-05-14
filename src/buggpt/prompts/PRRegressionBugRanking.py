@@ -38,9 +38,14 @@ Make sure to include ALL the given pull requests into the output.
         pr_titles = [github_pr.title for github_pr in self.github_prs]
         return template.replace("<pr_titles>", "\n".join(pr_titles))
 
-    def parse_answer(self, r):
+    def parse_answer(self, raw_answer):
+        assert type(raw_answer) == list
+        assert len(raw_answer) == 1
+
+        raw_answer = raw_answer[0]
+
         try:
-            risk_to_titles = json.loads(r)
+            risk_to_titles = json.loads(raw_answer)
         except json.JSONDecodeError:
             return None
 
