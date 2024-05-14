@@ -17,9 +17,22 @@ The usage examples you create may use only the public API of the {project_name} 
 
 Answer by giving ten usage examples that cover normal usage scenarios and ten usage examples that focus on corner cases (e.g., unusual values, such as None, NaN or empty lists).
 Each example must be an executable piece of Python code, including all necessary imports.
-Wrap each example separately into
+Print all relevant values, including intermediate values, in a human-readable form.
+
+Wrap each individual example into Python code blocks by using the following output format:
 ```python
+# Example 1:
+...
 ```
+```python
+# Example 2:
+...
+```
+```python
+# Example 3:
+...
+```
+etc.
 """
 
         return template.format(project_name=self.project_name,
