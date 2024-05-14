@@ -10,12 +10,7 @@ authors = [
     { name = "Michael Pradel", email = "michael@binaervarianz.de" }
 ]
 license = "MIT"
-dependencies = [
-    "openai",
-    "unidiff",
-    "libcst",
-    "docker"
-]
+dependencies = []
 
 [tool.hatch.build.targets.wheel]
 packages = [
