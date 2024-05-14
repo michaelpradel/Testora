@@ -48,9 +48,9 @@ Which of the two outputs is the expected behavior of the example? Explain your r
         raw_answer = raw_answer[0]
         
         answer = re.search(answer_pattern, raw_answer).group(1)
-        if answer == "Output 1":
+        if answer.strip() == "Output 1":
             return 1
-        elif answer == "Output 2":
+        elif answer.strip() == "Output 2":
             return 2
         else:
             return 0

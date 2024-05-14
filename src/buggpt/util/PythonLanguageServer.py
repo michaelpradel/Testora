@@ -11,7 +11,7 @@ class PythonLanguageServer:
         logger = MultilspyLogger()
         absolute_repo_path = str(Path(repo_path).resolve())
         self.lsp = SyncLanguageServer.create(
-            config, logger, repo_path)
+            config, logger, absolute_repo_path)
 
     def get_hover_text(self, file_path, line, column):
         with self.lsp.start_server():
