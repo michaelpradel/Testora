@@ -59,6 +59,8 @@ class ClonedRepoManager:
             cloned_repo = Repo(cloned_repo_dir)
             cloned_repo.git.reset('--hard')
             cloned_repo.git.clean('-f', '-d')
+            origin = cloned_repo.remotes.origin
+            origin.fetch()
 
     def _get_least_recently_used_clone_id(self) -> str:
         return self.usage_order[0]
