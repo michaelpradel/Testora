@@ -43,7 +43,7 @@ def merge_programs(programs):
         result += f"\nprint('XXXXX Program {fct_idx} starting XXXXX')\n"
         result += f"""try:
     program_{fct_idx}()
-except Exception as e:
+except BaseException as e:
     details = traceback.format_exc()
     print(details, file=sys.stderr)
 """
