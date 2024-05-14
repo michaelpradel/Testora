@@ -212,6 +212,16 @@ def nl2br(value):
 app.jinja_env.filters["nl2br"] = nl2br
 
 
+def escape_tags(value):
+    if type(value) == str:
+        return value.replace("<", "&lt;").replace(">", "&gt;")
+    else:
+        return value
+
+
+app.jinja_env.filters["escape_tags"] = escape_tags
+
+
 @app.route('/')
 def main_page():
     compute_pr_number_to_info()

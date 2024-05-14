@@ -63,7 +63,7 @@
                 {% for key, value in entry.items() %}
                 <tr>
                     <td>{{ key }}</td>
-                    <td>{{ value | nl2br | safe }}</td>
+                    <td>{{ value | escape_tags | nl2br | safe }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
