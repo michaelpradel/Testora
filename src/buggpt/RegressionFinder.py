@@ -77,7 +77,7 @@ def is_crash(output):
 def generate_tests_with_prompt(prompt, model, nb_samples=1):
     raw_answer = model.query(prompt, nb_samples)
     append_event(LLMEvent(pr_nb=pr.number,
-                 message="Raw answer", content=raw_answer))
+                 message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
 
     generated_tests = prompt.parse_answer(raw_answer)
     for idx, test in enumerate(generated_tests):
@@ -197,7 +197,7 @@ def classify_regression(project_name, pr, changed_functions, old_execution, new_
         project_name, pr, changed_functions, old_execution.code, old_execution.output, new_execution.output)
     raw_answer = gpt4.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
-                          message="Raw answer", content=raw_answer))
+                          message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     is_relevant_change, is_deterministic, is_regression_bug = prompt.parse_answer(
         raw_answer)
     append_event(ClassificationEvent(pr_nb=pr.number,
@@ -217,7 +217,7 @@ def select_expected_behavior(project_name, pr, old_execution, new_execution, doc
         project_name, old_execution.code, old_execution.output, new_execution.output, docstrings)
     raw_answer = gpt4.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
-                          message="Raw answer", content=raw_answer))
+                          message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     expected_behavior = prompt.parse_answer(raw_answer)
     append_event(SelectBehaviorEvent(pr_nb=pr.number,
                                      message="Selected expected behavior",
@@ -353,7 +353,7 @@ def filter_and_sort_prs_by_risk(github_prs):
         prompt = PRRegressionBugRanking(chunk)
         raw_answer = gpt4.query(prompt)
         append_event(LLMEvent(pr_nb=0,
-                              message="Raw answer", content=raw_answer))
+                              message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
         ranking_result = prompt.parse_answer(raw_answer)
         if ranking_result is None:
             append_event(Event(pr_nb=0,
