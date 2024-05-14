@@ -15,12 +15,11 @@ from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
-from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4_model, gpt35_model
+from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
 from buggpt.util.Logs import ClassificationEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
 from buggpt.util.PythonCodeUtil import has_private_calls_or_fails_to_parse
 
-
-gpt4 = LLMCache(OpenAIGPT(gpt4_model))
+gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
 gpt35 = LLMCache(OpenAIGPT(gpt35_model))
 
 

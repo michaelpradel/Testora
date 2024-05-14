@@ -5,6 +5,7 @@ from buggpt.util.Logs import append_event, LLMEvent
 
 openai = OpenAI(api_key=getenv("OPENAI_KEY"))
 
+gpt4o_model = "gpt-4o-2024-05-13"
 gpt4_model = "gpt-4-0125-preview"
 gpt35_model = "gpt-3.5-turbo-0125"
 
