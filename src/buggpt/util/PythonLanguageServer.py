@@ -9,6 +9,7 @@ class PythonLanguageServer:
     def __init__(self, repo_path):
         config = MultilspyConfig.from_dict({"code_language": "python"})
         logger = MultilspyLogger()
+        absolute_repo_path = str(Path(repo_path).resolve())
         self.lsp = SyncLanguageServer.create(
             config, logger, repo_path)
 

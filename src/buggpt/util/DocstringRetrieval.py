@@ -5,7 +5,7 @@ from buggpt.util.PythonCodeUtil import get_locations_of_calls
 
 def retrieve_relevant_docstrings(cloned_repo: ClonedRepo, code: str) -> str:
     # copy code into project
-    code_dir = f"{cloned_repo.repo.working_dir}/buggpt_code/"
+    code_dir = f"{cloned_repo.repo.working_dir}/buggpt_code"
     os.makedirs(code_dir, exist_ok=True)
     code_path = f"{code_dir}/test.py"
     with open(code_path, "w") as f:

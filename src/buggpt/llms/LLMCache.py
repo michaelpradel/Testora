@@ -61,7 +61,7 @@ class LLMCache:
 
         # no cached answer, query LLM
         self.nb_misses += 1
-        result = self.llm_module.query(prompt)
+        result = self.llm_module.query(prompt, nb_samples=nb_samples)
 
         # update cache (only if answer is non-empty)
         if result:
