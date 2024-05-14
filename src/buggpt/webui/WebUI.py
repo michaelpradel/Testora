@@ -1,6 +1,5 @@
 from collections import Counter
 from dataclasses import dataclass, field
-from typing import Dict, List
 from flask import Flask, render_template
 import json
 import glob

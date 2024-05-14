@@ -1,8 +1,6 @@
 import glob
 import json
-import re
 from github import Github, Auth
-from git import Repo
 from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.execution.ProgramMerger import merge_programs, separate_outputs
 from buggpt.execution.TestExecution import TestExecution
