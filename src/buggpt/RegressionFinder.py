@@ -55,7 +55,7 @@ def merge_tests_and_execute(test_executions, docker_executor):
     else:
         mid = len(test_executions) // 2
         test_executions_part1, test_executions_part2 = \
-            test_executions[mid], test_executions[mid:]
+            test_executions[:mid], test_executions[mid:]
         outputs_part1 = merge_tests_and_execute(
             test_executions_part1, docker_executor)
         outputs_part2 = merge_tests_and_execute(
@@ -410,7 +410,7 @@ if __name__ == "__main__":
     github_repo = github.get_repo(project.project_id)
 
     # process a specific chunk of PRs
-    with open("./data/pr_chunks/pandas_pr_chunk_57309_57328.json", "r") as f:
+    with open("./data/pr_chunks/pandas_pr_chunk_xxxxx_xxxxx.json", "r") as f:
         pr_nbs = json.load(f)
     done_pr_numbers = find_prs_checked_in_past()
     print(f"Already checked {len(done_pr_numbers)} PRs")
