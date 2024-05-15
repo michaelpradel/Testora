@@ -115,7 +115,9 @@ def fill_details():
                 is_not_in_main = True
 
             if entry["message"] == "Selected expected behavior":
-                selected_behavior = int(entry["expected_output"])
+                # prioritize "1", i.e., old version is expected, so we see it as a regression bug
+                if selected_behavior != 1:
+                    selected_behavior = int(entry["expected_output"])
 
         if nb_test_executions > 0:
             pr_info.status = "tests executed"
