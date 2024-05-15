@@ -2,7 +2,6 @@ __pycache__
 data/llm_cache*
 data/repos
 data/pr_chunks
-.vscode/launch.json
 /tmp
 .github_token
 logs_*.json

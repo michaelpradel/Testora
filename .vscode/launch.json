@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "name": "RegressionFinder",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "buggpt.RegressionFinder",
+        },
+    ]
+}
