@@ -3,7 +3,6 @@ import tarfile
 import tempfile
 from os.path import join
 from os import chdir, getcwd
-from buggpt.util import Stats
 
 
 class DockerExecutor:
