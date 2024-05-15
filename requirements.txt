@@ -1,4 +1,4 @@
-docker_py==1.10.6
+docker==7.0.0
 Flask==3.0.3
 GitPython==3.1.43
 libcst==1.2.0
