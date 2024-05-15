@@ -1,6 +1,3 @@
-from typing import List
-
-
 class PythonProject:
     def __init__(self, git_url):
         self.git_url = git_url

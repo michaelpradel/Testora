@@ -3,7 +3,10 @@ from openai import OpenAI
 from buggpt.prompts.PromptCommon import system_message
 from buggpt.util.Logs import append_event, LLMEvent
 
-openai = OpenAI(api_key=getenv("OPENAI_KEY"))
+with open(".openai_token", "r") as f:
+    openai_key = f.read().strip()
+
+openai = OpenAI(api_key=openai_key)
 
 gpt4o_model = "gpt-4o-2024-05-13"
 gpt4_model = "gpt-4-0125-preview"

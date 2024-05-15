@@ -409,27 +409,21 @@ if __name__ == "__main__":
     project = PythonProjects.pandas_project
     github_repo = github.get_repo(project.project_id)
 
-    # testing with motivating example
-    # pr = github_repo.get_pull(55108)
-    # check_pr(pr, github_repo, cloned_repo)
-
-    # run on recent PRs, excluding those we've already checked
+    # process a specific chunk of PRs
+    with open("./data/pr_chunks/pandas_pr_chunk_57309_57328.json", "r") as f:
+        pr_nbs = json.load(f)
     done_pr_numbers = find_prs_checked_in_past()
     print(f"Already checked {len(done_pr_numbers)} PRs")
-    github_prs = get_recent_prs(github_repo, nb=50)
-    # recent_pr_nbs = [57309, 57308, 57307, 57306, 57304, 57302, 57300, 57297, 57296, 57295, 57294, 57292, 57289, 57288, 57285, 57283, 57282, 57279, 57278, 57275, 57273, 57272, 57271, 57270, 57269, 57266, 57265, 57261, 57256, 57255, 57254, 57253, 57252, 57250, 57249, 57247, 57246, 57243, 57242, 57241, 57240, 57239, 57238, 57237, 57236, 57235, 57234, 57233, 57232, 57231, 57230, 57228, 57227, 57226, 57225, 57223, 57222, 57221, 57220, 57218, 57212, 57211, 57210, 57208, 57207, 57206, 57205, 57203, 57202, 57201, 57200, 57199, 57198, 57194, 57190, 57186, 57185, 57184, 57182, 57180, 57179, 57175, 57174, 57173, 57172, 57169, 57167, 57164, 57163, 57162, 57160, 57159, 57157, 57156, 57153, 57146, 57145, 57144, 57143, 57142, 57141, 57140, 57139, 57136, 57135, 57134, 57133, 57132, 57131, 57127, 57126, 57122, 57121, 57120, 57118, 57117, 57116, 57114, 57112, 57109, 57108, 57105, 57103, 57102, 57101, 57096, 57091, 57090, 57089, 57086, 57084, 57081, 57079, 57078, 57072, 57062, 57061, 57060, 57059, 57058, 57057, 57046, 57042, 57034, 57029, 57026, 57025, 57023, 57021, 57020, 57018, 57015, 57014, 57013, 57011, 57009, 57005, 56998, 56997, 56993, 56990, 56989, 56987, 56986, 56985, 56983, 56982, 56981, 56980, 56974, 56971, 56970, 56969, 56967, 56964, 56963, 56962, 56961, 56960, 56953, 56952, 56950, 56949, 56948, 56947, 56945, 56944, 56943, 56941, 56938, 56937, 56933, 56931, 56930, 56928, 56926, 56925, 56924, 56922, 56921, 56919, 56916, 56915, 56914, 56910, 56909, 56907, 56906, 56905, 56904, 56902, 56901, 56900, 56898, 56896, 56895, 56894, 56893, 56892, 56891, 56889, 56886, 56884, 56881, 56880, 56879, 56878, 56875, 56873, 56871, 56870, 56868, 56867, 56863, 56862, 56861, 56859, 56855, 56854, 56849, 56843, 56841, 56838, 56835, 56834, 56833, 56832, 56831, 56830, 56829, 56828, 56827, 56824, 56823, 56822, 56820, 56819, 56818, 56817, 56816, 56814, 56813, 56812, 56811, 56809, 56808, 56807, 56806, 56803, 56802, 56800, 56799, 56795, 56792, 56790, 56789, 56788, 56787, 56786, 56785, 56783, 56782, 56780, 56772, 56771, 56770, 56769, 56767, 56766, 56762, 56761, 56760, 56758, 56757, 56751, 56749, 56746, 56745, 56744, 56743, 56739, 56738, 56737, 56731, 56730, 56726, 56725, 56724, 56723, 56721, 56720, 56719, 56715, 56709, 56708, 56704, 56699, 56698, 56691, 56689, 56688, 56686, 56685, 56684, 56683, 56682, 56680, 56677, 56675, 56672, 56671, 56669, 56668, 56667, 56666, 56665, 56664, 56662, 56660, 56658, 56656, 56655, 56654, 56650, 56648, 56647, 56644, 56643, 56641, 56640, 56639]
-    # recent_pr_nbs = [
-    #     pr_nb for pr_nb in recent_pr_nbs if pr_nb not in done_pr_numbers]
-    # github_prs = []
-    # for pr_nb in recent_pr_nbs:
-    #     github_prs.append(github_repo.get_pull(pr_nb))
-    #     print(f"Added PR {pr_nb}")
+    github_prs = []
+    for pr_nb in pr_nbs:
+        if pr_nb in done_pr_numbers:
+            print(f"Skipping PR {pr_nb} because already analyzed")
+        else:
+            github_prs.append(github_repo.get_pull(pr_nb))
+            print(f"Added PR {pr_nb}")
+
     github_prs = filter_and_sort_prs_by_risk(github_prs)
     for github_pr in github_prs:
-        if github_pr.number in done_pr_numbers:
-            print(f"Skipping PR {github_pr.number} because already analyzed")
-            continue
-
         pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 
         append_event(PREvent(pr_nb=pr.number,
@@ -439,20 +433,3 @@ if __name__ == "__main__":
         append_event(PREvent(pr_nb=pr.number,
                              message="Done with PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
-
-    # testing on specific PRs
-    # interesting_pr_numbers = [58479, 58390, 58369, 58322, 58148]
-    # interesting_pr_numbers = [55108, 56841]  # known regression bugs
-    # interesting_pr_numbers = [58635]
-    # github_prs = [github_repo.get_pull(pr_nb)
-    #               for pr_nb in interesting_pr_numbers]
-    # prs = [PullRequest(github_pr, github_repo, cloned_repo_manager)
-    #        for github_pr in github_prs]
-    # for pr in prs:
-    #     append_event(PREvent(pr_nb=pr.number,
-    #                          message="Starting to check PR",
-    #                          title=pr.github_pr.title, url=pr.github_pr.html_url))
-    #     check_pr(cloned_repo_manager, pr)
-    #     append_event(PREvent(pr_nb=pr.number,
-    #                          message="Done with PR",
-    #                          title=pr.github_pr.title, url=pr.github_pr.html_url))
