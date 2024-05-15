@@ -36,16 +36,20 @@ except TypeError as e:
 """
     call_locations = get_locations_of_calls(code)
 
-    with open("/home/m/research/collabs/BugGPT/data/repos/pandas/buggpt_code/test.py", "w") as f:
+    test_path = "/workspaces/clones/clone2/pandas/buggpt_code/test.py"
+    repo_path = "/workspaces/clones/clone2/pandas/"
+    # test_path = "/home/m/research/collabs/BugGPT/data/repos/pandas_pool/clone2/pandas/buggpt_code/test.py"
+    # repo_path = "/home/m/research/collabs/BugGPT/data/repos/pandas_pool/clone2/pandas/"
+
+    with open(test_path, "w") as f:
         f.write(code)
 
-    server = PythonLanguageServer("/home/m/research/collabs/BugGPT/data/repos/pandas/")
+    server = PythonLanguageServer(repo_path)
     for call_location in call_locations:
         line = call_location.start.line - 1  # LSP lines are 0-based
         column = call_location.start.column
-        r = server.get_hover_text("/home/m/research/collabs/BugGPT/data/repos/pandas/buggpt_code/test.py", line, column)
+        r = server.get_hover_text(
+            test_path, line, column)
         print("--------------------------------------------------")
         print(r)
         print()
-
-    

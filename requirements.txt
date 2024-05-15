@@ -1,6 +1,7 @@
 docker==7.0.0
 Flask==3.0.3
 GitPython==3.1.43
+jedi-language-server==0.41.4
 libcst==1.2.0
 matplotlib==3.8.4
 openai==1.30.1
