@@ -53,6 +53,14 @@ class CallLocationExtractor(cst.CSTVisitor):
                 f"Warning: Unknown callee type {type(node.func)} -- ignoring this call")
 
 
+class AttributeExtractor(cst.CSTVisitor):
+    def __init__(self):
+        self.attributes = []
+
+    def visit_Attribute(self, node: cst.Attribute) -> bool | None:
+        self.attributes.append(node.attr.value)
+
+
 class SurroundingClassExtractor(cst.CSTVisitor):
     METADATA_DEPENDENCIES = (cst.metadata.PositionProvider,
                              cst.metadata.ParentNodeProvider,)
@@ -183,7 +191,7 @@ def extract_tests_of_fut(all_test_code, fut_name):
         return "\n".join(test_functions)
 
 
-def has_private_calls_or_fails_to_parse(code):
+def has_private_accesses_or_fails_to_parse(code):
     try:
         tree = cst.parse_module(code)
     except cst.ParserSyntaxError:
@@ -193,6 +201,12 @@ def has_private_calls_or_fails_to_parse(code):
     tree.visit(call_extractor)
     for callee in call_extractor.callees:
         if callee.startswith("_"):
+            return True
+
+    attribute_extractor = AttributeExtractor()
+    tree.visit(attribute_extractor)
+    for attribute in attribute_extractor.attributes:
+        if attribute.startswith("_"):
             return True
 
     return False

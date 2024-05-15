@@ -15,7 +15,7 @@ from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
 from buggpt.util.Logs import ClassificationEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
-from buggpt.util.PythonCodeUtil import has_private_calls_or_fails_to_parse
+from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 
 gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
 gpt35 = LLMCache(OpenAIGPT(gpt35_model))
@@ -47,7 +47,9 @@ def merge_tests_and_execute(test_executions, docker_executor):
     """
 
     merged_code = merge_programs([test.code for test in test_executions])
+    append_event(Event(pr_nb=-1, message="Merged code", content=merged_code))
     merged_outputs = docker_executor.execute_python_code(merged_code)
+    append_event(Event(pr_nb=-1, message="Merged output", content=merged_outputs))
     merged_outputs = clean_output(merged_outputs)
     outputs = separate_outputs(merged_outputs)
     if len(outputs) == len(test_executions):
@@ -108,7 +110,7 @@ def generate_tests_with_prompt(prompt, model, nb_samples=1):
 def remove_tests_with_private_call(tests):
     result = []
     for test in tests:
-        if not has_private_calls_or_fails_to_parse(test):
+        if not has_private_accesses_or_fails_to_parse(test):
             result.append(test)
     return result
 
