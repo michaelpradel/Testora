@@ -1,3 +1,4 @@
+import fcntl
 import json
 from os import makedirs
 from os.path import join, exists
@@ -35,7 +36,11 @@ class LLMCache:
 
     def write_cache(self):
         with open(self.cache_file, "w") as f:
-            json.dump(self.cache, f)
+            fcntl.flock(f, fcntl.LOCK_EX)
+            try:
+                json.dump(self.cache, f)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)
         print(
             f"LLMCache of {self.llm_module.model} with {len(self.cache)} entries saved. {self.nb_hits} hits, {self.nb_misses} misses.")
 
