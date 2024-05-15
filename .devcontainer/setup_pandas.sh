@@ -6,6 +6,11 @@ sudo mkdir clones
 sudo chown vscode:vscode clones/
 cd clones
 
+echo "Cleaning any existing pandas-dev containers"
+docker rm -f pandas-dev1
+docker rm -f pandas-dev2
+docker rm -f pandas-dev3
+
 mkdir clone1
 cd clone1
 
