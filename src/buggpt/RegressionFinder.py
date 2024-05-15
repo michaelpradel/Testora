@@ -401,7 +401,7 @@ if __name__ == "__main__":
 
     # setup for testing on pandas
     cloned_repo_manager = ClonedRepoManager(
-        "./data/repos/pandas_pool", "pandas", "pandas-dev")
+        "../clones", "pandas", "pandas-dev")
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")
     cloned_repo.repo.git.pull()
     token = open(".github_token", "r").read().strip()
