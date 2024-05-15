@@ -1,4 +1,5 @@
 from os import getenv
+from typing import List
 from openai import OpenAI
 from buggpt.prompts.PromptCommon import system_message
 from buggpt.util.Logs import append_event, LLMEvent
@@ -17,13 +18,13 @@ class OpenAIGPT:
     def __init__(self, model):
         self.model = model
 
-    def query(self, prompt, nb_samples=1):
+    def query(self, prompt, nb_samples=1) -> List:
         user_message = prompt.create_prompt()
         if len(user_message) > 10000:
             append_event(LLMEvent(pr_nb=-1,
                                   message=f"Query too long",
                                   content=f"System message:\n{system_message}\nUser message:\n{user_message}"))
-            return ""
+            return []
 
         append_event(LLMEvent(pr_nb=-1,
                               message=f"Querying {self.model}",
