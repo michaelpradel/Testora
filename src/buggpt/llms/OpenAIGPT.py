@@ -24,7 +24,7 @@ class OpenAIGPT:
             append_event(LLMEvent(pr_nb=-1,
                                   message=f"Query too long",
                                   content=f"System message:\n{system_message}\nUser message:\n{user_message}"))
-            return []
+            return [""]
 
         append_event(LLMEvent(pr_nb=-1,
                               message=f"Querying {self.model}",
