@@ -15,8 +15,9 @@ from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
-from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
+from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
+from buggpt.evaluation import EvalTaskManager
 
 gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
 gpt35 = LLMCache(OpenAIGPT(gpt35_model))
@@ -414,6 +415,14 @@ def filter_and_sort_prs_by_risk(github_prs):
     return result
 
 
+def get_prs_to_process():
+    name, task = EvalTaskManager.fetch_task()
+    if name is None:
+        return None, None
+    pr_numbers = json.loads(task)
+    return task, pr_numbers
+
+
 if __name__ == "__main__":
 
     # setup for testing on pandas
@@ -427,12 +436,11 @@ if __name__ == "__main__":
     github_repo = github.get_repo(project.project_id)
 
     # process a specific chunk of PRs
-    with open("./data/pr_chunks/pandas_pr_chunk_xxxxx_xxxxx.json", "r") as f:
-        pr_nbs = json.load(f)
+    task, pr_numbers = get_prs_to_process()
     done_pr_numbers = find_prs_checked_in_past()
     print(f"Already checked {len(done_pr_numbers)} PRs")
     github_prs = []
-    for pr_nb in pr_nbs:
+    for pr_nb in pr_numbers:
         if pr_nb in done_pr_numbers:
             print(f"Skipping PR {pr_nb} because already analyzed")
         else:
@@ -455,3 +463,7 @@ if __name__ == "__main__":
         append_event(PREvent(pr_nb=pr.number,
                              message="Done with PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+    # store logs into database
+    log = events_as_json()
+    EvalTaskManager.write_results({task: log})

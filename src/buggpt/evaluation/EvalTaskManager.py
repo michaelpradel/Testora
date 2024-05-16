@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Dict
 import mysql.connector
 
@@ -10,24 +11,21 @@ config = {
 with open(".db_token", "r") as f:
     config["password"] = f.read().strip()
 
+my_worker_id = os.getenv("HOSTNAME")
+
 
 def write_tasks(name_to_task: Dict[str, str]):
     try:
-        # Connect to the database
         conn = mysql.connector.connect(**config)
         print("Database connection established!")
 
-        # Create a cursor object using the cursor() method
         cursor = conn.cursor()
 
-        # Prepare SQL query to INSERT a new row into the table
         insert_query = "INSERT INTO experiments (name, task) VALUES (%s, %s)"
         for name, task in name_to_task.items():
             print(f"Inserting {name} with task {task}")
-            # Execute the SQL command
             cursor.execute(insert_query, (name, task))
 
-        # Commit your changes in the database
         conn.commit()
         print("Data inserted successfully!")
 
@@ -39,29 +37,68 @@ def write_tasks(name_to_task: Dict[str, str]):
 
     finally:
         if conn.is_connected():
-            # Close the cursor and connection
             cursor.close()
             conn.close()
             print("MySQL connection is closed")
 
 
-def write_results(name_to_result: Dict[str, str]):
+def fetch_task():
     try:
-        # Connect to the database
         conn = mysql.connector.connect(**config)
         print("Database connection established!")
 
-        # Create a cursor object using the cursor() method
+        cursor = conn.cursor()
+        conn.start_transaction()
+
+        # check if there's already a task assigned to this container; if yes, resume it
+        select_query = "SELECT name, task FROM experiments WHERE worker=%s"
+        cursor.execute(select_query, (my_worker_id,))
+        row = cursor.fetchone()
+        if row:
+            return row[0], row[1]
+
+        # otherwise, fetch a new task and mark it as assigned to this container
+        select_query = "SELECT name, task FROM experiments WHERE worker IS NULL LIMIT 1"
+        cursor.execute(select_query)
+        row = cursor.fetchone()
+
+        if row:
+            name, task = row[0], row[1]
+            update_query = "UPDATE experiments SET worker=%s WHERE name=%s"
+            cursor.execute(update_query, (my_worker_id, name))
+            conn.commit()
+            return name, task
+        else:
+            print("No task found.")
+            return None, None
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if conn.is_connected():
+            conn.rollback()
+            print("Transaction rolled back")
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+            print("MySQL connection is closed")
+
+    return None, None
+
+
+def write_results(name_to_result: Dict[str, str]):
+    try:
+        conn = mysql.connector.connect(**config)
+        print("Database connection established!")
+
         cursor = conn.cursor()
 
-        # Prepare SQL query to INSERT a new row into the table
         insert_query = "UPDATE experiments SET result=%s WHERE name=%s"
         for name, result in name_to_result.items():
             print(f"Inserting {name} with result {result}")
-            # Execute the SQL command
             cursor.execute(insert_query, (result, name))
 
-        # Commit your changes in the database
         conn.commit()
         print("Data inserted successfully!")
 
@@ -73,7 +110,6 @@ def write_results(name_to_result: Dict[str, str]):
 
     finally:
         if conn.is_connected():
-            # Close the cursor and connection
             cursor.close()
             conn.close()
             print("MySQL connection is closed")
@@ -81,8 +117,9 @@ def write_results(name_to_result: Dict[str, str]):
 
 if __name__ == "__main__":
     # write_tasks({"test": '["task1", "task2"]'})
-    result = {
-        "bla": {"blubb": 23, "blubb2": 42}
-    }
-    json_result = json.dumps(result)
-    write_results({"test": json_result})
+    # result = {
+    #     "bla": {"blubb": 23, "blubb2": 42}
+    # }
+    # json_result = json.dumps(result)
+    # write_results({"test": json_result})
+    print(fetch_task())

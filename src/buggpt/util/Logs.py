@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 import atexit
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel
 
 
@@ -47,7 +47,7 @@ class ErrorEvent(Event):
     details: str
 
 
-events = []
+events: List = []
 last_time_stored = datetime.now()
 
 
@@ -61,6 +61,9 @@ def append_event(evt):
     if datetime.now() - last_time_stored > timedelta(minutes=5):
         store_logs()
         last_time_stored = datetime.now()
+
+def events_as_json():
+    return json.dumps([evt.dict() for evt in events], indent=2)
 
 
 def store_logs():

@@ -1,6 +1,6 @@
-from os import getenv
+import time
 from typing import List
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 from buggpt.prompts.PromptCommon import system_message
 from buggpt.util.Logs import append_event, LLMEvent
 
@@ -30,27 +30,35 @@ class OpenAIGPT:
                               message=f"Querying {self.model}",
                               content=f"System message:\n{system_message}\nUser message:\n{user_message}"))
 
-        if prompt.use_json_output:
-            completion = openai.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_message}
-                ],
-                max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
-                n=nb_samples,
-                response_format={"type": "json_object"}
-            )
-        else:
-            completion = openai.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_message}
-                ],
-                max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
-                n=nb_samples
-            )
+        while True:
+            try:
+                if prompt.use_json_output:
+                    completion = openai.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {"role": "system", "content": system_message},
+                            {"role": "user", "content": user_message}
+                        ],
+                        max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
+                        n=nb_samples,
+                        response_format={"type": "json_object"}
+                    )
+                    break
+                else:
+                    completion = openai.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {"role": "system", "content": system_message},
+                            {"role": "user", "content": user_message}
+                        ],
+                        max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
+                        n=nb_samples
+                    )
+                    break
+            except RateLimitError as e:
+                print("Rate limit exceeded:", e)
+                print("Will try again in 60 seconds")
+                time.sleep(60)
 
         append_event(LLMEvent(pr_nb=-1,
                               message=f"Token usage",
