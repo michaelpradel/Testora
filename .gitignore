@@ -6,3 +6,4 @@ data/pr_chunks
 .github_token
 logs_*.json
 .openai_token
+.db_token
