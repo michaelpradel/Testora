@@ -43,6 +43,10 @@ class LLMEvent(Event):
     content: str
 
 
+class ErrorEvent(Event):
+    details: str
+
+
 events = []
 last_time_stored = datetime.now()
 

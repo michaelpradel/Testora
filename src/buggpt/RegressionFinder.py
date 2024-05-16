@@ -14,11 +14,15 @@ from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.PullRequest import PullRequest
 from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
-from buggpt.util.Logs import ClassificationEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
+from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 
 gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
 gpt35 = LLMCache(OpenAIGPT(gpt35_model))
+
+
+class BugGPTException(Exception):
+    pass
 
 
 def clean_output(output):
@@ -47,9 +51,11 @@ def merge_tests_and_execute(test_executions, docker_executor):
     """
 
     merged_code = merge_programs([test.code for test in test_executions])
-    append_event(Event(pr_nb=-1, message="Merged code", content=merged_code))
+    append_event(ErrorEvent(
+        pr_nb=-1, message="Merged code", details=merged_code))
     merged_outputs = docker_executor.execute_python_code(merged_code)
-    append_event(Event(pr_nb=-1, message="Merged output", content=merged_outputs))
+    append_event(ErrorEvent(
+        pr_nb=-1, message="Merged output", details=merged_outputs))
     merged_outputs = clean_output(merged_outputs)
     outputs = separate_outputs(merged_outputs)
     if len(outputs) == len(test_executions):
@@ -80,7 +86,11 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
     append_event(
         Event(pr_nb=pr_number, message=f"Done with compiling pandas at commit {commit}"))
 
-    outputs = merge_tests_and_execute(test_executions, docker_executor)
+    try:
+        outputs = merge_tests_and_execute(test_executions, docker_executor)
+    except RecursionError as e:
+        raise BugGPTException(
+            f"Exception during merge_tests_and_execute: {str(e)}")
     assert len(outputs) == len(test_executions)
 
     for output, test_execution in zip(outputs, test_executions):
@@ -431,7 +441,12 @@ if __name__ == "__main__":
         append_event(PREvent(pr_nb=pr.number,
                              message="Starting to check PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
-        check_pr(cloned_repo_manager, pr)
+        try:
+            check_pr(cloned_repo_manager, pr)
+        except BugGPTException as e:
+            append_event(ErrorEvent(
+                pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
+            continue
         append_event(PREvent(pr_nb=pr.number,
                              message="Done with PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
