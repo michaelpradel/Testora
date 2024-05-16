@@ -1,5 +1,6 @@
 import glob
 import json
+from typing import List
 from github import Github, Auth
 from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.execution.ProgramMerger import merge_programs, separate_outputs
@@ -43,7 +44,7 @@ def clean_output(output):
     return "\n".join(result)
 
 
-def merge_tests_and_execute(test_executions, docker_executor):
+def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
     """
     Try to merge all tests into a single program (for efficiency, to avoid repeated imports and Python engine startup).
     If this fails (e.g., due to segfault of Python), execute smaller subsets of tests at once.
@@ -60,6 +61,10 @@ def merge_tests_and_execute(test_executions, docker_executor):
     outputs = separate_outputs(merged_outputs)
     if len(outputs) == len(test_executions):
         return outputs
+    elif len(test_executions) == 1:
+        # we can't split it any further but don't see the expected output format
+        # (e.g., reaching this when code parses but raises a SyntaxError)
+        return [merged_outputs]
     else:
         mid = len(test_executions) // 2
         test_executions_part1, test_executions_part2 = \
