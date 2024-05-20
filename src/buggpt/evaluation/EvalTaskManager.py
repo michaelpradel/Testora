@@ -11,7 +11,8 @@ config = {
 with open(".db_token", "r") as f:
     config["password"] = f.read().strip()
 
-my_worker_id = os.getenv("HOSTNAME")
+with open(".worker_id", "r") as f:
+    my_worker_id = f.read().strip()
 
 
 def write_tasks(name_to_task: Dict[str, str]):

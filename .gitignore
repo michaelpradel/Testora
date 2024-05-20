@@ -8,3 +8,4 @@ logs_*.json
 .openai_token
 .db_token
 .openai_token_ExeCode
+.worker_id
