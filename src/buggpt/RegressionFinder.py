@@ -435,35 +435,46 @@ if __name__ == "__main__":
     project = PythonProjects.pandas_project
     github_repo = github.get_repo(project.project_id)
 
-    # process a specific chunk of PRs
     task, pr_numbers = get_prs_to_process()
-    done_pr_numbers = find_prs_checked_in_past()
-    print(f"Already checked {len(done_pr_numbers)} PRs")
-    github_prs = []
-    for pr_nb in pr_numbers:
-        if pr_nb in done_pr_numbers:
-            print(f"Skipping PR {pr_nb} because already analyzed")
-        else:
-            github_prs.append(github_repo.get_pull(pr_nb))
-            print(f"Added PR {pr_nb}")
+    while task:
+        append_event(
+            Event(pr_nb=0, message=f"Starting to work on task {task}"))
 
-    github_prs = filter_and_sort_prs_by_risk(github_prs)
-    for github_pr in github_prs:
-        pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
+        # process a specific chunk of PRs
+        done_pr_numbers = find_prs_checked_in_past()
+        print(f"Already checked {len(done_pr_numbers)} PRs")
+        github_prs = []
+        for pr_nb in pr_numbers:
+            if pr_nb in done_pr_numbers:
+                print(f"Skipping PR {pr_nb} because already analyzed")
+            else:
+                github_prs.append(github_repo.get_pull(pr_nb))
+                print(f"Added PR {pr_nb}")
 
-        append_event(PREvent(pr_nb=pr.number,
-                             message="Starting to check PR",
-                             title=pr.github_pr.title, url=pr.github_pr.html_url))
-        try:
-            check_pr(cloned_repo_manager, pr)
-        except BugGPTException as e:
-            append_event(ErrorEvent(
-                pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
-            continue
-        append_event(PREvent(pr_nb=pr.number,
-                             message="Done with PR",
-                             title=pr.github_pr.title, url=pr.github_pr.html_url))
+        github_prs = filter_and_sort_prs_by_risk(github_prs)
+        for github_pr in github_prs:
+            pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 
-    # store logs into database
-    log = events_as_json()
-    EvalTaskManager.write_results({task: log})
+            append_event(PREvent(pr_nb=pr.number,
+                                 message="Starting to check PR",
+                                 title=pr.github_pr.title, url=pr.github_pr.html_url))
+            try:
+                check_pr(cloned_repo_manager, pr)
+            except BugGPTException as e:
+                append_event(ErrorEvent(
+                    pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
+                continue
+            append_event(PREvent(pr_nb=pr.number,
+                                 message="Done with PR",
+                                 title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+        # store logs into database
+        log = events_as_json()
+        EvalTaskManager.write_results({task: log})
+
+        append_event(Event(pr_nb=0, message=f"Done with task {task}"))
+
+        # fetch the next task
+        task, pr_numbers = get_prs_to_process()
+
+    append_event(Event(pr_nb=0, message=f"No more tasks to work on"))
