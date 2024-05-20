@@ -416,11 +416,11 @@ def filter_and_sort_prs_by_risk(github_prs):
 
 
 def get_prs_to_process():
-    name, task = EvalTaskManager.fetch_task()
+    name, raw_task = EvalTaskManager.fetch_task()
     if name is None:
         return None, None
-    pr_numbers = json.loads(task)
-    return task, pr_numbers
+    pr_numbers = json.loads(raw_task)
+    return name, pr_numbers
 
 
 if __name__ == "__main__":
@@ -435,10 +435,10 @@ if __name__ == "__main__":
     project = PythonProjects.pandas_project
     github_repo = github.get_repo(project.project_id)
 
-    task, pr_numbers = get_prs_to_process()
-    while task:
+    task_name, pr_numbers = get_prs_to_process()
+    while task_name:
         append_event(
-            Event(pr_nb=0, message=f"Starting to work on task {task}"))
+            Event(pr_nb=0, message=f"Starting to work on task {task_name}"))
 
         # process a specific chunk of PRs
         done_pr_numbers = find_prs_checked_in_past()
@@ -470,11 +470,11 @@ if __name__ == "__main__":
 
         # store logs into database
         log = events_as_json()
-        EvalTaskManager.write_results({task: log})
+        EvalTaskManager.write_results({task_name: log})
 
-        append_event(Event(pr_nb=0, message=f"Done with task {task}"))
+        append_event(Event(pr_nb=0, message=f"Done with task {task_name}"))
 
         # fetch the next task
-        task, pr_numbers = get_prs_to_process()
+        task_name, pr_numbers = get_prs_to_process()
 
     append_event(Event(pr_nb=0, message=f"No more tasks to work on"))
