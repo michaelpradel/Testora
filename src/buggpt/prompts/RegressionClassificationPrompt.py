@@ -51,10 +51,12 @@ The pull request "{pr_title}" of the {project_name} project changes the {fut_qua
 {new_output}
 
 # Task
-You should explain your reasoning and then answer three questions:
+You should explain your reasoning and then answer five questions:
 1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
 2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
-3) Is the different output surprising to the developer of the pull request, i.e., is this a potential regression bug? Answer either "expected" or "surprising".
+3) Does the usage example refer only to public APIs of {project_name}, or does it use any project-internal functionality? Answer either "public" or "project-internal".
+4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
+5) Is the different output intended by the developer of the pull request, or is the change in behavior rather surprising? Answer either "intended" or "surprising".
 Explain your reasoning and then give your answers in the following format:
 <THOUGHTS>
 ...
@@ -68,6 +70,12 @@ Explain your reasoning and then give your answers in the following format:
 <ANSWER3>
 ...
 </ANSWER3>
+<ANSWER4>
+...
+</ANSWER4>
+<ANSWER5>
+...
+</ANSWER5>
 """
 
         query = template.format(project_name=self.project_name,
@@ -114,7 +122,9 @@ Explain your reasoning and then give your answers in the following format:
         in_answer = 0
         is_relevant_change = None
         is_deterministic = None
-        is_regression_bug = None
+        is_public = None
+        is_legal = None
+        is_surprising = None
         for line in raw_answer.split("\n"):
             if in_answer == 1:
                 if line.strip() == "noteworthy":
@@ -127,10 +137,20 @@ Explain your reasoning and then give your answers in the following format:
                 elif line.strip() == "non-deterministic":
                     is_deterministic = False
             elif in_answer == 3:
-                if line.strip() == "surprising":
-                    is_regression_bug = True
-                elif line.strip() == "expected":
-                    is_regression_bug = False
+                if line.strip() == "public":
+                    is_public = True
+                elif line.strip() == "project-internal":
+                    is_public = False
+            elif in_answer == 4:
+                if line.strip() == "legal":
+                    is_legal = True
+                elif line.strip() == "illegal":
+                    is_legal = False
+            elif in_answer == 5:
+                if line.strip() == "intended":
+                    is_surprising = False
+                elif line.strip() == "surprising":
+                    is_surprising = True
 
             if line.strip() == "</ANSWER1>" or line.strip() == "</ANSWER2>" or line.strip() == "</ANSWER3>":
                 in_answer = 0
@@ -140,5 +160,9 @@ Explain your reasoning and then give your answers in the following format:
                 in_answer = 2
             if line.strip() == "<ANSWER3>":
                 in_answer = 3
+            if line.strip() == "<ANSWER4>":
+                in_answer = 4
+            if line.strip() == "<ANSWER5>":
+                in_answer = 5
 
-        return is_relevant_change, is_deterministic, is_regression_bug
+        return is_relevant_change, is_deterministic, is_public, is_legal, is_surprising

@@ -100,10 +100,14 @@ def fill_details():
                 nb_test_executions += 1
 
             if entry["message"] == "Classification":
-                if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_regression_bug"]:
+                if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_public"] and entry["is_legal"] and entry["is_surprising"]:
                     entry["message"] = "Classification: Regression"
                     is_regression = True
-                elif entry["is_regression_bug"] == False:
+                elif entry["is_relevant_change"] in [True, False] and \
+                        entry["is_deterministic"] in [True, False] and \
+                        entry["is_public"] in [True, False] and \
+                        entry["is_legal"] in [True, False] and \
+                        entry["is_surprising"] in [True, False]:
                     entry["message"] = "Classification: Intended"
                     is_intended_difference = True
                 else:
@@ -241,4 +245,4 @@ def pr_page(number):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    app.run(debug=True)
+    app.run(debug=True, port=4000)

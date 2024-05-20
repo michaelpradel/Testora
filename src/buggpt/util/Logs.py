@@ -30,7 +30,9 @@ class ComparisonEvent(Event):
 class ClassificationEvent(Event):
     is_relevant_change: Optional[bool]
     is_deterministic: Optional[bool]
-    is_regression_bug: Optional[bool]
+    is_public: Optional[bool]
+    is_legal: Optional[bool]
+    is_surprising: Optional[bool]
     old_is_crash: bool
     new_is_crash: bool
 
@@ -61,6 +63,7 @@ def append_event(evt):
     if datetime.now() - last_time_stored > timedelta(minutes=5):
         store_logs()
         last_time_stored = datetime.now()
+
 
 def events_as_json():
     return json.dumps([evt.dict() for evt in events], indent=2)

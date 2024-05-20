@@ -238,17 +238,19 @@ def classify_regression(project_name, pr, changed_functions, old_execution, new_
     raw_answer = gpt4.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
-    is_relevant_change, is_deterministic, is_regression_bug = prompt.parse_answer(
+    is_relevant_change, is_deterministic, is_public, is_legal, is_surprising = prompt.parse_answer(
         raw_answer)
     append_event(ClassificationEvent(pr_nb=pr.number,
                                      message="Classification",
                                      is_relevant_change=is_relevant_change,
                                      is_deterministic=is_deterministic,
-                                     is_regression_bug=is_regression_bug,
+                                     is_public=is_public,
+                                     is_legal=is_legal,
+                                     is_surprising=is_surprising,
                                      old_is_crash=is_crash(
                                          old_execution.output),
                                      new_is_crash=is_crash(new_execution.output)))
-    return is_regression_bug
+    return is_relevant_change and is_deterministic and is_public and is_legal and is_surprising
 
 
 def select_expected_behavior(project_name, pr, old_execution, new_execution, docstrings):
