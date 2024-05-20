@@ -54,7 +54,7 @@ The pull request "{pr_title}" of the {project_name} project changes the {fut_qua
 You should explain your reasoning and then answer three questions:
 1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
 2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
-3) Is the different output surprising given the intent of the pull request, i.e., is this a potential regression bug? Answer either "expected" or "surprising".
+3) Is the different output surprising to the developer of the pull request, i.e., is this a potential regression bug? Answer either "expected" or "surprising".
 Explain your reasoning and then give your answers in the following format:
 <THOUGHTS>
 ...
