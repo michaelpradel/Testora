@@ -52,7 +52,7 @@ def fetch_task():
         conn.start_transaction()
 
         # check if there's already a task assigned to this container; if yes, resume it
-        select_query = "SELECT name, task FROM experiments WHERE worker=%s"
+        select_query = "SELECT name, task FROM experiments WHERE worker=%s AND result IS NULL"
         cursor.execute(select_query, (my_worker_id,))
         row = cursor.fetchone()
         if row:
