@@ -35,19 +35,30 @@ def merge_programs(programs):
         code = ast.unparse(ast.fix_missing_locations(function_def))
         function_def_snippets.append(code)
 
-    result = "import sys\nimport traceback\n\n"
+    result = "import sys\nimport traceback\nimport io\n\n"
     for function_def_snippet in function_def_snippets:
         result += function_def_snippet + "\n\n"
 
     for fct_idx in range(len(function_def_snippets)):
-        result += f"\nprint('XXXXX Program {fct_idx} starting XXXXX')\n"
-        result += f"""try:
+        result += f"""print('XXXXX Program {fct_idx} starting XXXXX')
+try:
+    my_stdout = io.StringIO()
+    my_stderr = io.StringIO()
+    sys.stdout = my_stdout
+    sys.stderr = my_stderr
     program_{fct_idx}()
 except BaseException as e:
     details = traceback.format_exc()
-    print(details, file=sys.stderr)
+    print(details, file=my_stderr)
+finally:
+    sys.stdout.flush()
+    sys.stderr.flush()
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+    print(my_stdout.getvalue(), end="")
+    print(my_stderr.getvalue(), end="")
+print('XXXXX Program {fct_idx} done XXXXX')
 """
-        result += f"\nprint('XXXXX Program {fct_idx} done XXXXX')\n"
 
     return result
 
