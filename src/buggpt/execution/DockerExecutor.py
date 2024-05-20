@@ -33,7 +33,20 @@ class DockerExecutor:
 
     def execute_python_code(self, code):
         self.copy_code_to_container(code, "/tmp/code.py")
-        command = "python -u /tmp/code.py" # -u to avoid non-deterministic buffering
+        command = "python -u /tmp/code.py"  # -u to avoid non-deterministic buffering
         exec_result = self.container.exec_run(command)
         output = exec_result.output.decode("utf-8")
         return output
+
+
+if __name__ == "__main__":
+    code = """
+x = 23
+print(x)
+x.foo()
+print("never reach this")
+"""
+
+    executor = DockerExecutor("pandas-dev")
+    output = executor.execute_python_code(code)
+    print(output)
