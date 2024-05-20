@@ -4,7 +4,7 @@ from openai import OpenAI, RateLimitError
 from buggpt.prompts.PromptCommon import system_message
 from buggpt.util.Logs import append_event, LLMEvent
 
-with open(".openai_token", "r") as f:
+with open(".openai_token_ExeCode", "r") as f:
     openai_key = f.read().strip()
 
 openai = OpenAI(api_key=openai_key)
