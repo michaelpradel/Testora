@@ -52,6 +52,14 @@ def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
     In the extreme case, will try to execute each test separately.
     """
 
+    if len(test_executions) > 20:
+        # split into chunks of at most 20 test executions
+        chunks = [test_executions[i:i + 20] for i in range(0, len(test_executions), 20)]
+        all_outputs = []
+        for chunk in chunks:
+            all_outputs.extend(merge_tests_and_execute(chunk, docker_executor))
+        return all_outputs
+
     merged_code = merge_programs([test.code for test in test_executions])
     append_event(ErrorEvent(
         pr_nb=-1, message="Merged code", details=merged_code))
