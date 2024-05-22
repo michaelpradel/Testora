@@ -1,0 +1,201 @@
+The pull request "BUG: wrong future Warning on string assignment in certain condition" of the pandas project changes the pandas.core.dtypes.missing.construct_1d_array_from_inferred_fill_value, pandas.core.indexing._ensure_listlike_indexer, pandas.core.indexing._setitem_with_indexer, pandas.core.indexing._setitem_single_column function(s). Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
+
+# Details about the pull request
+# Comments
+Comment by MarcoGorelli:
+- [] closes  # 56503 (Replace xxxx with the GitHub issue number)
+- [][Tests added and passed](https: // pandas.pydata.org/pandas-docs/dev/development/contributing_codebase.html  # writing-tests) if fixing a bug or adding a new feature
+- [] All[code checks passed](https: // pandas.pydata.org/pandas-docs/dev/development/contributing_codebase.html  # pre-commit).
+- [] Added[type annotations](https: // pandas.pydata.org/pandas-docs/dev/development/contributing_codebase.html  # type-hints) to new arguments/methods/functions.
+- [] Added an entry in the latest `doc/source/whatsnew/vX.X.X.rst` file if fixing a bug or adding a new feature.
+
+is this it? finally ? 🤞
+
+Comment by mroeschke:
+Thanks @ MarcoGorelli
+
+# Review comments
+Comment by mroeschke:
+`construct_1d_arraylike_from_scalar`?
+
+Comment by mroeschke:
+Discussed during the dev meeting. If the idea is to fill with the appropriate missing value, I think you can use a combination of `infer_fill_value` with `construct_1d_arraylike_from_scalar`
+
+Comment by MarcoGorelli:
+thanks! will update
+
+Comment by MarcoGorelli:
+I think this would run into the same issues that https: // github.com/pandas-dev/pandas/pull/56321 addressed
+
+I'd factored out the common logic, if there's a better way perhaps it can be addressed separately?
+
+# Commit messages
+whatsnew
+
+Merge remote-tracking branch 'upstream/main' into partial-row-multi-columns-expansion
+
+Merge remote-tracking branch 'upstream/main' into partial-row-multi-columns-expansion
+
+factor out construct_1d_array_from_inferred_fill_value
+
+Merge remote-tracking branch 'upstream/main' into partial-row-multi-columns-expansion: label: typing
+
+
+
+# Diff of the pull request
+diff - -git a/pandas/core/dtypes/missing.py b/pandas/core/dtypes/missing.py
+index 17c1ad5e4d..9e00eb657f 100644
+- -- a/pandas/core/dtypes/missing.py
++ ++ b/pandas/core/dtypes/missing.py
+@ @ -646, 6 + 646, 20 @ @ def infer_fill_value(val):
+return np.nan
+
+
++ def construct_1d_array_from_inferred_fill_value(
++ value: object, length: int
++) -> ArrayLike:
++  # Find our empty_value dtype by constructing an array
++  # from our value and doing a .take on it
++ from pandas.core.algorithms import take_nd
++ from pandas.core.construction import sanitize_array
++ from pandas.core.indexes.base import Index
++
++ arr=sanitize_array(value, Index(range(1)), copy=False)
++ taker=-1 * np.ones(length, dtype=np.intp)
++ return take_nd(arr, taker)
++
++
+def maybe_fill(arr: np.ndarray) -> np.ndarray:
+"""
+Fill numpy.ndarray with NaN, unless we have a integer or boolean dtype.
+
+diff --git a/pandas/core/indexing.py b/pandas/core/indexing.py
+index c6759a9f54..c7a938dbc4 100644
+--- a/pandas/core/indexing.py
++++ b/pandas/core/indexing.py
+@@ -50,6 +50,7 @@ from pandas.core.dtypes.generic import (
+ABCSeries,
+)
+from pandas.core.dtypes.missing import (
++ construct_1d_array_from_inferred_fill_value,
+infer_fill_value,
+is_valid_na_for_dtype,
+isna,
+@@ -61,7 +62,6 @@ import pandas.core.common as com
+from pandas.core.construction import (
+array as pd_array,
+extract_array,
+- sanitize_array,
+)
+from pandas.core.indexers import (
+check_array_indexer,
+@@ -854,7 +854,6 @@ class _LocationIndexer(NDFrameIndexerBase):
+if self.ndim != 2:
+return
+
+- orig_key = key
+if isinstance(key, tuple) and len(key) > 1:
+# key may be a tuple if we are .loc
+# if length of key is > 1 set key to column part
+@@ -872,7 +871,7 @@ class _LocationIndexer(NDFrameIndexerBase):
+keys = self.obj.columns.union(key, sort=False)
+diff = Index(key).difference(self.obj.columns, sort=False)
+
+- if len(diff) and com.is_null_slice(orig_key[0]):
++ if len(diff):
+# e.g. if we are doing df.loc[:, ["A", "B"]] = 7 and "B"
+# is a new column, add the new columns with dtype=np.void
+# so that later when we go through setitem_single_column
+@@ -1878,12 +1877,9 @@ class _iLocIndexer(_LocationIndexer):
+
+self.obj[key] = empty_value
+elif not is_list_like(value):
+- # Find our empty_value dtype by constructing an array
+- # from our value and doing a .take on it
+- arr = sanitize_array(value, Index(range(1)), copy=False)
+- taker = -1 * np.ones(len(self.obj), dtype=np.intp)
+- empty_value = algos.take_nd(arr, taker)
+- self.obj[key] = empty_value
++ self.obj[key] = construct_1d_array_from_inferred_fill_value(
++ value, len(self.obj)
++ )
+else:
+# FIXME: GH#42099#issuecomment-864326014
+self.obj[key] = infer_fill_value(value)
+@@ -2165,6 +2161,17 @@ class _iLocIndexer(_LocationIndexer):
+else:
+# set value into the column (first attempting to operate inplace, then
+# falling back to casting if necessary)
++ dtype = self.obj.dtypes.iloc[loc]
++ if dtype == np.void:
++ # This means we're expanding, with multiple columns, e.g.
++ # df = pd.DataFrame({'A': [1,2,3], 'B': [4,5,6]})
++ # df.loc[df.index <= 2, ['F', 'G']] = (1, 'abc')
++ # Columns F and G will initially be set to np.void.
++ # Here, we replace those temporary `np.void` columns with
++ # columns of the appropriate dtype, based on `value`.
++ self.obj.iloc[:, loc] = construct_1d_array_from_inferred_fill_value(
++ value, len(self.obj)
++ )
+self.obj._mgr.column_setitem(loc, plane_indexer, value)
+
+def _setitem_single_block(self, indexer, value, name: str) -> None:
+
+# Usage example that changes its behavior
+```python
+# Example 19: Assigning to unaligned multi-index DataFrame
+import pandas as pd
+
+arrays = [['A', 'A', 'B', 'B'], ['type1', 'type2', 'type1', 'type2']]
+index = pd.MultiIndex.from_arrays(arrays, names=['Letter', 'Type'])
+df = pd.DataFrame({"Value": [1, 2, 3, 4], "Add": [5, 6, 7, 8]}, index=index)
+df.loc[("C", "type1"), ["New", "NewValue"]] = [9, 10]
+print(df)
+```
+
+# Output of the usage example before the change
+Value Add New NewValue
+Letter Type
+A type1 1.0 5.0 NaN NaN
+type2 2.0 6.0 NaN NaN
+B type1 3.0 7.0 NaN NaN
+type2 4.0 8.0 NaN NaN
+C type1 NaN NaN 9.0 10.0
+
+
+# Output of the usage example after the change
+Value Add New NewValue
+Letter Type
+A type1 1.0 5.0 b'' b''
+type2 2.0 6.0 b'' b''
+B type1 3.0 7.0 b'' b''
+type2 4.0 8.0 b'' b''
+C type1 NaN NaN 9 10
+
+
+# Task
+You should explain your reasoning and then answer five questions:
+1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
+2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
+3) Does the usage example refer only to public APIs of pandas, or does it use any project-internal functionality? Answer either "public" or "project-internal".
+4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
+5) Is the different output intended by the developer of the pull request, or is the change in behavior rather surprising? Answer either "intended" or "surprising".
+Explain your reasoning and then give your answers in the following format:
+<THOUGHTS>
+...
+</THOUGHTS>
+<ANSWER1>
+...
+</ANSWER1>
+<ANSWER2>
+...
+</ANSWER2>
+<ANSWER3>
+...
+</ANSWER3>
+<ANSWER4>
+...
+</ANSWER4>
+<ANSWER5>
+...
+</ANSWER5>

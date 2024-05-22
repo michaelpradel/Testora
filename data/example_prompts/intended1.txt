@@ -1,0 +1,206 @@
+The pull request "PERF: RangeIndex.round returns RangeIndex when possible" of the pandas project changes the pandas.core.indexes.range.round function(s). Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
+
+# Details about the pull request
+## Comments
+Comment by mroeschke:
+None
+
+## Review comments
+Comment by datapythonista:
+Personal preference, but I'd find more readable to simply use `self.start % 10 ... and self.stop % 10 ...`.
+
+Comment by datapythonista:
+```suggestion
+# e.g. RangeIndex(10, 30, 10).round(-1) doesn't need rounding
+```
+
+Comment by datapythonista:
+I know this is from the original docstring, but for me it's not obvious what this means by reading it, maybe adding an example or two here would be helpful.
+
+Comment by mroeschke:
+Fair point. I'll change this to your suggestion
+
+Comment by mroeschke:
+Thanks!
+
+Comment by mroeschke:
+Sure thing. I added an example for the negative case.
+
+## Commit messages
+PERF: RangeIndex.round returns RangeIndex when possible
+
+Add whatsnew
+
+Merge remote-tracking branch 'upstream/main' into perf/ri/round
+
+Add typing
+
+Merge remote-tracking branch 'upstream/main' into perf/ri/round
+
+Address feedback
+
+Merge remote-tracking branch 'upstream/main' into perf/ri/round
+
+
+
+# Diff of the pull request
+diff --git a/doc/source/whatsnew/v3.0.0.rst b/doc/source/whatsnew/v3.0.0.rst
+index 1f42b75c5c..88d36439af 100644
+--- a/doc/source/whatsnew/v3.0.0.rst
++++ b/doc/source/whatsnew/v3.0.0.rst
+@@ -274,6 +274,7 @@ Performance improvements
+- Performance improvement in :meth:`MultiIndex.equals` for equal length indexes (:issue:`56990`)
+- Performance improvement in :meth:`RangeIndex.__getitem__` with a boolean mask or integers returning a :class:`RangeIndex` instead of a :class:`Index` when possible. (:issue:`57588`)
+- Performance improvement in :meth:`RangeIndex.append` when appending the same index (:issue:`57252`)
++- Performance improvement in :meth:`RangeIndex.round` returning a :class:`RangeIndex` instead of a :class:`Index` when possible. (:issue:`57824`)
+- Performance improvement in :meth:`RangeIndex.join` returning a :class:`RangeIndex` instead of a :class:`Index` when possible. (:issue:`57651`, :issue:`57752`)
+- Performance improvement in :meth:`RangeIndex.reindex` returning a :class:`RangeIndex` instead of a :class:`Index` when possible. (:issue:`57647`, :issue:`57752`)
+- Performance improvement in :meth:`RangeIndex.take` returning a :class:`RangeIndex` instead of a :class:`Index` when possible. (:issue:`57445`, :issue:`57752`)
+diff --git a/pandas/core/indexes/base.py b/pandas/core/indexes/base.py
+index 0c955dc978..c2df773326 100644
+--- a/pandas/core/indexes/base.py
++++ b/pandas/core/indexes/base.py
+@@ -6737,7 +6737,6 @@ class Index(IndexOpsMixin, PandasObject):
+"""
+return Index(self.to_series().diff(periods))
+
+- @ final
+def round(self, decimals: int = 0) -> Self:
+
+
+"""
+Round each value in the Index to the given number of decimals.
+diff --git a/pandas/core/indexes/range.py b/pandas/core/indexes/range.py
+index 63fcddd961..8199ba8ed3 100644
+--- a/pandas/core/indexes/range.py
++++ b/pandas/core/indexes/range.py
+@@ -1165,6 +1165,42 @@ class RangeIndex(Index):
+
+# --------------------------------------------------------------------
+
++ # error: Return type "RangeIndex | Index" of "round" incompatible with
++ # return type "RangeIndex" in supertype "Index"
++ def round(self, decimals: int = 0) -> Self | Index: # type: ignore[override]
++ """
++ Round each value in the Index to the given number of decimals.
++
++ Parameters
++ ----------
++ decimals: int, optional
++ Number of decimal places to round to. If decimals is negative,
++ it specifies the number of positions to the left of the decimal point
++ e.g. ``round(11.0, -1) == 10.0``.
++
++ Returns
++ -------
++ Index or RangeIndex
++ A new Index with the rounded values.
++
++ Examples
++ --------
++ >> > import pandas as pd
++ >> > idx = pd.RangeIndex(10, 30, 10)
++ >> > idx.round(decimals=-1)
++ RangeIndex(start=10, stop=30, step=10)
++ >> > idx = pd.RangeIndex(10, 15, 1)
++ >> > idx.round(decimals=-1)
++ Index([10, 10, 10, 10, 10], dtype='int64')
++ """
++ if decimals >= 0:
++ return self.copy()
++ elif self.start % 10**-decimals == 0 and self.step % 10**-decimals == 0:
++ # e.g. RangeIndex(10, 30, 10).round(-1) doesn't need rounding
++ return self.copy()
++ else:
++ return super().round(decimals=decimals)
++
+def _cmp_method(self, other, op):
+if isinstance(other, RangeIndex) and self._range == other._range:
+# Both are immutable so if ._range attr. are equal, shortcut is possible
+diff --git a/pandas/tests/indexes/ranges/test_range.py b/pandas/tests/indexes/ranges/test_range.py
+index 3040b4c13d..635812dcdd 100644
+--- a/pandas/tests/indexes/ranges/test_range.py
++++ b/pandas/tests/indexes/ranges/test_range.py
+@@ -608,6 +608,37 @@ class TestRangeIndex:
+tm.assert_index_equal(result, expected)
+
+
++@pytest.mark.parametrize(
++ "rng, decimals",
++ [
++ [range(5), 0],
++ [range(5), 2],
++ [range(10, 30, 10), -1],
++ [range(30, 10, -10), -1],
++ ],
++)
++def test_range_round_returns_rangeindex(rng, decimals):
++ ri = RangeIndex(rng)
++ expected = ri.copy()
++ result = ri.round(decimals=decimals)
++ tm.assert_index_equal(result, expected, exact=True)
++
++
++@pytest.mark.parametrize(
++ "rng, decimals",
++ [
++ [range(10, 30, 1), -1],
++ [range(30, 10, -1), -1],
++ [range(11, 14), -10],
++ ],
++)
++def test_range_round_returns_index(rng, decimals):
++ ri = RangeIndex(rng)
++ expected = Index(list(rng)).round(decimals=decimals)
++ result = ri.round(decimals=decimals)
++ tm.assert_index_equal(result, expected, exact=True)
++
++
+def test_reindex_1_value_returns_rangeindex():
+ri = RangeIndex(0, 10, 2, name="foo")
+result, result_indexer = ri.reindex([2])
+
+# Usage example that changes its behavior
+```python
+# Example 14: Round a RangeIndex with empty range
+import pandas as pd
+
+idx = pd.RangeIndex(0, 0)
+rounded_idx = idx.round(decimals=0)
+print(rounded_idx)
+```
+
+# Output of the usage example before the change
+Index([], dtype='int64')
+
+
+# Output of the usage example after the change
+RangeIndex(start=0, stop=0, step=1)
+
+
+# Task
+You should explain your reasoning and then answer five questions:
+1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
+2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
+3) Does the usage example refer only to public APIs of pandas, or does it use any project-internal functionality? Answer either "public" or "project-internal".
+4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
+5) Is the different output intended by the developer of the pull request, or is the change in behavior rather surprising? Answer either "intended" or "surprising".
+Explain your reasoning and then give your answers in the following format:
+<THOUGHTS>
+...
+</THOUGHTS>
+<ANSWER1>
+...
+</ANSWER1>
+<ANSWER2>
+...
+</ANSWER2>
+<ANSWER3>
+...
+</ANSWER3>
+<ANSWER4>
+...
+</ANSWER4>
+<ANSWER5>
+...
+</ANSWER5>

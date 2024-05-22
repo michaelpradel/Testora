@@ -1,0 +1,185 @@
+The pull request "PERF: Unary methods on RangeIndex returns RangeIndex" of the pandas project changes the function(s). Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
+
+# Details about the pull request
+# Comments
+Comment by mroeschke:
+None
+
+Comment by WillAyd:
+Conflict but otherwise lgtm
+
+# Review comments
+# Commit messages
+PERF: Unary methods on RangeIndex returns RangeIndex
+
+Whatsnew number
+
+Merge remote-tracking branch 'upstream/main' into perf/ri/unary_method
+
+Merge remote-tracking branch 'upstream/main' into perf/ri/unary_method
+
+Merge remote-tracking branch 'upstream/main' into perf/ri/unary_method
+
+
+
+# Diff of the pull request
+diff - -git a/doc/source/whatsnew/v3.0.0.rst b/doc/source/whatsnew/v3.0.0.rst
+index 69ba0f4a2d..7263329d2e 100644
+- -- a/doc/source/whatsnew/v3.0.0.rst
++ ++ b/doc/source/whatsnew/v3.0.0.rst
+@ @ -282, 6 + 282, 7 @ @ Performance improvements
+- Performance improvement in : meth: `RangeIndex.take` returning a : class: `RangeIndex` instead of a : class: `Index` when possible. (: issue: `57445`, : issue: `57752`)
+- Performance improvement in ``DataFrameGroupBy.__len__`` and ``SeriesGroupBy.__len__`` (: issue: `57595`)
+- Performance improvement in indexing operations for string dtypes(: issue: `56997`)
++ - Performance improvement in unary methods on a: class: `RangeIndex` returning a: class: `RangeIndex` instead of a: class: `Index` when possible. (: issue: `57825`)
+
+.. ---------------------------------------------------------------------------
+.. _whatsnew_300.bug_fixes:
+diff - -git a/pandas/core/indexes/range.py b/pandas/core/indexes/range.py
+index e5e0a4b66f..728f42a9c2 100644
+- -- a/pandas/core/indexes/range.py
++ ++ b/pandas/core/indexes/range.py
+@ @ -1314, 6 + 1314, 27 @ @ class RangeIndex(Index):
+# test_arithmetic_explicit_conversions
+return super()._arith_method(other, op)
+
++ def __abs__(self) -> Self | Index:
++ if len(self) == 0 or self.min() >= 0:
++ return self.copy()
++ elif self.max() <= 0:
++ return -self
++ else:
++ return super().__abs__()
++
++ def __neg__(self) -> Self:
++ rng = range(-self.start, -self.stop, -self.step)
++ return self._simple_new(rng, name=self.name)
++
++ def __pos__(self) -> Self:
++ return self.copy()
++
++ def __invert__(self) -> Self:
++ if len(self) == 0:
++ return self.copy()
++ rng = range(~self.start, ~self.stop, -self.step)
++ return self._simple_new(rng, name=self.name)
++
+# error: Return type "Index" of "take" incompatible with return type
+# "RangeIndex" in supertype "Index"
+def take(  # type: ignore[override]
+diff - -git a/pandas/tests/indexes/ranges/test_range.py b/pandas/tests/indexes/ranges/test_range.py
+index 00655f5546..2090679106 100644
+- -- a/pandas/tests/indexes/ranges/test_range.py
++ ++ b/pandas/tests/indexes/ranges/test_range.py
+@ @ -763, 6 + 763, 67 @ @ def test_getitem_boolmask_wrong_length():
+ri[[True]]
+
+
++ def test_pos_returns_rangeindex():
++ ri=RangeIndex(2, name="foo")
++ expected=ri.copy()
++ result=+ri
++ tm.assert_index_equal(result, expected, exact=True)
++
++
++def test_neg_returns_rangeindex():
++ ri=RangeIndex(2, name="foo")
++ result=-ri
++ expected=RangeIndex(0, -2, -1, name="foo")
++ tm.assert_index_equal(result, expected, exact=True)
++
++ ri=RangeIndex(-2, 2, name="foo")
++ result=-ri
++ expected=RangeIndex(2, -2, -1, name="foo")
++ tm.assert_index_equal(result, expected, exact=True)
++
++
++@pytest.mark.parametrize(
++ "rng, exp_rng",
++ [
++ [range(0), range(0)],
++ [range(10), range(10)],
++ [range(-2, 1, 1), range(2, -1, -1)],
++ [range(0, -10, -1), range(0, 10, 1)],
++],
++)
++ def test_abs_returns_rangeindex(rng, exp_rng):
++ ri=RangeIndex(rng, name="foo")
++ expected=RangeIndex(exp_rng, name="foo")
++ result=abs(ri)
++ tm.assert_index_equal(result, expected, exact=True)
++
++
++def test_abs_returns_index():
++ ri=RangeIndex(-2, 2, name="foo")
++ result=abs(ri)
++ expected=Index([2, 1, 0, 1], name="foo")
++ tm.assert_index_equal(result, expected, exact=True)
++
++
++@pytest.mark.parametrize(
++ "rng",
++ [
++ range(0),
++ range(5),
++ range(0, -5, -1),
++ range(-2, 2, 1),
++ range(2, -2, -2),
++ range(0, 5, 2),
++],
++)
++ def test_invert_returns_rangeindex(rng):
++ ri=RangeIndex(rng, name="foo")
++ result=~ri
++ assert isinstance(result, RangeIndex)
++ expected=~Index(list(rng), name="foo")
++ tm.assert_index_equal(result, expected, exact=False)
++
++
+@ pytest.mark.parametrize(
+"rng",
+[
+
+# Usage example that changes its behavior
+```python
+# Corner Case Example 1: Taking absolute value of a RangeIndex with start >= stop.
+import pandas as pd
+ri = pd.RangeIndex(5, 2)
+result = abs(ri)
+print(result)
+```
+
+# Output of the usage example before the change
+Index([], dtype='int64')
+
+
+# Output of the usage example after the change
+RangeIndex(start=5, stop=2, step=1)
+
+
+# Task
+You should explain your reasoning and then answer five questions:
+1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
+2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
+3) Does the usage example refer only to public APIs of pandas, or does it use any project-internal functionality? Answer either "public" or "project-internal".
+4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal(e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
+5) Is the different output intended by the developer of the pull request, or is the change in behavior rather surprising? Answer either "intended" or "surprising".
+Explain your reasoning and then give your answers in the following format:
+< THOUGHTS >
+...
+< /THOUGHTS >
+< ANSWER1 >
+...
+< /ANSWER1 >
+< ANSWER2 >
+...
+< /ANSWER2 >
+< ANSWER3 >
+...
+< /ANSWER3 >
+< ANSWER4 >
+...
+< /ANSWER4 >
+< ANSWER5 >
+...
+< /ANSWER5 >

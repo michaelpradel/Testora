@@ -1,0 +1,160 @@
+The pull request "PERF: Allow RangeIndex.take to return a RangeIndex when possible" of the pandas project changes the pandas.core.indexes.range._concat, pandas.core.indexes.range.take function(s). Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
+
+# Details about the pull request
+## Comments
+Comment by mroeschke:
+Discovered in https://github.com/pandas-dev/pandas/pull/57441
+
+Comment by phofl:
+thx @mroeschke
+
+Comment by phofl:
+https://asv-runner.github.io/asv-collection/pandas/#frame_methods.SortValues.time_frame_sort_values
+
+Looks like this caused a pretty bad regression
+
+## Review comments
+## Commit messages
+PERF: Allow RangeIndex.take to return a RangeIndex when possible
+
+Add number
+
+Trigger CI
+
+Use empty
+
+Use range(0) again
+
+Fix append bug
+
+
+
+# Diff of the pull request
+diff --git a/doc/source/whatsnew/v3.0.0.rst b/doc/source/whatsnew/v3.0.0.rst
+index 77c80dcfe7..d750d3675d 100644
+--- a/doc/source/whatsnew/v3.0.0.rst
++++ b/doc/source/whatsnew/v3.0.0.rst
+@@ -167,6 +167,7 @@ Performance improvements
+- Performance improvement in :meth:`Index.take` when ``indices`` is a full range indexer from zero to length of index (:issue:`56806`)
+- Performance improvement in :meth:`MultiIndex.equals` for equal length indexes (:issue:`56990`)
+- Performance improvement in :meth:`RangeIndex.append` when appending the same index (:issue:`57252`)
++- Performance improvement in :meth:`RangeIndex.take` returning a :class:`RangeIndex` instead of a :class:`Index` when possible. (:issue:`57445`)
+- Performance improvement in indexing operations for string dtypes (:issue:`56997`)
+-
+
+diff --git a/pandas/core/indexes/range.py b/pandas/core/indexes/range.py
+index a8e8ae1400..20286cad58 100644
+--- a/pandas/core/indexes/range.py
++++ b/pandas/core/indexes/range.py
+@@ -1006,11 +1006,13 @@ class RangeIndex(Index):
+# Get the stop value from "next" or alternatively
+# from the last non-empty index
+stop = non_empty_indexes[-1].stop if next_ is None else next_
+- return RangeIndex(start, stop, step).rename(name)
++ if len(non_empty_indexes) == 1:
++ step = non_empty_indexes[0].step
++ return RangeIndex(start, stop, step, name=name)
+
+# Here all "indexes" had 0 length, i.e. were empty.
+# In this case return an empty range index.
+- return RangeIndex(0, 0).rename(name)
++ return RangeIndex(_empty_range, name=name)
+
+def __len__(self) -> int:
+"""
+
+
+@ @ -1168, 7 + 1170, 7 @ @ class RangeIndex(Index):
+allow_fill: bool = True,
+fill_value = None,
+**kwargs,
+-) -> Index:
++) -> Self | Index:
+if kwargs:
+nv.validate_take((), kwargs)
+if is_scalar(indices):
+@ @ -1179, 7 + 1181, 7 @ @ class RangeIndex(Index):
+self._maybe_disallow_fill(allow_fill, fill_value, indices)
+
+if len(indices) == 0:
+- taken = np.array([], dtype=self.dtype)
++ return type(self)(_empty_range, name=self.name)
+else:
+ind_max = indices.max()
+if ind_max >= len(self):
+@ @ -1199, 5 + 1201, 4 @ @ class RangeIndex(Index):
+if self.start != 0:
+taken += self.start
+
+-  # _constructor so RangeIndex-> Index with an int64 dtype
+- return self._constructor._simple_new(taken, name=self.name)
++ return self._shallow_copy(taken, name=self.name)
+diff - -git a/pandas/tests/indexes/ranges/test_range.py b/pandas/tests/indexes/ranges/test_range.py
+index 29d6916cc7..d500687763 100644
+- -- a/pandas/tests/indexes/ranges/test_range.py
++ ++ b/pandas/tests/indexes/ranges/test_range.py
+@ @ -606, 3 + 606, 20 @ @ class TestRangeIndex:
+result = 3 - RangeIndex(0, 4, 1)
+expected = RangeIndex(3, -1, -1)
+tm.assert_index_equal(result, expected)
++
++
++def test_take_return_rangeindex():
++ ri = RangeIndex(5, name="foo")
++ result = ri.take([])
++ expected = RangeIndex(0, name="foo")
++ tm.assert_index_equal(result, expected, exact=True)
++
++ result = ri.take([3, 4])
++ expected = RangeIndex(3, 5, name="foo")
++ tm.assert_index_equal(result, expected, exact=True)
++
++
++def test_append_one_nonempty_preserve_step():
++ expected = RangeIndex(0, -1, -1)
++ result = RangeIndex(0).append([expected])
++ tm.assert_index_equal(result, expected, exact=True)
+
+# Usage example that changes its behavior
+```python
+import pandas as pd
+# Example 6: Using RangeIndex.take with a list containing a negative index
+ri = pd.RangeIndex(0, 5, name="index")
+result = ri.take([-1, 2])
+print(result)
+```
+
+# Output of the usage example before the change
+Index([4, 2], dtype='int64', name='index')
+
+
+# Output of the usage example after the change
+RangeIndex(start=4, stop=0, step=-2, name='index')
+
+
+# Task
+You should explain your reasoning and then answer five questions:
+1) Is the different output a noteworthy change in behavior, as opposed to, e.g., a minor change in formatting? Answer either "minor" or "noteworthy".
+2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
+3) Does the usage example refer only to public APIs of pandas, or does it use any project-internal functionality? Answer either "public" or "project-internal".
+4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal(e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
+5) Is the different output intended by the developer of the pull request, or is the change in behavior rather surprising? Answer either "intended" or "surprising".
+Explain your reasoning and then give your answers in the following format:
+< THOUGHTS >
+...
+< /THOUGHTS >
+< ANSWER1 >
+...
+< /ANSWER1 >
+< ANSWER2 >
+...
+< /ANSWER2 >
+< ANSWER3 >
+...
+< /ANSWER3 >
+< ANSWER4 >
+...
+< /ANSWER4 >
+< ANSWER5 >
+...
+< /ANSWER5 >
