@@ -399,7 +399,7 @@ def find_prs_checked_in_past():
     return done_prs
 
 
-def filter_and_sort_prs_by_risk(github_prs):
+def filter_and_sort_prs_by_risk(github_prs, cloned_repo_manager):
     # split into chunks of 20
     chunks = [github_prs[i:i + 20] for i in range(0, len(github_prs), 20)]
 
@@ -407,7 +407,7 @@ def filter_and_sort_prs_by_risk(github_prs):
     all_high_risk_prs = []
     all_medium_risk_prs = []
     for chunk in chunks:
-        prompt = PRRegressionBugRanking(chunk)
+        prompt = PRRegressionBugRanking(chunk, cloned_repo_manager.repo_name)
         raw_answer = gpt4.query(prompt)
         append_event(LLMEvent(pr_nb=0,
                               message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
@@ -446,7 +446,7 @@ def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
             github_prs.append(github_repo.get_pull(pr_nb))
             print(f"Added PR {pr_nb}")
 
-    github_prs = filter_and_sort_prs_by_risk(github_prs)
+    github_prs = filter_and_sort_prs_by_risk(github_prs, cloned_repo_manager)
     for github_pr in github_prs:
         pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 

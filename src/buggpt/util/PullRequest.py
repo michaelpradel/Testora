@@ -23,10 +23,11 @@ class PullRequest:
         return PatchSet(diff, encoding=encoding)
 
     def _get_non_test_modified_files(self):
+        module_name = self.cloned_repo_manager.module_name
         modified_python_files = [
             f for f in self.patch.modified_files if f.path.endswith(".py") or f.path.endswith(".pyx")]
         non_test_modified_python_files = [
-            f for f in modified_python_files if "test" not in f.path and f.path.startswith("pandas")]
+            f for f in modified_python_files if "test" not in f.path and f.path.startswith(module_name)]
         return non_test_modified_python_files
 
     def has_non_comment_change(self):

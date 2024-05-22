@@ -3,13 +3,14 @@ from buggpt.util.Logs import LLMEvent, append_event
 
 
 class PRRegressionBugRanking:
-    def __init__(self, github_prs):
+    def __init__(self, github_prs, repo_name):
         self.github_prs = github_prs
+        self.repo_name = repo_name
         self.use_json_output = True
 
     def create_prompt(self):
         template = """
-The following is a list of titles of pull requests in the pandas project. Rank them by their likelihood to accidentally introduce a regression bug.
+The following is a list of titles of pull requests in the <repo_name> project. Rank them by their likelihood to accidentally introduce a regression bug.
 
 <pr_titles>
 
@@ -36,7 +37,7 @@ Provide your answer using this JSON format:
 Make sure to include ALL the given pull requests into the output.
 """
         pr_titles = [github_pr.title for github_pr in self.github_prs]
-        return template.replace("<pr_titles>", "\n".join(pr_titles))
+        return template.replace("<repo_name>", self.repo_name).replace("<pr_titles>", "\n".join(pr_titles))
 
     def parse_answer(self, raw_answer):
         assert type(raw_answer) == list
