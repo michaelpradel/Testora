@@ -19,8 +19,8 @@ git clone https://github.com/scikit-learn/scikit-learn.git
 cd scikit-learn
 echo "Building dev container for scikit-learn (first clone)"
 docker run -t -d --name scikit-learn-dev1 -v ${PWD}:/home/scikit-learn python:3.10
-docker exec scikit-learn-dev1 pip install wheel numpy scipy cython meson-python ninja
-docker exec scikit-learn-dev1 pip install --editable . --verbose --no-build-isolation --config-settings editable-verbose=true
+docker exec -w /home/scikit-learn scikit-learn-dev1 pip install wheel numpy scipy cython meson-python ninja
+docker exec -w /home/scikit-learn scikit-learn-dev1 pip install --editable . --verbose --no-build-isolation --config-settings editable-verbose=true
 echo "Done with first clone"
 
 cd ../../../BugGPT
