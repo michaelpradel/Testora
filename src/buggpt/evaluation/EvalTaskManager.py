@@ -44,6 +44,8 @@ def write_tasks(name_to_task: Dict[str, str]):
 
 
 def fetch_task():
+    task_filter = "%" # note: SQL wildcard syntax
+
     try:
         conn = mysql.connector.connect(**config)
         print("Database connection established!")
@@ -59,8 +61,8 @@ def fetch_task():
             return row[0], row[1]
 
         # otherwise, fetch a new task and mark it as assigned to this container
-        select_query = "SELECT name, task FROM experiments WHERE worker IS NULL LIMIT 1"
-        cursor.execute(select_query)
+        select_query = "SELECT name, task FROM experiments WHERE worker IS NULL LIMIT 1 AND name LIKE %s"
+        cursor.execute(select_query, (task_filter,))
         row = cursor.fetchone()
 
         if row:
