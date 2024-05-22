@@ -120,7 +120,7 @@ def is_crash(output):
     return "Traceback (most recent call last)" in output
 
 
-def generate_tests_with_prompt(prompt, model, nb_samples=1):
+def generate_tests_with_prompt(pr, prompt, model, nb_samples=1):
     raw_answer = model.query(prompt, nb_samples)
     append_event(LLMEvent(pr_nb=pr.number,
                  message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
@@ -151,22 +151,23 @@ def generate_tests(pr, github_repo, changed_functions):
         # full diff with GPT4
         prompt_full_diff = RegressionTestGeneratorPrompt(
             github_repo.name, changed_functions, full_diff)
-        all_tests.extend(generate_tests_with_prompt(prompt_full_diff, gpt4))
+        all_tests.extend(generate_tests_with_prompt(
+            pr, prompt_full_diff, gpt4))
 
         # full diff with GPT3.5
         all_tests.extend(generate_tests_with_prompt(
-            prompt_full_diff, gpt35, nb_samples=10))
+            pr, prompt_full_diff, gpt35, nb_samples=10))
 
     if len(filtered_diff.split("\n")) <= 200 and filtered_diff != full_diff:
         # filtered diff with GPT4
         prompt_filtered_diff = RegressionTestGeneratorPrompt(
             github_repo.name, changed_functions, filtered_diff)
         all_tests.extend(generate_tests_with_prompt(
-            prompt_filtered_diff, gpt4))
+            pr, prompt_filtered_diff, gpt4))
 
         # filtered diff with GPT3.5
         all_tests.extend(generate_tests_with_prompt(
-            prompt_filtered_diff, gpt35, nb_samples=10))
+            pr, prompt_filtered_diff, gpt35, nb_samples=10))
 
     # de-dup tests
     nb_tests_before_dedup_and_cleaning = len(all_tests)
