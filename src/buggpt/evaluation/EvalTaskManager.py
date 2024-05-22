@@ -44,7 +44,7 @@ def write_tasks(name_to_task: Dict[str, str]):
 
 
 def fetch_task():
-    task_filter = "%" # note: SQL wildcard syntax
+    task_filter = "scikit-learn%" # note: SQL wildcard syntax
 
     try:
         conn = mysql.connector.connect(**config)
