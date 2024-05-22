@@ -276,7 +276,7 @@ def select_expected_behavior(project_name, pr, old_execution, new_execution, doc
     return expected_behavior
 
 
-def check_pr(cloned_repo_manager, pr):
+def check_pr(github_repo, cloned_repo_manager, pr):
     # ignore if too few or too many files changed
     if len(pr.non_test_modified_python_files) == 0:
         append_event(Event(
@@ -454,7 +454,7 @@ def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
                              message="Starting to check PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
         try:
-            check_pr(cloned_repo_manager, pr)
+            check_pr(github_repo, cloned_repo_manager, pr)
         except BugGPTException as e:
             append_event(ErrorEvent(
                 pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
