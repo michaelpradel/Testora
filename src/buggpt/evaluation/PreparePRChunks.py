@@ -2,16 +2,15 @@ import json
 from github import Github, Auth
 
 from buggpt.RegressionFinder import get_recent_prs
-from buggpt.execution import PythonProjects
 from buggpt.evaluation import EvalTaskManager
 
 
-def write_PR_chunks_into_database():
+def write_PR_chunks_into_database(project_name, project_id):
     token = open(".github_token", "r").read().strip()
     github = Github(auth=Auth.Token(token))
-    project = PythonProjects.pandas_project
-    github_repo = github.get_repo(project.project_id)
-    github_prs = get_recent_prs(github_repo, nb=1000)
+    
+    github_repo = github.get_repo(project_id)
+    github_prs = get_recent_prs(github_repo, nb=200)
     recent_pr_nbs = [pr.number for pr in github_prs]
 
     chunk_size = 50
@@ -20,7 +19,7 @@ def write_PR_chunks_into_database():
 
     name_to_task = {}
     for chunk in chunks:
-        task_name = f"{chunk[0]}_{chunk[-1]}"
+        task_name = f"{project_name}_{chunk[0]}_{chunk[-1]}"
         task = json.dumps(chunk)
         name_to_task[task_name] = task
 
@@ -28,4 +27,5 @@ def write_PR_chunks_into_database():
 
 
 if __name__ == "__main__":
-    write_PR_chunks_into_database()
+    # write_PR_chunks_into_database("pandas", "pandas-dev/pandas")
+    write_PR_chunks_into_database("scikit-learn", "scikit-learn/scikit-learn")

@@ -13,7 +13,6 @@ from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPr
 from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.PullRequest import PullRequest
-from buggpt.execution import PythonProjects
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
 from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
@@ -54,7 +53,8 @@ def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
 
     if len(test_executions) > 20:
         # split into chunks of at most 20 test executions
-        chunks = [test_executions[i:i + 20] for i in range(0, len(test_executions), 20)]
+        chunks = [test_executions[i:i + 20]
+                  for i in range(0, len(test_executions), 20)]
         all_outputs = []
         for chunk in chunks:
             all_outputs.extend(merge_tests_and_execute(chunk, docker_executor))
@@ -92,13 +92,14 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
     docker_executor = DockerExecutor(container_name)
 
     append_event(
-        Event(pr_nb=-1, message=f"Compiling pandas at commit {commit} in container {container_name}"))
+        Event(pr_nb=-1, message=f"Compiling {cloned_repo_manager.repo_name} at commit {commit} in container {container_name}"))
 
-    # to trigger pandas re-compilation
-    docker_executor.execute_python_code("import pandas")
+    # to trigger re-compilation (e.g., for pandas or scikit-learn)
+    docker_executor.execute_python_code(
+        f"import {cloned_repo_manager.module_name}")
 
     append_event(
-        Event(pr_nb=pr_number, message=f"Done with compiling pandas at commit {commit}"))
+        Event(pr_nb=pr_number, message=f"Done with compiling {cloned_repo_manager.repo_name} at commit {commit}"))
 
     try:
         outputs = merge_tests_and_execute(test_executions, docker_executor)
@@ -308,14 +309,15 @@ def check_pr(cloned_repo_manager, pr):
                            message="Ignoring because no tests were generated"))
         return
 
-    # make sure the tests import pandas
-    updated_tests = []
-    for test in generated_tests:
-        if "import pandas" not in test:
-            updated_tests.append("import pandas as pd\n" + test)
-        else:
-            updated_tests.append(test)
-    generated_tests = updated_tests
+    if cloned_repo_manager.repo_name == "pandas":
+        # make sure the tests import pandas
+        updated_tests = []
+        for test in generated_tests:
+            if "import pandas" not in test:
+                updated_tests.append("import pandas as pd\n" + test)
+            else:
+                updated_tests.append(test)
+        generated_tests = updated_tests
 
     # execute tests
     old_executions = [TestExecution(t) for t in generated_tests]
@@ -433,50 +435,63 @@ def get_prs_to_process():
     return name, pr_numbers
 
 
-if __name__ == "__main__":
+def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
+    done_pr_numbers = find_prs_checked_in_past()
+    print(f"Already checked {len(done_pr_numbers)} PRs")
+    github_prs = []
+    for pr_nb in pr_numbers:
+        if pr_nb in done_pr_numbers:
+            print(f"Skipping PR {pr_nb} because already analyzed")
+        else:
+            github_prs.append(github_repo.get_pull(pr_nb))
+            print(f"Added PR {pr_nb}")
 
-    # setup for testing on pandas
-    cloned_repo_manager = ClonedRepoManager(
-        "../clones", "pandas", "pandas-dev")
+    github_prs = filter_and_sort_prs_by_risk(github_prs)
+    for github_pr in github_prs:
+        pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
+
+        append_event(PREvent(pr_nb=pr.number,
+                             message="Starting to check PR",
+                             title=pr.github_pr.title, url=pr.github_pr.html_url))
+        try:
+            check_pr(cloned_repo_manager, pr)
+        except BugGPTException as e:
+            append_event(ErrorEvent(
+                pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
+            continue
+        append_event(PREvent(pr_nb=pr.number,
+                             message="Done with PR",
+                             title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+
+def get_repo(project_name):
+    if project_name == "pandas":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "pandas", "pandas-dev/pandas", "pandas-dev", "pandas")
+    elif project_name == "scikit-learn":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "scikit-learn", "scikit-learn/scikit-learn", "scikit-learn-dev", "sklearn")
+
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")
     cloned_repo.repo.git.pull()
     token = open(".github_token", "r").read().strip()
     github = Github(auth=Auth.Token(token))
-    project = PythonProjects.pandas_project
-    github_repo = github.get_repo(project.project_id)
+    github_repo = github.get_repo(cloned_repo_manager.repo_id)
 
+    return github_repo, cloned_repo_manager
+
+
+def main():
     task_name, pr_numbers = get_prs_to_process()
     while task_name:
         append_event(
             Event(pr_nb=0, message=f"Starting to work on task {task_name}"))
 
+        project_name = task_name.split("_")[0]
+        github_repo, cloned_repo_manager = get_repo(project_name)
+
         # process a specific chunk of PRs
-        done_pr_numbers = find_prs_checked_in_past()
-        print(f"Already checked {len(done_pr_numbers)} PRs")
-        github_prs = []
-        for pr_nb in pr_numbers:
-            if pr_nb in done_pr_numbers:
-                print(f"Skipping PR {pr_nb} because already analyzed")
-            else:
-                github_prs.append(github_repo.get_pull(pr_nb))
-                print(f"Added PR {pr_nb}")
-
-        github_prs = filter_and_sort_prs_by_risk(github_prs)
-        for github_pr in github_prs:
-            pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
-
-            append_event(PREvent(pr_nb=pr.number,
-                                 message="Starting to check PR",
-                                 title=pr.github_pr.title, url=pr.github_pr.html_url))
-            try:
-                check_pr(cloned_repo_manager, pr)
-            except BugGPTException as e:
-                append_event(ErrorEvent(
-                    pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
-                continue
-            append_event(PREvent(pr_nb=pr.number,
-                                 message="Done with PR",
-                                 title=pr.github_pr.title, url=pr.github_pr.html_url))
+        work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers)
 
         # store logs into database
         log = events_as_json()
@@ -488,3 +503,7 @@ if __name__ == "__main__":
         task_name, pr_numbers = get_prs_to_process()
 
     append_event(Event(pr_nb=0, message=f"No more tasks to work on"))
+
+
+if __name__ == "__main__":
+    main()

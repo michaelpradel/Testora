@@ -17,10 +17,12 @@ class ClonedRepo:
 class ClonedRepoManager:
     nb_clones = 3
 
-    def __init__(self, pool_dir, repo_name, container_base_name):
+    def __init__(self, pool_dir, repo_name, repo_id, container_base_name, module_name):
         self.pool_dir = pool_dir
         self.repo_name = repo_name
+        self.repo_id = repo_id
         self.container_base_name = container_base_name
+        self.module_name = module_name
 
         self.clone_state_file = f"{self.pool_dir}/clone_state.json"
         self._read_clone_state()
