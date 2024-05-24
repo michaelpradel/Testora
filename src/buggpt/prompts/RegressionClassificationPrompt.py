@@ -9,24 +9,42 @@ class RegressionClassificationPrompt:
         self.use_json_output = False
 
     def extract_pr_details(self):
-        result = ""
-
-        result += "## Comments\n"
-        result += f"Comment by {self.pr.github_pr.user.login}:\n"
-        result += f"{self.pr.github_pr.body}\n\n"
+        comments = ""
+        comments += f"Comment by {self.pr.github_pr.user.login}:\n"
+        comments += f"{self.pr.github_pr.body}\n\n"
         for comment in self.pr.github_pr.get_issue_comments():
-            result += f"Comment by {comment.user.login}:\n"
-            result += f"{comment.body}\n\n"
+            new_comment = f"Comment by {comment.user.login}:\n"
+            new_comment += f"{comment.body}\n\n"
+            if len(comments) + len(new_comment) > 2000:
+                comments += "(...)\n\n"
+                break
+            comments += new_comment
 
-        result += "## Review comments\n"
+        review_comments = ""
         for comment in self.pr.github_pr.get_comments():
-            result += f"Comment by {comment.user.login}:\n"
-            result += f"{comment.body}\n\n"
+            new_review_comment = f"Comment by {comment.user.login}:\n"
+            new_review_comment += f"{comment.body}\n\n"
+            if len(review_comments) + len(new_review_comment) > 2000:
+                review_comments += "(...)\n\n"
+                break
+            review_comments += new_review_comment
 
-        result += "## Commit messages\n"
+        commit_messages = ""
+        commit_messages += "## Commit messages\n"
         for commit in self.pr.github_pr.get_commits():
-            result += f"{commit.commit.message}\n\n"
+            new_commit_message = f"{commit.commit.message}\n\n"
+            if len(commit_messages) + len(new_commit_message) > 2000:
+                commit_messages += "(...)\n\n"
+                break
+            commit_messages += new_commit_message
 
+        result = ""
+        result += "## Comments\n"
+        result += comments
+        result += "## Review comments\n"
+        result += review_comments
+        result += "## Commit messages\n"
+        result += commit_messages
         return result
 
     def create_prompt(self):
