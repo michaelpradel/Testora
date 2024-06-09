@@ -118,11 +118,12 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
     for pr in pr_numbers:
         logs_for_pr = pr_to_logs.get(pr, [])
         print(f"Found {len(logs_for_pr)} logs for PR {pr}")
+        print(f"First entry in first log: {logs_for_pr[0][0]}")
         if not logs_for_pr:
             print(f"Warning: No logs found for PR {pr}")
             continue
         most_recent_log = logs_for_pr.sort(
-            key=lambda logs: logs[0]["timestamp"])[-1]
+            key=lambda log: log[0]["timestamp"])[-1]
         events_to_keep.append(most_recent_log)
 
     return events_to_keep
