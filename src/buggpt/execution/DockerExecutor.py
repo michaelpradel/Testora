@@ -33,7 +33,7 @@ class DockerExecutor:
 
     def execute_python_code(self, code):
         self.copy_code_to_container(code, "/tmp/code.py")
-        command = "timeout 30s python -u /tmp/code.py"  # -u to avoid non-deterministic buffering
+        command = "timeout 300s python -u /tmp/code.py"  # -u to avoid non-deterministic buffering
         
         # for scipy, make sure we run inside the scipy-dev environment
         if self.container.name.startswith("scipy-dev"):
