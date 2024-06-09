@@ -72,6 +72,7 @@ def events_as_json():
 
 
 def store_logs():
+    global last_file_stored_to
     timestamp = datetime.now().isoformat()
     event_dicts = [evt.dict() for evt in events]
     out_file = f"logs_{timestamp}.json"
