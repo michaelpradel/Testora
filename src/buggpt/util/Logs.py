@@ -99,7 +99,7 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
     current_pr = None
     current_pr_events = None
     for event in events:
-        if current_pr is None and event["message"] == "Starting to check PR":
+        if event["message"] == "Starting to check PR":
             current_pr = event["pr_nb"]
             current_pr_events = [event]
             continue
@@ -110,20 +110,18 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
                 logs_for_pr = pr_to_logs.get(current_pr, [])
                 logs_for_pr.append(current_pr_events)
                 pr_to_logs[current_pr] = logs_for_pr
-                print(f"Added {len(current_pr_events)} logs for PR {current_pr}")
                 current_pr = None
 
     # keep last run for each PR
     events_to_keep = []
     for pr in pr_numbers:
         logs_for_pr = pr_to_logs.get(pr, [])
-        print(f"Found {len(logs_for_pr)} logs for PR {pr}")
-        print(f"First entry in first log: {logs_for_pr[0][0]}")
         if not logs_for_pr:
             print(f"Warning: No logs found for PR {pr}")
             continue
-        most_recent_log = logs_for_pr.sort(
-            key=lambda log: log[0]["timestamp"])[-1]
+        logs_for_pr.sort(
+            key=lambda log: log[0]["timestamp"])
+        most_recent_log = logs_for_pr[-1]
         events_to_keep.append(most_recent_log)
 
     return events_to_keep
