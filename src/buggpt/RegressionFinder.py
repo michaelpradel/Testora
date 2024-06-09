@@ -14,7 +14,7 @@ from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.PullRequest import PullRequest
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
-from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json
+from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json, read_old_logs
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.evaluation import EvalTaskManager
 
@@ -494,9 +494,11 @@ def main():
         # process a specific chunk of PRs
         work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers)
 
-        # store logs into database
-        log = events_as_json()
-        EvalTaskManager.write_results({task_name: log})
+        # store logs (both from current run and from recent runs on this task) into database
+        current_events = events_as_json()
+        old_events = read_old_logs()
+        merged_log = merge_logs(current_events + old_events, pr_numbers)
+        EvalTaskManager.write_results({task_name: merged_log})
 
         append_event(Event(pr_nb=0, message=f"Done with task {task_name}"))
 
