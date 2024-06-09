@@ -107,8 +107,9 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
         if current_pr is not None:
             current_pr_events.append(event)
             if event["message"] == "Done with PR":
-                pr_to_logs[current_pr] = pr_to_logs.get(
-                    current_pr, []) + current_pr_events
+                logs_for_pr = pr_to_logs.get(current_pr, [])
+                logs_for_pr.append(current_pr_events)
+                pr_to_logs[current_pr] = logs_for_pr
                 print(f"Added {len(current_pr_events)} logs for PR {current_pr}")
                 current_pr = None
 
