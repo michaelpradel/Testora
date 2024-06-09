@@ -129,7 +129,8 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
         logs_for_pr.sort(
             key=lambda log: log[0]["timestamp"])
         most_recent_log = logs_for_pr[-1]
-        events_to_keep.append(most_recent_log)
+        for event in most_recent_log:
+            events_to_keep.append(event)
 
     return events_to_keep
 
