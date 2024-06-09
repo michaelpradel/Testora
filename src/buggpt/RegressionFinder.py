@@ -499,7 +499,8 @@ def main():
         current_events = json.loads(current_events_as_json)
         old_events = read_old_logs()
         merged_log = keep_newest_logs_for_pr_numbers(current_events + old_events, pr_numbers)
-        EvalTaskManager.write_results({task_name: merged_log})
+        merged_log_as_json = json.dumps(merged_log, indent=2)
+        EvalTaskManager.write_results({task_name: merged_log_as_json})
 
         append_event(Event(pr_nb=0, message=f"Done with task {task_name}"))
 
