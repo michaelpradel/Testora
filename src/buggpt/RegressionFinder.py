@@ -495,7 +495,8 @@ def main():
         work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers)
 
         # store logs (both from current run and from recent runs on this task) into database
-        current_events = events_as_json()
+        current_events_as_json = events_as_json()
+        current_events = json.loads(current_events_as_json)
         old_events = read_old_logs()
         merged_log = keep_newest_logs_for_pr_numbers(current_events + old_events, pr_numbers)
         EvalTaskManager.write_results({task_name: merged_log})
