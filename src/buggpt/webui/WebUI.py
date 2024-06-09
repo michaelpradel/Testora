@@ -1,5 +1,6 @@
 from collections import Counter
 from dataclasses import dataclass, field
+from typing import Dict
 from flask import Flask, render_template
 import json
 import glob
@@ -42,7 +43,7 @@ class PRInfo:
     status: str = "(unknown)"
 
 
-pr_number_to_info = {}
+pr_number_to_info: Dict[int, PRInfo] = {}
 
 
 def compute_pr_number_to_info():
