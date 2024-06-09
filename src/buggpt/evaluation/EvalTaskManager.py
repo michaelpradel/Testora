@@ -1,7 +1,6 @@
-import json
-import os
 from typing import Dict
 import mysql.connector
+import argparse
 
 config = {
     "user": "buggpt_user_w",
@@ -44,7 +43,7 @@ def write_tasks(name_to_task: Dict[str, str]):
 
 
 def fetch_task():
-    task_filter = "scikit-learn%" # note: SQL wildcard syntax
+    task_filter = "scikit-learn%"  # note: SQL wildcard syntax
 
     try:
         conn = mysql.connector.connect(**config)
@@ -118,11 +117,46 @@ def write_results(name_to_result: Dict[str, str]):
             print("MySQL connection is closed")
 
 
+def fetch_results() -> Dict[str, str]:
+    try:
+        conn = mysql.connector.connect(**config)
+        print("Database connection established!")
+
+        cursor = conn.cursor()
+        conn.start_transaction()
+
+        # check if there's already a task assigned to this container; if yes, resume it
+        select_query = "SELECT name, result FROM experiments WHERE result is not NULL"
+        cursor.execute(select_query)
+        rows = cursor.fetchall()
+        return {row[0]: row[1] for row in rows}
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if conn.is_connected():
+            conn.rollback()
+            print("Transaction rolled back")
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+            print("MySQL connection is closed")
+
+    return {}
+
+
 if __name__ == "__main__":
-    # write_tasks({"test": '["task1", "task2"]'})
-    # result = {
-    #     "bla": {"blubb": 23, "blubb2": 42}
-    # }
-    # json_result = json.dumps(result)
-    # write_results({"test": json_result})
-    print(fetch_task())
+    parser = argparse.ArgumentParser(
+        description="Manage experiments/tasks via MySQL database")
+    parser.add_argument("--fetch_results", action="store_true",
+                        help="Fetch results for all finished tasks")
+
+    args = parser.parse_args()
+    if args.fetch_results:
+        name_to_result = fetch_results()
+        for name, result in name_to_result.items():
+            with open(f"results_{name}.json", "w") as f:
+                f.write(result)
+
+    else:
+        print("Nothing do to (use --fetch_results to fetch results)")

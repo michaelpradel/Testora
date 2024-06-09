@@ -5,6 +5,7 @@ data/pr_chunks
 /tmp
 .github_token
 logs_*.json
+results_*.json
 .openai_token
 .db_token
 .openai_token_ExeCode
