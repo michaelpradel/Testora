@@ -53,7 +53,7 @@ class ErrorEvent(Event):
 
 events: List = []
 last_time_stored = datetime.now()
-
+last_file_stored_to: Optional[str] = None
 
 def append_event(evt):
     global last_time_stored
@@ -74,7 +74,13 @@ def events_as_json():
 def store_logs():
     timestamp = datetime.now().isoformat()
     event_dicts = [evt.dict() for evt in events]
-    json.dump(event_dicts, open(f"logs_{timestamp}.json", "w"), indent=2)
+    out_file = f"logs_{timestamp}.json"
+    json.dump(event_dicts, open(out_file, "w"), indent=2)
+
+    # remove previous log from this run
+    if last_file_stored_to is not None:
+        os.remove(last_file_stored_to)
+    last_file_stored_to = out_file
 
 
 def read_old_logs():
