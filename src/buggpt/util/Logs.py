@@ -109,12 +109,14 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
             if event["message"] == "Done with PR":
                 pr_to_logs[current_pr] = pr_to_logs.get(
                     current_pr, []) + current_pr_events
+                print(f"Added {len(current_pr_events)} logs for PR {current_pr}")
                 current_pr = None
 
     # keep last run for each PR
     events_to_keep = []
     for pr in pr_numbers:
         logs_for_pr = pr_to_logs.get(pr, [])
+        print(f"Found {len(logs_for_pr)} logs for PR {pr}")
         if not logs_for_pr:
             print(f"Warning: No logs found for PR {pr}")
             continue
