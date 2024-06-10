@@ -1,3 +1,4 @@
+import json
 from typing import Dict
 import mysql.connector
 import argparse
@@ -145,6 +146,21 @@ def fetch_results() -> Dict[str, str]:
     return {}
 
 
+def repair_result(name, result_as_str):
+    # past bug has added one level too much of nested lists
+    result = json.loads(result_as_str)
+    if len(result) > 1 and type(result[0]) == list:
+        # the result entry needs fixing
+        print(f"Fixing format of result for {name}")
+        fixed_result = []
+        for entry in result:
+            for evt in entry:
+                fixed_result.append(evt)
+        return json.dumps(fixed_result)
+    else:
+        return result_as_str
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Manage experiments/tasks via MySQL database")
@@ -155,6 +171,7 @@ if __name__ == "__main__":
     if args.fetch_results:
         name_to_result = fetch_results()
         for name, result in name_to_result.items():
+            result = repair_result(name, result)
             with open(f"results_{name}.json", "w") as f:
                 f.write(result)
 
