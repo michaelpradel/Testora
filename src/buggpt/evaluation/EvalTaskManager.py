@@ -99,7 +99,7 @@ def write_results(name_to_result: Dict[str, str]):
 
         insert_query = "UPDATE experiments SET result=%s WHERE name=%s"
         for name, result in name_to_result.items():
-            print(f"Inserting {name} with result {result}")
+            print(f"Inserting {name} with result of length {len(result)}")
             cursor.execute(insert_query, (result, name))
 
         conn.commit()
