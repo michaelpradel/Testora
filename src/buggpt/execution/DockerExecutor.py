@@ -37,7 +37,7 @@ class DockerExecutor:
         
         # for scipy, make sure we run inside the scipy-dev environment
         if self.container.name.startswith("scipy-dev"):
-            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev && {command}"
+            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev && {command}'"
         
         exec_result = self.container.exec_run(command)
         output = exec_result.output.decode("utf-8")
