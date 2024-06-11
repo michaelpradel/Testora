@@ -29,4 +29,5 @@ def write_PR_chunks_into_database(project_name, project_id):
 if __name__ == "__main__":
     # write_PR_chunks_into_database("pandas", "pandas-dev/pandas")
     # write_PR_chunks_into_database("scikit-learn", "scikit-learn/scikit-learn")
-    write_PR_chunks_into_database("scipy", "scipy/scipy")
+    # write_PR_chunks_into_database("scipy", "scipy/scipy")
+    write_PR_chunks_into_database("numpy", "numpy/numpy")
