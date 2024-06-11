@@ -35,9 +35,11 @@ class DockerExecutor:
         self.copy_code_to_container(code, "/tmp/code.py")
         command = "timeout 300s python -u /tmp/code.py"  # -u to avoid non-deterministic buffering
         
-        # for scipy, make sure we run inside the scipy-dev environment
+        # for scipy and numpy, make sure we run inside the their dev environment
         if self.container.name.startswith("scipy-dev"):
             command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev && {command}'"
+        elif self.container.name.startswith("numpy-dev"):
+            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate numpy-dev && {command}'"
         
         exec_result = self.container.exec_run(command)
         output = exec_result.output.decode("utf-8")
