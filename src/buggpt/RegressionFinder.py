@@ -12,6 +12,7 @@ from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGenerator
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
+from buggpt.util.Exceptions import BugGPTException
 from buggpt.util.PullRequest import PullRequest
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
 from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json, read_old_logs, keep_newest_logs_for_pr_numbers
@@ -20,10 +21,6 @@ from buggpt.evaluation import EvalTaskManager
 
 gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
 gpt35 = LLMCache(OpenAIGPT(gpt35_model))
-
-
-class BugGPTException(Exception):
-    pass
 
 
 def clean_output(output):

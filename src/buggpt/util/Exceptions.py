@@ -1,0 +1,2 @@
+class BugGPTException(Exception):
+    pass

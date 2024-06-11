@@ -2,7 +2,7 @@ import ast
 from textwrap import dedent
 import re
 
-from buggpt.RegressionFinder import BugGPTException
+from buggpt.util.Exceptions import BugGPTException
 
 
 def merge_programs(programs):
