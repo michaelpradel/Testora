@@ -472,6 +472,9 @@ def get_repo(project_name):
     elif project_name == "scikit-learn":
         cloned_repo_manager = ClonedRepoManager(
             "../clones", "scikit-learn", "scikit-learn/scikit-learn", "scikit-learn-dev", "sklearn")
+    elif project_name == "scipy":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "scipy", "scipy/scipy", "scipy-dev", "scipy")
 
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")
     cloned_repo.repo.git.pull()
