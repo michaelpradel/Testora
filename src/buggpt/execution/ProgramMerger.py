@@ -2,6 +2,8 @@ import ast
 from textwrap import dedent
 import re
 
+from buggpt.RegressionFinder import BugGPTException
+
 
 def merge_programs(programs):
     function_def_snippets = []
@@ -80,7 +82,8 @@ def separate_outputs(output):
         program_end_match = program_end_pattern.match(line)
         if program_end_match:
             program_nb = int(program_end_match.group(1))
-            assert (program_nb == in_program)
+            if program_nb != in_program:
+                raise BugGPTException(f"Unexpected output of merged tests:\n{str(output)}")
             in_program = None
             result.append(current_output)
         elif in_program is not None:
