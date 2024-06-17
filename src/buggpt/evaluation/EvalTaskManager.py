@@ -1,3 +1,4 @@
+from os.path import exists
 import json
 from typing import Dict
 import mysql.connector
@@ -172,8 +173,12 @@ if __name__ == "__main__":
         name_to_result = fetch_results()
         for name, result in name_to_result.items():
             result = repair_result(name, result)
-            with open(f"results_{name}.json", "w") as f:
-                f.write(result)
+            out_file = f"results_{name}.json"
+            if exists(out_file):
+                print(f"Result for {name} already exists, skipping")
+            else:
+                with open(out_file, "w") as f:
+                    f.write(result)
 
     else:
         print("Nothing do to (use --fetch_results to fetch results)")
