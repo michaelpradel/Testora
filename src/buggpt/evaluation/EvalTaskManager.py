@@ -1,4 +1,6 @@
+import fnmatch
 from os.path import exists
+from os import listdir, getcwd
 import json
 from typing import Dict
 import mysql.connector
@@ -162,11 +164,30 @@ def repair_result(name, result_as_str):
         return result_as_str
 
 
+def sort_results():
+    all_files = listdir(getcwd())
+    log_files = [f for f in all_files if fnmatch.fnmatch(f, "results_*.json")]
+
+    log_file_to_timestamp = {}
+    for log_file in log_files:
+        with open(log_file) as f:
+            events = json.load(f)
+        last_timestamp = events[-1]["timestamp"]
+        log_file_to_timestamp[log_file] = last_timestamp
+    
+    sorted_files = sorted(log_file_to_timestamp.items(), key=lambda x: x[1])
+    print("Log files (oldest to newest, by last timestamp):")
+    for log_file, timestamp in sorted_files:
+        print(f"{log_file} -- ({timestamp})")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Manage experiments/tasks via MySQL database")
     parser.add_argument("--fetch_results", action="store_true",
                         help="Fetch results for all finished tasks")
+    parser.add_argument("--sort_results", action="store_true",
+                        help="Sort result files by last timestamp in log")
 
     args = parser.parse_args()
     if args.fetch_results:
@@ -179,6 +200,8 @@ if __name__ == "__main__":
             else:
                 with open(out_file, "w") as f:
                     f.write(result)
+    elif args.sort_results:
+        sort_results()
 
     else:
         print("Nothing do to (use --fetch_results to fetch results)")
