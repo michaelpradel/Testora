@@ -59,6 +59,7 @@ class ClonedRepoManager:
         for clone_id, _ in self.clone_id_to_state.items():
             cloned_repo_dir = f"{self.pool_dir}/{clone_id}/{self.repo_name}"
             cloned_repo = Repo(cloned_repo_dir)
+            cloned_repo.git.rm('-rf', '.')
             cloned_repo.git.reset('--hard')
             cloned_repo.git.clean('-f', '-d')
             origin = cloned_repo.remotes.origin
