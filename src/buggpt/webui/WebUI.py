@@ -157,16 +157,24 @@ def summarize_status():
     return summary
 
 
-def compute_perf_stats():
-    format_str = "%Y-%m-%dT%H:%M:%S.%f"
+def parse_time_stamp(time_stamp):
+    format_strs = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S"]
+    for format_str in format_strs:
+        try:
+            return datetime.strptime(time_stamp, format_str)
+        except ValueError:
+            pass
+    raise ValueError(f"Could not parse time stamp: {time_stamp}")
 
+
+def compute_perf_stats():
     entries = []
     for log_file in get_log_files():
         with open(log_file, "r") as f:
             entries.extend(json.load(f))
 
-    total_time = datetime.strptime(entries[-1]["timestamp"], format_str) - \
-        datetime.strptime(entries[0]["timestamp"], format_str)
+    total_time = parse_time_stamp(entries[-1]["timestamp"]) - \
+        parse_time_stamp(entries[0]["timestamp"])
 
     message_prefix_to_timedelta = {}
     message_prefix_to_nb = Counter()
@@ -181,7 +189,7 @@ def compute_perf_stats():
             current_timestamp = entry["timestamp"]
             current_message_prefix = entry["message"].split(" ")[0]
             message_prefix_to_timedelta[previous_message_prefix] = message_prefix_to_timedelta.get(
-                previous_message_prefix, timedelta(0)) + (datetime.strptime(current_timestamp, format_str) - datetime.strptime(previous_timestamp, format_str))
+                previous_message_prefix, timedelta(0)) + (parse_time_stamp(current_timestamp) - parse_time_stamp(previous_timestamp))
             message_prefix_to_nb[previous_message_prefix] += 1
             previous_timestamp = current_timestamp
             previous_message_prefix = current_message_prefix
