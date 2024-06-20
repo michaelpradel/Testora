@@ -86,6 +86,7 @@ def fill_details():
         for entry in pr_info.entries:
             if entry["message"].startswith("Starting to check PR"):
                 pr_info.title = entry["title"]
+                pr_info.url = entry["url"]
 
             if entry["message"].startswith("Ignoring"):
                 pr_info.status = "ignored"
