@@ -10,7 +10,7 @@ def write_PR_chunks_into_database(project_name, project_id):
     github = Github(auth=Auth.Token(token))
     
     github_repo = github.get_repo(project_id)
-    github_prs = get_recent_prs(github_repo, nb=200)
+    github_prs = get_recent_prs(github_repo, nb=1000)
     recent_pr_nbs = [pr.number for pr in github_prs]
 
     chunk_size = 50
