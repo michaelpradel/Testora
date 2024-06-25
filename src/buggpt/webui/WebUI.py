@@ -12,16 +12,16 @@ app = Flask("BugGPT Web UI")
 
 
 parser = argparse.ArgumentParser(description="Web UI for BugGPT")
-parser.add_argument("--file", help="Log file to process",
-                    type=str, required=False)
+parser.add_argument("--files", help="Log file(s) to process",
+                    type=str, required=False, nargs="+")
 parser.add_argument("--all", help="Use all log files", action="store_true")
 
 
 def get_log_files():
     # Use log file passed as argument
     args = parser.parse_args()
-    if args.file:
-        return [args.file]
+    if args.files:
+        return args.files
 
     logs = glob.glob('logs_*.json')
 
