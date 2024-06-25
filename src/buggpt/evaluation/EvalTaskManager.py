@@ -180,6 +180,55 @@ def sort_results():
     for log_file, timestamp in sorted_files:
         print(f"{log_file} -- ({timestamp})")
 
+def show_unfinished_tasks():
+    # find unassigned tasks
+    try:
+        conn = mysql.connector.connect(**config)
+        print("Database connection established!")
+
+        cursor = conn.cursor()
+        conn.start_transaction()
+        select_query = "SELECT name, task FROM experiments WHERE worker IS NULL"
+        cursor.execute(select_query)
+        rows = cursor.fetchall()
+        for row in rows:
+            print(f"Not assigned to any worker yet: {row[0]}")
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if conn.is_connected():
+            conn.rollback()
+            print("Transaction rolled back")
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+            print("MySQL connection is closed")
+
+    # find assigned tasks that are not finished
+    try:
+        conn = mysql.connector.connect(**config)
+        print("Database connection established!")
+
+        cursor = conn.cursor()
+        conn.start_transaction()
+        select_query = "SELECT name, task, worker FROM experiments WHERE worker IS NOT NULL AND result IS NULL"
+        cursor.execute(select_query)
+        rows = cursor.fetchall()
+        for row in rows:
+            print(f"Assigned to worker {row[2]} but not finished: {row[0]}")
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if conn.is_connected():
+            conn.rollback()
+            print("Transaction rolled back")
+
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+            print("MySQL connection is closed")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -188,6 +237,8 @@ if __name__ == "__main__":
                         help="Fetch results for all finished tasks")
     parser.add_argument("--sort_results", action="store_true",
                         help="Sort result files by last timestamp in log")
+    parser.add_argument("--show_unfinished", action="store_true",
+                        help="Show tasks that are not assigned or finished yet")
 
     args = parser.parse_args()
     if args.fetch_results:
@@ -202,6 +253,8 @@ if __name__ == "__main__":
                     f.write(result)
     elif args.sort_results:
         sort_results()
+    elif args.show_unfinished:
+        show_unfinished_tasks()
 
     else:
         print("Nothing do to (use --fetch_results to fetch results)")
