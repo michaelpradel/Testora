@@ -14,7 +14,7 @@ class PullRequest:
         self.pre_commit = self.parents[0].sha
 
         self.patch = self._pr_url_to_patch()
-        self.non_test_modified_python_files = self._get_non_test_modified_files()
+        self.non_test_modified_python_files, self.non_test_modified_code_files = self._get_non_test_modified_files()
 
     def _pr_url_to_patch(self):
         diff_url = self.github_pr.html_url + ".diff"
@@ -24,11 +24,26 @@ class PullRequest:
 
     def _get_non_test_modified_files(self):
         module_name = self.cloned_repo_manager.module_name
+
+        # Python files only
         modified_python_files = [
             f for f in self.patch.modified_files if f.path.endswith(".py") or f.path.endswith(".pyx")]
         non_test_modified_python_files = [
             f for f in modified_python_files if "test" not in f.path and f.path.startswith(module_name)]
-        return non_test_modified_python_files
+
+        # Python and other PLs
+        modified_code_files = [
+            f for f in self.patch.modified_files if
+            f.path.endswith(".py") or
+            f.path.endswith(".pyx") or
+            f.path.endswith(".c") or
+            f.path.endswith(".cpp") or
+            f.path.endswith(".h")
+        ]
+        non_test_modified_code_files = [
+            f for f in modified_code_files if "test" not in f.path and f.path.startswith(module_name)]
+
+        return non_test_modified_python_files, non_test_modified_code_files
 
     def has_non_comment_change(self):
         pre_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(

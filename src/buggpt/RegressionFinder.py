@@ -276,13 +276,15 @@ def select_expected_behavior(project_name, pr, old_execution, new_execution, doc
 
 def check_pr(github_repo, cloned_repo_manager, pr):
     # ignore if too few or too many files changed
-    if len(pr.non_test_modified_python_files) == 0:
+    # nb_modified_code_files = len(pr.non_test_modified_python_files)
+    nb_modified_code_files = len(pr.non_test_modified_code_files)
+    if nb_modified_code_files == 0:
         append_event(Event(
-            pr_nb=pr.github_pr.number, message="Ignoring because no non-test Python files were modified"))
+            pr_nb=pr.github_pr.number, message="Ignoring because no non-test code files were modified"))
         return
-    if len(pr.non_test_modified_python_files) > 3:
+    if nb_modified_code_files > 3:
         append_event(Event(
-            pr_nb=pr.number, message="Ignoring because too many non-test Python files were modified"))
+            pr_nb=pr.number, message="Ignoring because too many non-test code files were modified"))
         return
 
     # ignore if PR has more than one parent
@@ -501,7 +503,8 @@ def main():
         current_events_as_json = events_as_json()
         current_events = json.loads(current_events_as_json)
         old_events = read_old_logs()
-        merged_log = keep_newest_logs_for_pr_numbers(current_events + old_events, pr_numbers)
+        merged_log = keep_newest_logs_for_pr_numbers(
+            current_events + old_events, pr_numbers)
         merged_log_as_json = json.dumps(merged_log, indent=2)
         EvalTaskManager.write_results({task_name: merged_log_as_json})
 
