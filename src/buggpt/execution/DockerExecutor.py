@@ -49,6 +49,7 @@ class DockerExecutor:
 if __name__ == "__main__":
     code = """
 x = 23
+
 print(x)
 x.foo()
 print("never reach this")
