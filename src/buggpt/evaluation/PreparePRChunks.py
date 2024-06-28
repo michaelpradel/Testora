@@ -10,7 +10,7 @@ def write_PR_chunks_into_database(project_name, project_id):
     github = Github(auth=Auth.Token(token))
     
     github_repo = github.get_repo(project_id)
-    github_prs = get_recent_prs(github_repo, nb=1000)
+    github_prs = get_recent_prs(github_repo, nb=100)
     recent_pr_nbs = [pr.number for pr in github_prs]
 
     chunk_size = 50
@@ -30,4 +30,5 @@ if __name__ == "__main__":
     # write_PR_chunks_into_database("pandas", "pandas-dev/pandas")
     # write_PR_chunks_into_database("scikit-learn", "scikit-learn/scikit-learn")
     # write_PR_chunks_into_database("scipy", "scipy/scipy")
-    write_PR_chunks_into_database("numpy", "numpy/numpy")
+    # write_PR_chunks_into_database("numpy", "numpy/numpy")
+    write_PR_chunks_into_database("transformers", "huggingface/transformers")
