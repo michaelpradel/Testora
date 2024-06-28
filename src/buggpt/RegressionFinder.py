@@ -288,10 +288,10 @@ def check_pr(github_repo, cloned_repo_manager, pr):
         return
 
     # ignore if PR has more than one parent
-    if len(pr.parents) != 1:
-        append_event(
-            Event(pr_nb=pr.number, message=f"Ignoring because PR has != 1 parent"))
-        return
+    # if len(pr.parents) != 1:
+    #     append_event(
+    #         Event(pr_nb=pr.number, message=f"Ignoring because PR has != 1 parent"))
+    #     return
 
     # ignore if only comment changes
     if not pr.has_non_comment_change():
