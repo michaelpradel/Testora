@@ -10,3 +10,4 @@ results_*.json
 .db_token
 .openai_token_ExeCode
 .worker_id
+candidate_projects.csv
