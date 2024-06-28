@@ -477,6 +477,9 @@ def get_repo(project_name):
     elif project_name == "numpy":
         cloned_repo_manager = ClonedRepoManager(
             "../clones", "numpy", "numpy/numpy", "numpy-dev", "numpy")
+    elif project_name == "transformers":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "transformers", "huggingface/transformers", "transformers-dev", "transformers")
 
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")
     cloned_repo.repo.git.pull()
