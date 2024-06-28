@@ -388,7 +388,7 @@ def get_recent_prs(github_repo, nb=50):
 def find_prs_checked_in_past():
     done_prs = set()
 
-    logs = glob.glob('logs_*.json')
+    logs = glob.glob('logs_*.json') + glob.glob('done_prs*.json')
     for log in logs:
         with open(log, "r") as f:
             entries = json.load(f)
