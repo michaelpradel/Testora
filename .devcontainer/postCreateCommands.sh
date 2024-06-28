@@ -8,4 +8,5 @@ echo "Setting up pandas"
 # .devcontainer/setup_scikit-learn.sh
 # .devcontainer/setup_scipy.sh
 # .devcontainer/setup_numpy.sh
-.devcontainer/setup_transformers.sh
+# .devcontainer/setup_transformers.sh
+.devcontainer/setup_keras.sh
