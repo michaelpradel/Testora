@@ -72,6 +72,15 @@ class ClonedRepoManager:
         self.usage_order.remove(clone_id)
         self.usage_order.append(clone_id)
 
+    def _safe_checkout(self, cloned_repo: Repo, commit: str):
+        try:
+            cloned_repo.git.checkout(commit)
+        except Exception as e:
+            if commit == "main":
+                cloned_repo.git.checkout("master")
+            else:
+                raise e
+
     def get_cloned_repo(self, commit) -> ClonedRepo:
         # reuse existing clone if possible
         for clone_id, state in self.clone_id_to_state.items():
@@ -87,7 +96,7 @@ class ClonedRepoManager:
         clone_id = self._get_least_recently_used_clone_id()
         cloned_repo_dir = f"{self.pool_dir}/{clone_id}/{self.repo_name}"
         cloned_repo = Repo(cloned_repo_dir)
-        cloned_repo.git.checkout(commit)
+        self._safe_checkout(cloned_repo, commit)
 
         # update clone state
         state = self.clone_id_to_state[clone_id]
