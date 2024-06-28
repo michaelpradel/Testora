@@ -41,7 +41,7 @@ class PullRequest:
             f.path.endswith(".h")
         ]
         non_test_modified_code_files = [
-            f for f in modified_code_files if "test" not in f.path and f.path.startswith(module_name)]
+            f for f in modified_code_files if "test" not in f.path and (f.path.startswith(module_name) or f.path.startswith(f"src/{module_name}"))]
 
         return non_test_modified_python_files, non_test_modified_code_files
 
