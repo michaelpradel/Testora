@@ -22,11 +22,14 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "./.devcontainer/postCreateCommands.sh"
+	"postCreateCommand": "./.devcontainer/postCreateCommands.sh",
 
 	// Configure tool-specific properties.
 	// "customizations": {},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
+
+	// keep containers running (useful for long-running experiments on servers)
+	"shutdownAction": "none"
 }
