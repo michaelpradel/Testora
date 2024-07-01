@@ -14,14 +14,14 @@ class PullRequest:
         self.parents = github_repo.get_commit(self.post_commit).parents
         self.pre_commit = self.parents[0].sha
 
-        self.patch = self._pr_url_to_patch()
-        self.non_test_modified_python_files, self.non_test_modified_code_files = self._get_non_test_modified_files()
+        self._pr_url_to_patch()
+        self._get_non_test_modified_files()
 
     def _pr_url_to_patch(self):
         diff_url = self.github_pr.html_url + ".diff"
         diff = urllib.request.urlopen(diff_url)
         encoding = diff.headers.get_charsets()[0]
-        return PatchSet(diff, encoding=encoding)
+        self.patch = PatchSet(diff, encoding=encoding)
 
     def _get_non_test_modified_files(self):
         module_name = self.cloned_repo_manager.module_name
@@ -29,8 +29,8 @@ class PullRequest:
         # Python files only
         modified_python_files = [
             f for f in self.patch.modified_files if f.path.endswith(".py") or f.path.endswith(".pyx")]
-        non_test_modified_python_files = [
-            f for f in modified_python_files if "test" not in f.path and f.path.startswith(module_name)]
+        self.non_test_modified_python_files = [
+            f.path for f in modified_python_files if "test" not in f.path and f.path.startswith(module_name)]
 
         # Python and other PLs
         modified_code_files = [
@@ -41,10 +41,8 @@ class PullRequest:
             f.path.endswith(".cpp") or
             f.path.endswith(".h")
         ]
-        non_test_modified_code_files = [
-            f for f in modified_code_files if "test" not in f.path and (f.path.startswith(module_name) or f.path.startswith(f"src/{module_name}"))]
-
-        return non_test_modified_python_files, non_test_modified_code_files
+        self.non_test_modified_code_files = [
+            f.path for f in modified_code_files if "test" not in f.path and (f.path.startswith(module_name) or f.path.startswith(f"src/{module_name}"))]
 
     def get_modified_files(self):
         if Config.code_change_pl == "python":
@@ -74,11 +72,14 @@ class PullRequest:
             self.files_with_non_comment_changes))  # turn into set while preserving order
         return len(self.files_with_non_comment_changes) > 0
 
-    def _get_relevant_changed_files(self):
+    def _get_relevant_changed_files(self) -> list[str]:
         if Config.code_change_pl == "python":
             return self.files_with_non_comment_changes
         elif Config.code_change_pl == "all":
             return self.non_test_modified_code_files
+        else:
+            raise Exception(
+                f"Unexpected configuration value: {Config.code_change_pl}")
 
     def get_filtered_diff(self):
         post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
