@@ -2,6 +2,7 @@ from unidiff import PatchSet
 import urllib.request
 
 from buggpt.util.PythonCodeUtil import equal_modulo_docstrings, extract_target_function_by_range, get_name_of_defined_function
+from buggpt import Config
 
 
 class PullRequest:
@@ -45,7 +46,16 @@ class PullRequest:
 
         return non_test_modified_python_files, non_test_modified_code_files
 
+    def get_modified_files(self):
+        if Config.code_change_pl == "python":
+            return self.non_test_modified_python_files
+        elif Config.code_change_pl == "all":
+            return self.non_test_modified_code_files
+
     def has_non_comment_change(self):
+        if Config.code_change_pl == "all":
+            return len(self.non_test_modified_code_files) > 0
+
         pre_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.pre_commit)
         post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
@@ -64,12 +74,18 @@ class PullRequest:
             self.files_with_non_comment_changes))  # turn into set while preserving order
         return len(self.files_with_non_comment_changes) > 0
 
+    def _get_relevant_changed_files(self):
+        if Config.code_change_pl == "python":
+            return self.files_with_non_comment_changes
+        elif Config.code_change_pl == "all":
+            return self.non_test_modified_code_files
+
     def get_filtered_diff(self):
         post_commit_cloned_repo = self.cloned_repo_manager.get_cloned_repo(
             self.post_commit)
 
         diff_parts = []
-        for file_path in self.files_with_non_comment_changes:
+        for file_path in self._get_relevant_changed_files():
             raw_diff = post_commit_cloned_repo.repo.git.diff(
                 self.pre_commit, self.post_commit, file_path)
             diff_parts.append(raw_diff)
@@ -89,7 +105,7 @@ class PullRequest:
             self.post_commit)
 
         for modified_file in self.patch.modified_files:
-            if modified_file.path in self.files_with_non_comment_changes:
+            if modified_file.path in self._get_relevant_changed_files():
                 with open(f"{post_commit_cloned_repo.repo.working_dir}/{modified_file.path}", "r") as f:
                     new_file_content = f.read()
 

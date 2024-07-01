@@ -18,6 +18,7 @@ from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
 from buggpt.util.Logs import ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json, read_old_logs, keep_newest_logs_for_pr_numbers
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.evaluation import EvalTaskManager
+from buggpt import Config
 
 gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
 gpt35 = LLMCache(OpenAIGPT(gpt35_model))
@@ -288,16 +289,16 @@ def check_pr(github_repo, cloned_repo_manager, pr):
         return
 
     # ignore if PR has more than one parent
-    # if len(pr.parents) != 1:
-    #     append_event(
-    #         Event(pr_nb=pr.number, message=f"Ignoring because PR has != 1 parent"))
-    #     return
+    if Config.single_parent_PRs_only and len(pr.parents) != 1:
+        append_event(
+            Event(pr_nb=pr.number, message=f"Ignoring because PR has != 1 parent"))
+        return
 
     # ignore if only comment changes
-    # if not pr.has_non_comment_change():
-    #     append_event(
-    #         Event(pr_nb=pr.number, message="Ignoring because only comments changed"))
-    #     return
+    if not pr.has_non_comment_change():
+        append_event(
+            Event(pr_nb=pr.number, message="Ignoring because only comments changed"))
+        return
 
     # extract diff and names of changed functions
     changed_functions = pr.get_changed_function_names()
