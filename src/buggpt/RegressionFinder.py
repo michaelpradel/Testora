@@ -184,13 +184,18 @@ def validate_output_difference(cloned_repo_manager, pr, old_execution, new_execu
     assert (new_execution.output is not None)
 
     # re-execute test on old and new version and ignore flaky differences
-    old_execution_repeated = TestExecution(old_execution.code)
-    execute_tests_on_commit(cloned_repo_manager,
-                            pr.number, [old_execution_repeated], pr.pre_commit)
-    new_execution_repeated = TestExecution(new_execution.code)
-    execute_tests_on_commit(cloned_repo_manager,
-                            pr.number, [new_execution_repeated], pr.post_commit)
-    return old_execution.output == old_execution_repeated.output and new_execution.output == new_execution_repeated.output and old_execution.output != new_execution.output
+    for _ in range(10):
+        old_execution_repeated = TestExecution(old_execution.code)
+        execute_tests_on_commit(cloned_repo_manager,
+                                pr.number, [old_execution_repeated], pr.pre_commit)
+        new_execution_repeated = TestExecution(new_execution.code)
+        execute_tests_on_commit(cloned_repo_manager,
+                                pr.number, [new_execution_repeated], pr.post_commit)
+        if old_execution.output != old_execution_repeated.output:
+            return False
+        if new_execution.output != new_execution_repeated.output:
+            return False
+    return True
 
 
 def reduce_test(cloned_repo_manager, pr, old_execution, new_execution):
