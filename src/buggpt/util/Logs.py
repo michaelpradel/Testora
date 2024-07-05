@@ -55,6 +55,7 @@ events: List = []
 last_time_stored = datetime.now()
 last_file_stored_to: Optional[str] = None
 
+
 def append_event(evt):
     global last_time_stored
 
@@ -135,4 +136,5 @@ def keep_newest_logs_for_pr_numbers(events, pr_numbers):
     return events_to_keep
 
 
-atexit.register(store_logs)
+def start_logging():
+    atexit.register(store_logs)
