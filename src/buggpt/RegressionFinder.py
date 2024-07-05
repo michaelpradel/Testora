@@ -83,6 +83,15 @@ def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
         return outputs_part1 + outputs_part2
 
 
+def execute_tests(test_executions, docker_executor):
+    outputs = []
+    for test_execution in test_executions:
+        output = docker_executor.execute_python_code(test_execution.code)
+        output = clean_output(output)
+        outputs.append(output)
+    return outputs
+
+
 def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, commit):
     cloned_repo = cloned_repo_manager.get_cloned_repo(
         commit)
@@ -100,7 +109,10 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
         Event(pr_nb=pr_number, message=f"Done with compiling {cloned_repo_manager.repo_name} at commit {commit}"))
 
     try:
-        outputs = merge_tests_and_execute(test_executions, docker_executor)
+        if Config.use_program_merger:
+            outputs = merge_tests_and_execute(test_executions, docker_executor)
+        else:
+            outputs = execute_tests(test_executions, docker_executor)
     except RecursionError as e:
         raise BugGPTException(
             f"Exception during merge_tests_and_execute: {str(e)}")
