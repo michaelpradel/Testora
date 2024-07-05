@@ -40,6 +40,13 @@ def summarize_status():
     for pr_info in pr_number_to_info.values():
         summary["total"] += 1
         summary[pr_info.status] += 1
+
+    # add percentages
+    for key in summary:
+        if key != "total":
+            percentage = (int(summary[key]) / summary['total']) * 100
+            summary[key] = f"{summary[key]} ({percentage:.1f}%)"
+
     return summary
 
 
