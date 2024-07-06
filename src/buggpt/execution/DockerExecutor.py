@@ -32,8 +32,12 @@ class DockerExecutor:
             self.container.put_archive(target_dir, data)
 
     def execute_python_code(self, code):
-        self.copy_code_to_container(code, "/tmp/code.py")
-        command = "timeout 300s python -u /tmp/code.py"  # -u to avoid non-deterministic buffering
+        # create a fresh directory to get rid of any old state
+        self.container.exec_run("rm -rf /tmp/BugGPT")
+        self.container.exec_run("mkdir /tmp/BugGPT")
+
+        self.copy_code_to_container(code, "/tmp/BugGPT/BugGPT_test_code.py")
+        command = "timeout 300s python -u /tmp/BugGPT/BugGPT_test_code.py"  # -u to avoid non-deterministic buffering
         
         # for scipy and numpy, make sure we run inside the their dev environment
         if self.container.name.startswith("scipy-dev"):
