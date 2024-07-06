@@ -77,9 +77,14 @@ class ClonedRepoManager:
             cloned_repo.git.checkout(commit)
         except Exception as e:
             if commit == "main":
-                cloned_repo.git.checkout("master")
+                self._safe_checkout(cloned_repo, "master")
             else:
-                raise e
+                cloned_repo.git.rm('--cached', '-rf', '.')
+                cloned_repo.git.reset('--hard')
+                cloned_repo.git.clean('-f', '-d')
+                origin = cloned_repo.remotes.origin
+                origin.fetch()
+                cloned_repo.git.checkout(commit)
 
     def get_cloned_repo(self, commit) -> ClonedRepo:
         # reuse existing clone if possible
