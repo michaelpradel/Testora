@@ -56,6 +56,7 @@ def fill_details(pr_number_to_info: Dict[int, PRInfo]):
         is_not_in_main = None
         nb_generated_tests = 0
         nb_test_executions = 0
+        nb_test_failures = 0
         nb_observed_differences = 0
         selected_behavior = 0
         for entry in pr_info.entries:
@@ -75,6 +76,8 @@ def fill_details(pr_number_to_info: Dict[int, PRInfo]):
 
             if entry["message"] == "Test execution":
                 nb_test_executions += 1
+                if "Traceback (most recent call last)" in entry["output"]:
+                    nb_test_failures += 1
 
             if entry["message"] == "Classification":
                 if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_public"] and entry["is_legal"] and entry["is_surprising"]:
@@ -102,7 +105,8 @@ def fill_details(pr_number_to_info: Dict[int, PRInfo]):
 
         if nb_test_executions > 0:
             pr_info.status = "tests executed"
-            pr_info.summary = f"{nb_generated_tests} generated tests, {nb_test_executions} test executions"
+            failure_percentage = 100 * nb_test_failures / nb_test_executions
+            pr_info.summary = f"{nb_generated_tests} generated tests, {nb_test_executions} test executions, {nb_test_failures} failures ({failure_percentage:.1f}%)"
 
         if is_regression:
             if selected_behavior == 1:
