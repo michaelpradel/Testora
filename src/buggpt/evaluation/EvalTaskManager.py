@@ -2,7 +2,7 @@ import fnmatch
 from os.path import exists
 from os import listdir, getcwd
 import json
-from typing import Dict
+from typing import Dict, List
 import mysql.connector
 import argparse
 
@@ -121,7 +121,11 @@ def write_results(name_to_result: Dict[str, str]):
             print("MySQL connection is closed")
 
 
-def fetch_results() -> Dict[str, str]:
+def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
+    existing_results = [f.replace("results_", "").replace(
+        ".json", "") for f in existing_result_files]
+
+    # 1) find results we have not yet downloaded
     try:
         conn = mysql.connector.connect(**config)
         print("Database connection established!")
@@ -129,11 +133,11 @@ def fetch_results() -> Dict[str, str]:
         cursor = conn.cursor()
         conn.start_transaction()
 
-        # check if there's already a task assigned to this container; if yes, resume it
-        select_query = "SELECT name, result FROM experiments WHERE result is not NULL"
+        select_query = "SELECT name FROM experiments WHERE result is not NULL"
         cursor.execute(select_query)
         rows = cursor.fetchall()
-        return {row[0]: row[1] for row in rows}
+        names_to_download: List[str] = [row[0]
+                             for row in rows if row[0] not in existing_results]
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         if conn.is_connected():
@@ -146,7 +150,34 @@ def fetch_results() -> Dict[str, str]:
             conn.close()
             print("MySQL connection is closed")
 
-    return {}
+    # 2) download new results
+    name_to_result = {}
+    for name_to_download in names_to_download:
+        print(f"Downloading result for {name_to_download}")
+        try:
+            conn = mysql.connector.connect(**config)
+            print("Database connection established!")
+
+            cursor = conn.cursor()
+            conn.start_transaction()
+
+            select_query = "SELECT result FROM experiments WHERE name=%s"
+            cursor.execute(select_query, (name_to_download,))
+            rows = cursor.fetchall()
+            name_to_result[name_to_download] = rows[0][0]
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+            if conn.is_connected():
+                conn.rollback()
+                print("Transaction rolled back")
+
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+                print("MySQL connection is closed")
+
+    return name_to_result
 
 
 def repair_result(name, result_as_str):
@@ -174,11 +205,12 @@ def sort_results():
             events = json.load(f)
         last_timestamp = events[-1]["timestamp"]
         log_file_to_timestamp[log_file] = last_timestamp
-    
+
     sorted_files = sorted(log_file_to_timestamp.items(), key=lambda x: x[1])
     print("Log files (oldest to newest, by last timestamp):")
     for log_file, timestamp in sorted_files:
         print(f"{log_file} -- ({timestamp})")
+
 
 def show_unfinished_tasks():
     # find unassigned tasks
@@ -230,6 +262,12 @@ def show_unfinished_tasks():
             print("MySQL connection is closed")
 
 
+def find_existing_result_files():
+    all_files = listdir(getcwd())
+    log_files = [f for f in all_files if fnmatch.fnmatch(f, "results_*.json")]
+    return log_files
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Manage experiments/tasks via MySQL database")
@@ -242,13 +280,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.fetch_results:
-        name_to_result = fetch_results()
+        existing_result_files = find_existing_result_files()
+        name_to_result = fetch_results(existing_result_files)
         for name, result in name_to_result.items():
             result = repair_result(name, result)
             out_file = f"results_{name}.json"
-            if exists(out_file):
-                print(f"Result for {name} already exists, skipping")
-            else:
+            if not exists(out_file):
+                print(f"Write new result to file {out_file}")
                 with open(out_file, "w") as f:
                     f.write(result)
     elif args.sort_results:
