@@ -16,6 +16,7 @@ use_program_merger = False
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())
 config_parameters = current_globals - initial_globals
+config_parameters = config_parameters - {"initial_globals", "current_globals", "config_parameters"}
 config_dict = {p: v for p, v in globals().items() if p in config_parameters}
 append_event(
     Event(pr_nb=0, message=f"Configuration: {config_dict}"))
