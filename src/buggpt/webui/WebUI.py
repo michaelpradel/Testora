@@ -32,6 +32,14 @@ def get_log_files():
     return [logs[-1]]
 
 
+def get_entries():
+    entries = []
+    for log_file in get_log_files():
+        with open(log_file, "r") as f:
+            entries.extend(json.load(f))
+    return entries
+
+
 pr_number_to_info: Dict[int, PRInfo] = {}
 
 
@@ -60,12 +68,7 @@ def parse_time_stamp(time_stamp):
     raise ValueError(f"Could not parse time stamp: {time_stamp}")
 
 
-def compute_perf_stats():
-    entries = []
-    for log_file in get_log_files():
-        with open(log_file, "r") as f:
-            entries.extend(json.load(f))
-
+def compute_perf_stats(entries):
     total_time = parse_time_stamp(entries[-1]["timestamp"]) - \
         parse_time_stamp(entries[0]["timestamp"])
 
@@ -135,7 +138,8 @@ def main_page():
     global pr_number_to_info
     pr_number_to_info = compute_pr_number_to_info(get_log_files())
     summary = summarize_status()
-    perf_stats = compute_perf_stats()
+    entries = get_entries()
+    perf_stats = compute_perf_stats(entries)
     return render_template("index.html", summary=summary, data=pr_number_to_info.values(), perf_stats=perf_stats, color_mapping=status_colors)
 
 
@@ -144,8 +148,8 @@ def pr_page(number):
     global pr_number_to_info
     pr_number_to_info = compute_pr_number_to_info(get_log_files())
     pr_info = pr_number_to_info[number]
-
-    return render_template('pr.html', pr_info=pr_info)
+    perf_stats = compute_perf_stats(pr_info.entries)
+    return render_template('pr.html', pr_info=pr_info, perf_stats=perf_stats)
 
 
 if __name__ == "__main__":
