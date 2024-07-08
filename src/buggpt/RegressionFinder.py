@@ -83,13 +83,10 @@ def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
         return outputs_part1 + outputs_part2
 
 
-def execute_tests(test_executions, docker_executor):
-    outputs = []
-    for test_execution in test_executions:
-        output = docker_executor.execute_python_code(test_execution.code)
-        output = clean_output(output)
-        outputs.append(output)
-    return outputs
+def execute_test(test_execution, docker_executor):
+    output = docker_executor.execute_python_code(test_execution.code)
+    output = clean_output(output)
+    test_execution.output = output
 
 
 def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, commit):
@@ -111,19 +108,23 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
     try:
         if Config.use_program_merger:
             outputs = merge_tests_and_execute(test_executions, docker_executor)
+            assert len(outputs) == len(test_executions)
+            for output, test_execution in zip(outputs, test_executions):
+                test_execution.output = output
+                append_event(TestExecutionEvent(pr_nb=pr_number,
+                                                message="Test execution",
+                                                code=test_execution.code,
+                                                output=output))
         else:
-            outputs = execute_tests(test_executions, docker_executor)
+            for test_execution in test_executions:
+                execute_test(test_execution, docker_executor)
+                append_event(TestExecutionEvent(pr_nb=pr_number,
+                                                message="Test execution",
+                                                code=test_execution.code,
+                                                output=test_execution.output))
     except RecursionError as e:
         raise BugGPTException(
             f"Exception during merge_tests_and_execute: {str(e)}")
-    assert len(outputs) == len(test_executions)
-
-    for output, test_execution in zip(outputs, test_executions):
-        test_execution.output = output
-        append_event(TestExecutionEvent(pr_nb=pr_number,
-                                        message="Test execution",
-                                        code=test_execution.code,
-                                        output=output))
 
 
 def is_crash(output):
