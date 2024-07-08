@@ -1,5 +1,7 @@
 import re
 
+from buggpt.util.Exceptions import BugGPTException
+
 answer_pattern = re.compile(r"<ANSWER>(.*?)</ANSWER>", re.DOTALL)
 
 
@@ -47,7 +49,10 @@ Which of the two outputs is the expected behavior of the example? Explain your r
 
         raw_answer = raw_answer[0]
         
-        answer = re.search(answer_pattern, raw_answer).group(1)
+        match = re.search(answer_pattern, raw_answer)
+        if match is None:
+            raise BugGPTException("Could not find answer in the response.")
+        answer = match.group(1)
         if answer.strip() == "Output 1":
             return 1
         elif answer.strip() == "Output 2":
