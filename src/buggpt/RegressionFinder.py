@@ -517,6 +517,10 @@ def get_repo(project_name):
     elif project_name == "keras":
         cloned_repo_manager = ClonedRepoManager(
             "../clones", "keras", "keras-team/keras", "keras-dev", "keras")
+    elif project_name == "marshmallow":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "marshmallow", "marshmallow-code/marshmallow", "marshmallow-dev", "marshmallow")
+
 
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")
     cloned_repo.repo.git.pull()
