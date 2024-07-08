@@ -128,7 +128,9 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
 
 
 def is_crash(output):
-    return "Traceback (most recent call last)" in output
+    return "Traceback (most recent call last)" in output or \
+        "error" in output.lower() or \
+        "fail" in output.lower()
 
 
 def generate_tests_with_prompt(pr, prompt, model, nb_samples=1):
@@ -353,20 +355,33 @@ def check_pr(github_repo, cloned_repo_manager, pr):
         assert old_execution.output is not None
         assert new_execution.output is not None
 
-        # check and validate that outputs are different
+        # check for behavioral differences
         difference_found = old_execution.output != new_execution.output
+        if is_crash(old_execution.output) and is_crash(new_execution.output):
+            # ignore differences if both tests crash
+            append_event(ComparisonEvent(pr_nb=pr.number,
+                                         message=f"Both tests failed, considering them the same",
+                                         test_code=old_execution.code, old_output=old_execution.output,
+                                         new_output=new_execution.output))
+            continue
         if difference_found:
+            # double-check differences by re-executing the tests
             difference_found_again = validate_output_difference(cloned_repo_manager,
                                                                 pr, old_execution, new_execution)
             if not difference_found_again:
                 difference_found = False
-        append_event(ComparisonEvent(pr_nb=pr.number,
-                                     message=f"{'Different' if difference_found else 'Same'} outputs",
-                                     test_code=old_execution.code, old_output=old_execution.output,
-                                     new_output=new_execution.output))
 
         if not difference_found:
+            append_event(ComparisonEvent(pr_nb=pr.number,
+                                         message=f"Same output",
+                                         test_code=old_execution.code, old_output=old_execution.output,
+                                         new_output=new_execution.output))
             continue
+
+        append_event(ComparisonEvent(pr_nb=pr.number,
+                                     message=f"Different outputs",
+                                     test_code=old_execution.code, old_output=old_execution.output,
+                                     new_output=new_execution.output))
 
         # if difference found, reduce the test while still observing a difference
         old_execution, new_execution = reduce_test(cloned_repo_manager,
