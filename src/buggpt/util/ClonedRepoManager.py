@@ -78,6 +78,8 @@ class ClonedRepoManager:
         except Exception as e:
             if commit == "main":
                 self._safe_checkout(cloned_repo, "master")
+            elif commit == "master":
+                self._safe_checkout(cloned_repo, "dev")
             else:
                 cloned_repo.git.rm('--cached', '-rf', '.')
                 cloned_repo.git.reset('--hard')
