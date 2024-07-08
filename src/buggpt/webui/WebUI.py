@@ -4,8 +4,8 @@ from flask import Flask, render_template
 import json
 import glob
 import argparse
-from datetime import datetime, timedelta
-from buggpt.util.LogParser import PRInfo, compute_pr_number_to_info
+from datetime import timedelta
+from buggpt.util.LogParser import PRInfo, compute_pr_number_to_info, parse_time_stamp
 
 app = Flask("BugGPT Web UI")
 
@@ -56,16 +56,6 @@ def summarize_status():
             summary[key] = f"{summary[key]} ({percentage:.1f}%)"
 
     return summary
-
-
-def parse_time_stamp(time_stamp):
-    format_strs = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S"]
-    for format_str in format_strs:
-        try:
-            return datetime.strptime(time_stamp, format_str)
-        except ValueError:
-            pass
-    raise ValueError(f"Could not parse time stamp: {time_stamp}")
 
 
 def compute_perf_stats(entries):

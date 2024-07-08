@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 import json
 from typing import Dict
 import re
@@ -15,6 +16,17 @@ class PRInfo:
     nb_test_executions: int = 0
     summary: str = "(summary missing)"
     status: str = "(unknown)"
+    time_taken: str = ""
+
+
+def parse_time_stamp(time_stamp):
+    format_strs = ["%Y-%m-%dT%H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S"]
+    for format_str in format_strs:
+        try:
+            return datetime.strptime(time_stamp, format_str)
+        except ValueError:
+            pass
+    raise ValueError(f"Could not parse time stamp: {time_stamp}")
 
 
 def compute_pr_number_to_info(log_files: list[str]):
@@ -128,6 +140,10 @@ def fill_details(pr_number_to_info: Dict[int, PRInfo]):
             pr_info.summary += f", {nb_observed_differences} differences"
 
         pr_info.nb_test_executions = nb_test_executions
+
+        start_time = parse_time_stamp(pr_info.entries[0]["timestamp"])
+        end_time = parse_time_stamp(pr_info.entries[-1]["timestamp"])
+        pr_info.time_taken = str(end_time - start_time)
 
 
 def extract_done_prs(pr_number_to_info: Dict[int, PRInfo]):
