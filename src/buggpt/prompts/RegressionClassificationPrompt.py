@@ -74,7 +74,7 @@ You should explain your reasoning and then answer five questions:
 2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
 3) Does the usage example refer only to public APIs of {project_name}, or does it use any project-internal functionality? Answer either "public" or "project-internal".
 4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
-5) Is the different output intended by the developer of the pull request, i.e., is the difference in line with the PR description? Answer either "intended" or "unintended".
+5) Is the different output intended by the developer of the pull request? A change is "intended" if it is in line with the description of the pull request or a logical consequence of it. If the change is not expected based on the pull request, it is "unintended". Answer either "intended" or "unintended".
 Explain your reasoning and then give your answers in the following format:
 <THOUGHTS>
 ...
