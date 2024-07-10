@@ -543,7 +543,7 @@ def main():
         append_event(
             Event(pr_nb=0, message=f"Starting to work on task {task_name}"))
 
-        project_name = task_name.split("_")[0]
+        project_name = "_".join(task_name.split("_")[:-2])
         github_repo, cloned_repo_manager = get_repo(project_name)
 
         # process a specific chunk of PRs
