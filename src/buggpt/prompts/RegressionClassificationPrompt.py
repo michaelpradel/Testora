@@ -74,7 +74,7 @@ You should explain your reasoning and then answer five questions:
 2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
 3) Does the usage example refer only to public APIs of {project_name}, or does it use any project-internal functionality? Answer either "public" or "project-internal".
 4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
-5) Is the different output intended by the developer of the pull request, or is the change in behavior rather surprising? Answer either "intended" or "surprising".
+5) Is the different output intended by the developer of the pull request, i.e., is the difference in line with the PR description? Answer either "intended" or "unintended".
 Explain your reasoning and then give your answers in the following format:
 <THOUGHTS>
 ...
@@ -167,7 +167,7 @@ Explain your reasoning and then give your answers in the following format:
             elif in_answer == 5:
                 if line.strip() == "intended":
                     is_surprising = False
-                elif line.strip() == "surprising":
+                elif line.strip() == "unintended":
                     is_surprising = True
 
             if line.strip() == "</ANSWER1>" or line.strip() == "</ANSWER2>" or line.strip() == "</ANSWER3>":
