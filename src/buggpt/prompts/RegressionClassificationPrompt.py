@@ -70,7 +70,7 @@ The pull request "{pr_title}" of the {project_name} project changes the {fut_qua
 
 # Task
 You should explain your reasoning and then answer five questions:
-1) Is the different output a noteworthy change in behavior, such as a completely different value being computed, or is it a minor change, such as a different line number in a stack trace, a minor change in formatting, or a minor change in a warning message? Answer either "minor" or "noteworthy".
+1) Is the different output a noteworthy change in behavior, such as a completely different value being computed, or is it a minor change, such as a change in a warning/error message or a change in formatting? Answer either "minor" or "noteworthy".
 2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
 3) Does the usage example refer only to public APIs of {project_name}, or does it use any project-internal functionality? Answer either "public" or "project-internal".
 4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
