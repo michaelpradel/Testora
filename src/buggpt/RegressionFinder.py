@@ -520,6 +520,10 @@ def get_repo(project_name):
     elif project_name == "marshmallow":
         cloned_repo_manager = ClonedRepoManager(
             "../clones", "marshmallow", "marshmallow-code/marshmallow", "marshmallow-dev", "marshmallow")
+    elif project_name == "pytorch_geometric":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "pytorch_geometric", "pyg-team/pytorch_geometric", "pytorch_geometric-dev", "torch_geometric")
+
 
 
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")

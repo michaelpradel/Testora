@@ -33,4 +33,5 @@ if __name__ == "__main__":
     # write_PR_chunks_into_database("numpy", "numpy/numpy")
     # write_PR_chunks_into_database("transformers", "huggingface/transformers")
     # write_PR_chunks_into_database("keras", "keras-team/keras")
-    write_PR_chunks_into_database("marshmallow", "marshmallow-code/marshmallow")
+    # write_PR_chunks_into_database("marshmallow", "marshmallow-code/marshmallow")
+    write_PR_chunks_into_database("pytorch_geometric", "pyg-team/pytorch_geometric")
