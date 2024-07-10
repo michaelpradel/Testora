@@ -29,7 +29,7 @@ cp -r clone1 clone2
 cd clone2/marshmallow
 echo "Building dev container for marshmallow (second clone)"
 docker run -t -d --name marshmallow-dev2 -v ${PWD}:/home/marshmallow python:3.10
-docker exec -w /home/marshmallow marshmallow-dev1 pip install -e '.[dev]'
+docker exec -w /home/marshmallow marshmallow-dev2 pip install -e '.[dev]'
 echo "Done with second clone"
 
 echo "Creating third clone of marshmallow"
@@ -38,7 +38,7 @@ cp -r clone1 clone3
 cd clone3/marshmallow
 echo "Building dev container for marshmallow (third clone)"
 docker run -t -d --name marshmallow-dev3 -v ${PWD}:/home/marshmallow python:3.10
-docker exec -w /home/marshmallow marshmallow-dev1 pip install -e '.[dev]'
+docker exec -w /home/marshmallow marshmallow-dev3 pip install -e '.[dev]'
 echo "Done with third clone"
 
 cd ../../../BugGPT
