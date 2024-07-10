@@ -11,4 +11,5 @@ echo "Setting up project-under-analysis"
 # .devcontainer/setup_transformers.sh
 # .devcontainer/setup_keras.sh
 # .devcontainer/setup_marshmallow.sh
-.devcontainer/setup_pytorch_geometric.sh
+# .devcontainer/setup_pytorch_geometric.sh
+.devcontainer/setup_scapy.sh

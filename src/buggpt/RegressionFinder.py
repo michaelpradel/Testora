@@ -523,8 +523,9 @@ def get_repo(project_name):
     elif project_name == "pytorch_geometric":
         cloned_repo_manager = ClonedRepoManager(
             "../clones", "pytorch_geometric", "pyg-team/pytorch_geometric", "pytorch_geometric-dev", "torch_geometric")
-
-
+    elif project_name == "scapy":
+        cloned_repo_manager = ClonedRepoManager(
+            "../clones", "scapy", "secdev/scapy", "scapy-dev", "scapy")
 
     cloned_repo = cloned_repo_manager.get_cloned_repo("main")
     cloned_repo.repo.git.pull()
