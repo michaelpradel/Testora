@@ -104,7 +104,7 @@ class ClonedRepoManager:
         clone_id = self._get_least_recently_used_clone_id()
         cloned_repo_dir = f"{self.pool_dir}/{clone_id}/{self.repo_name}"
         cloned_repo = Repo(cloned_repo_dir)
-        self._safe_checskout(cloned_repo, commit)
+        self._safe_checkout(cloned_repo, commit)
 
         # update clone state
         state = self.clone_id_to_state[clone_id]
