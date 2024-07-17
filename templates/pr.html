@@ -52,8 +52,8 @@
 
 <body>
     <div class="info">
-        <h1><a href="{{ pr_info.url }}">PR{{ pr_info.number }}</a>: {{ pr_info.title }}</h1>
-        <h2>Status: {{ pr_info.status }}</h2>
+        <h1><a href="{{ pr_result.url }}">PR{{ pr_result.number }}</a>: {{ pr_result.title }}</h1>
+        <h2>Status: {{ pr_result.status() }}</h2>
     </div>
 
     <h2>Perf Stats</h2>
@@ -79,7 +79,7 @@
     </table>
 
     <h2>Log</h2>
-    {% for entry in pr_info.entries %}
+    {% for entry in pr_result.entries %}
     <div class="entries">
         <table>
             <thead>

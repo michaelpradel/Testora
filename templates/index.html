@@ -48,28 +48,6 @@
         </tbody>
     </table>
 
-    <h1>Perf Stats</h1>
-    <table class="compact-table">
-        <thead>
-            <tr>
-                <th>Event</th>
-                <th>Count</th>
-                <th>Time (total)</th>
-                <th>Time (avg)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for event, count, total_time, avg_time in perf_stats %}
-            <tr>
-                <td>{{ event }}</td>
-                <td>{{ count }}</td>
-                <td>{{ total_time }}</td>
-                <td>{{ avg_time }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
     <h1>Pull Requests</h1>
     <table>
         <thead>
@@ -82,13 +60,13 @@
             </tr>
         </thead>
         <tbody>
-            {% for pr_info in data %}
-            <tr style="background-color: {{ color_mapping[pr_info.status] | default('#FFFFFF') }}">
-                <td><a href="{{ pr_info.url }}">{{ pr_info.number }}</a></td>
-                <td>{{ pr_info.title }}</td>
-                <td>{{ pr_info.summary }}</td>
-                <td>{{ pr_info.time_taken }}</td>
-                <td><a href="/pr{{ pr_info.number }}">{{ pr_info.status }}</a></td>
+            {% for pr_result in data %}
+            <tr style="background-color: {{ color_mapping[pr_result.status()] | default('#FFFFFF') }}">
+                <td><a href="{{ pr_result.url }}">{{ pr_result.number }}</a></td>
+                <td>{{ pr_result.title }}</td>
+                <td>{{ pr_result.summary() }}</td>
+                <td>{{ pr_result.time_taken }}</td>
+                <td><a href="/pr{{ pr_result.number }}">{{ pr_result.status() }}</a></td>
             </tr>
             {% endfor %}
         </tbody>

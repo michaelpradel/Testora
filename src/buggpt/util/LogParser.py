@@ -1,22 +1,176 @@
-from dataclasses import dataclass, field
 from datetime import datetime
+from enum import Enum
 import json
-from typing import Dict
 import re
 import argparse
 from buggpt.util.Logs import Event
 
 
-@dataclass
-class PRInfo:
-    number: int
-    url: str
-    title: str = "(title missing)"
-    entries: list = field(default_factory=list)
-    nb_test_executions: int = 0
-    summary: str = "(summary missing)"
-    status: str = "(unknown)"
-    time_taken: str = ""
+nb_test_generated_pattern = r"^Generated (\d+) tests"
+
+
+class Classification(Enum):
+    UNKNOWN = 0
+    INTENDED_CHANGE = 1
+    COINCIDENTAL_FIX = 2
+    REGRESSION = 3
+
+
+class ClassificationResult:
+    def __init__(self, test_code: str, old_output: str, new_output: str):
+        self.test_code = test_code
+        self.old_output = old_output
+        self.new_output = new_output
+        self.classification: Classification = Classification.UNKNOWN
+
+
+class PRResult:
+    def __init__(self, number, entries):
+        self.number = number
+        self.entries = entries
+
+        # initialize details
+        self.title = None
+        self.url = None
+        self.ignored = False
+        self.ignored_reason = None
+        self.nb_generated_tests = 0
+        self.nb_test_executions = 0
+        self.nb_test_failures = 0
+        self.classification_results = []
+
+        # fill details with proper values
+        for entry in self.entries:
+            if entry["message"].startswith("Starting to check PR"):
+                self.title = entry["title"]
+                self.url = entry["url"]
+
+            if entry["message"].startswith("Ignoring"):
+                self.ignored = True
+                self.ignored_reason = entry["message"]
+
+            nb_generated_tests_match = re.search(
+                nb_test_generated_pattern, entry["message"])
+            if nb_generated_tests_match:
+                self.nb_generated_tests += int(
+                    nb_generated_tests_match.group(1))
+
+            if entry["message"] == "Test execution":
+                self.nb_test_executions += 1
+                if "Traceback (most recent call last)" in entry["output"]:
+                    self.nb_test_failures += 1
+
+        start_time = parse_time_stamp(entries[0]["timestamp"])
+        end_time = parse_time_stamp(entries[-1]["timestamp"])
+        self.time_taken = str(end_time - start_time)
+
+        # extract classification details
+        for entry_idx, entry in enumerate(self.entries):
+            if entry["message"] == "Classification":
+                classification_result = None
+                # find test code, old output, new output by looking further up in the log
+                for idx2 in range(entry_idx, -1, -1):
+                    if self.entries[idx2]["message"] == "Different outputs (also after test reduction)":
+                        classification_result = ClassificationResult(
+                            self.entries[idx2]["test_code"], self.entries[idx2]["old_output"], self.entries[idx2]["new_output"])
+                        break
+                if classification_result is None:
+                    raise Exception(
+                        "Could not find test code, old output, new output for classification entry")
+
+                # extract outcome of classification
+                if entry["is_relevant_change"] in [True, False] and \
+                        entry["is_deterministic"] in [True, False] and \
+                        entry["is_public"] in [True, False] and \
+                        entry["is_legal"] in [True, False] and \
+                        entry["is_surprising"] in [True, False]:
+                    if entry["is_relevant_change"] and \
+                            entry["is_deterministic"] and \
+                            entry["is_public"] and \
+                            entry["is_legal"] and \
+                            entry["is_surprising"]:
+                        # find entry that selected the expected behavior further down in the log
+                        for idx2 in range(entry_idx, len(self.entries)):
+                            if self.entries[idx2]["message"] == "Selected expected behavior":
+                                if self.entries[idx2]["expected_output"] == 1:
+                                    classification_result.classification = Classification.REGRESSION
+                                elif self.entries[idx2]["expected_output"] == 2:
+                                    classification_result.classification = Classification.COINCIDENTAL_FIX
+                                break
+                    else:
+                        classification_result.classification = Classification.INTENDED_CHANGE
+
+                self.classification_results.append(classification_result)
+
+    def status(self):
+        if self.ignored:
+            return "ignored"
+
+        final_classification = Classification.UNKNOWN
+        for cls in self.classification_results:
+            if cls.classification.value > final_classification.value:
+                final_classification = cls.classification
+
+        if final_classification == Classification.UNKNOWN and self.nb_test_executions > 0:
+            return "checked"
+        else:
+            return final_classification.name.lower()
+
+    def summary(self):
+        s = self.status()
+        if s == "ignored":
+            return self.ignored_reason
+        elif s == "checked":
+            return f"{self.nb_generated_tests} generated tests, {self.nb_test_executions} test executions, {self.nb_test_failures} failures ({100 * self.nb_test_failures / self.nb_test_executions:.1f}%)"
+        elif s == "intended_change":
+            return f"{self.nb_generated_tests} generated tests, {self.nb_test_executions} test executions, {self.nb_test_failures} failures ({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), {len(self.classification_results)} differences"
+        else:
+            assert s in ["coincidental_fix", "regression"]
+            nb_intended_changes = 0
+            nb_coincidental_fixes = 0
+            nb_regressions = 0
+            for cls in self.classification_results:
+                if cls.classification == Classification.INTENDED_CHANGE:
+                    nb_intended_changes += 1
+                elif cls.classification == Classification.COINCIDENTAL_FIX:
+                    nb_coincidental_fixes += 1
+                elif cls.classification == Classification.REGRESSION:
+                    nb_regressions += 1
+
+            return f"{self.nb_generated_tests} generated tests, {self.nb_test_executions} test executions, {self.nb_test_failures} failures ({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), {len(self.classification_results)} differences ({nb_intended_changes} intended, {nb_coincidental_fixes} coincidental, {nb_regressions} regressions)"
+
+
+def parse_log_files(log_files):
+    pr_results = []
+    meta_entries = []
+
+    for log_file in log_files:
+        with open(log_file, "r") as f:
+            entries = json.load(f)
+
+        current_pr_number = None
+        current_entries = []
+        for entry in entries:
+            if entry["message"] == "Starting to check PR":
+                current_pr_number = entry["pr_nb"]
+                current_entries = [entry]
+            elif entry["pr_nb"] == -1:
+                entry["pr_nb"] = current_pr_number
+                current_entries.append(entry)
+            elif entry["pr_nb"] == 0:
+                meta_entries.append(entry)
+            elif entry["message"] == "Done with PR":
+                current_entries.append(entry)
+                pr_results.append(
+                    PRResult(current_pr_number, current_entries))
+                current_pr_number = None
+                current_entries = []
+            elif entry["pr_nb"] == current_pr_number:
+                current_entries.append(entry)
+            else:
+                raise Exception(f"Unexpected state during parsing.\n{entry}")
+
+    return pr_results, meta_entries
 
 
 def parse_time_stamp(time_stamp):
@@ -27,131 +181,6 @@ def parse_time_stamp(time_stamp):
         except ValueError:
             pass
     raise ValueError(f"Could not parse time stamp: {time_stamp}")
-
-
-def compute_pr_number_to_info(log_files: list[str]):
-    pr_number_to_info: Dict[int, PRInfo] = {}
-
-    if len(pr_number_to_info) != 0:
-        return
-
-    entries = []
-    for log_file in log_files:
-        with open(log_file, "r") as f:
-            entries.extend(json.load(f))
-
-    previous_pr_number = 0
-    for entry in entries:
-        if entry["pr_nb"] == -1:
-            entry["pr_nb"] = previous_pr_number
-        pr_info = pr_number_to_info.get(entry["pr_nb"],
-                                        PRInfo(
-                                            number=entry["pr_nb"],
-                                            url=f"https://github.com/pandas-dev/pandas/pull/{entry['pr_nb']}"
-        ))
-        pr_info.entries.append(entry)
-        pr_number_to_info[entry["pr_nb"]] = pr_info
-        previous_pr_number = entry["pr_nb"]
-
-    fill_details(pr_number_to_info)
-
-    return pr_number_to_info
-
-
-def fill_details(pr_number_to_info: Dict[int, PRInfo]):
-    nb_test_generated_pattern = r"^Generated (\d+) tests"
-
-    for pr_info in pr_number_to_info.values():
-        is_regression = False
-        is_intended_difference = False
-        is_unclear = False
-        is_not_in_main = None
-        nb_generated_tests = 0
-        nb_test_executions = 0
-        nb_test_failures = 0
-        nb_observed_differences = 0
-        selected_behavior = 0
-        for entry in pr_info.entries:
-            if entry["message"].startswith("Starting to check PR"):
-                pr_info.title = entry["title"]
-                pr_info.url = entry["url"]
-
-            if entry["message"].startswith("Ignoring"):
-                pr_info.status = "ignored"
-                pr_info.summary = entry["message"]
-                break
-
-            nb_generated_tests_match = re.search(
-                nb_test_generated_pattern, entry["message"])
-            if nb_generated_tests_match:
-                nb_generated_tests += int(nb_generated_tests_match.group(1))
-
-            if entry["message"] == "Test execution":
-                nb_test_executions += 1
-                if "Traceback (most recent call last)" in entry["output"]:
-                    nb_test_failures += 1
-
-            if entry["message"] == "Classification":
-                if entry["is_relevant_change"] and entry["is_deterministic"] and entry["is_public"] and entry["is_legal"] and entry["is_surprising"]:
-                    entry["message"] = "Classification: Regression"
-                    is_regression = True
-                elif entry["is_relevant_change"] in [True, False] and \
-                        entry["is_deterministic"] in [True, False] and \
-                        entry["is_public"] in [True, False] and \
-                        entry["is_legal"] in [True, False] and \
-                        entry["is_surprising"] in [True, False]:
-                    entry["message"] = "Classification: Intended"
-                    is_intended_difference = True
-                else:
-                    entry["message"] = "Classification: Unclear"
-                    is_unclear = True
-                nb_observed_differences += 1
-
-            if entry["message"] == "Difference not present in main anymore":
-                is_not_in_main = True
-
-            if entry["message"] == "Selected expected behavior":
-                # prioritize "1", i.e., old version is expected, so we see it as a regression bug
-                if selected_behavior != 1:
-                    selected_behavior = int(entry["expected_output"])
-
-        if nb_test_executions > 0:
-            pr_info.status = "tests executed"
-            failure_percentage = 100 * nb_test_failures / nb_test_executions
-            pr_info.summary = f"{nb_generated_tests} generated tests, {nb_test_executions} test executions, {nb_test_failures} failures ({failure_percentage:.1f}%)"
-
-        if is_regression:
-            if selected_behavior == 1:
-                pr_info.status = "regression bug"
-                pr_info.summary += f", {nb_observed_differences} differences"
-                if is_not_in_main:
-                    pr_info.summary += ", not in main"
-            elif selected_behavior == 2:
-                pr_info.status = "coincidental fix"
-                pr_info.summary += f", {nb_observed_differences} differences"
-            else:
-                pr_info.status = "unclear classification"
-                pr_info.summary += f", {nb_observed_differences} differences"
-        elif is_intended_difference:
-            pr_info.status = "intended difference"
-            pr_info.summary += f", {nb_observed_differences} differences"
-        elif is_unclear:
-            pr_info.status = "unclear classification"
-            pr_info.summary += f", {nb_observed_differences} differences"
-
-        pr_info.nb_test_executions = nb_test_executions
-
-        start_time = parse_time_stamp(pr_info.entries[0]["timestamp"])
-        end_time = parse_time_stamp(pr_info.entries[-1]["timestamp"])
-        pr_info.time_taken = str(end_time - start_time)
-
-
-def extract_done_prs(pr_number_to_info: Dict[int, PRInfo]):
-    done_pr_nbs = []
-    for pr_info in pr_number_to_info.values():
-        if pr_info.nb_test_executions > 0:
-            done_pr_nbs.append(pr_info.number)
-    return done_pr_nbs
 
 
 def write_as_log(pr_nbs: list[int]):
@@ -171,7 +200,17 @@ if __name__ == "__main__":
                         help="Create a log-like file with all PRs that have been fully analyzed")
 
     args = parser.parse_args()
-    pr_number_to_info = compute_pr_number_to_info(args.files)
+    pr_results, meta_results = parse_log_files(args.files)
+    print(f"Found {len(pr_results)} PRs and {
+          len(meta_results)} meta-results in log files.")
+    print()
+    for pr_result in pr_results:
+        print(f"PR {pr_result.number}: {len(pr_result.entries)} entries, {
+              len(pr_result.classification_results)} classification results")
+        print(f"Status: {pr_result.status()}")
+        print(f"Summary: {pr_result.summary()}")
+        print()
+
     if args.extract_done_prs:
-        done_pr_nbs = extract_done_prs(pr_number_to_info)
+        done_pr_nbs = [r.number for r in pr_results]
         write_as_log(done_pr_nbs)

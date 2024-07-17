@@ -1,11 +1,9 @@
 from collections import Counter
-from typing import Dict
+from typing import Dict, List
 from flask import Flask, render_template
-import json
-import glob
 import argparse
 from datetime import timedelta
-from buggpt.util.LogParser import PRInfo, compute_pr_number_to_info, parse_time_stamp
+from buggpt.util.LogParser import PRResult, parse_log_files, parse_time_stamp
 
 app = Flask("BugGPT Web UI")
 
@@ -13,41 +11,16 @@ app = Flask("BugGPT Web UI")
 parser = argparse.ArgumentParser(description="Web UI for BugGPT")
 parser.add_argument("--files", help="Log file(s) to process",
                     type=str, required=False, nargs="+")
-parser.add_argument("--all", help="Use all log files", action="store_true")
 
-
-def get_log_files():
-    # Use log file passed as argument
-    args = parser.parse_args()
-    if args.files:
-        return args.files
-
-    logs = glob.glob('logs_*.json')
-
-    if args.all:
-        return logs
-
-    # Get the latest log file
-    logs.sort()
-    return [logs[-1]]
-
-
-def get_entries():
-    entries = []
-    for log_file in get_log_files():
-        with open(log_file, "r") as f:
-            entries.extend(json.load(f))
-    return entries
-
-
-pr_number_to_info: Dict[int, PRInfo] = {}
+pr_results: List[PRResult] = []
+pr_number_to_result: Dict[int, PRResult] = {}
 
 
 def summarize_status():
     summary = Counter()
-    for pr_info in pr_number_to_info.values():
+    for pr_result in pr_results:
         summary["total"] += 1
-        summary[pr_info.status] += 1
+        summary[pr_result.status()] += 1
 
     # add percentages
     for key in summary:
@@ -95,11 +68,11 @@ def compute_perf_stats(entries):
 
 
 status_colors = {
-    "regression bug": "#FFCCCC",
-    "coincidental fix": "#CBC3E3",
-    "intended difference": "#CCFFCC",
-    "unclear classification": "#FFFFE0",
-    "tests executed": "#D3D3D3",
+    "unknown": "#FFFFE0",
+    "checked": "#D3D3D3",
+    "intended_change": "#CCFFCC",
+    "coincidental_fix": "#CBC3E3",
+    "regression": "#FFCCCC",
 }
 
 
@@ -125,21 +98,22 @@ app.jinja_env.filters["escape_tags"] = escape_tags
 
 @app.route('/')
 def main_page():
-    global pr_number_to_info
-    pr_number_to_info = compute_pr_number_to_info(get_log_files())
+    global pr_results
+    pr_results, _ = parse_log_files(args.files)
     summary = summarize_status()
-    entries = get_entries()
-    perf_stats = compute_perf_stats(entries)
-    return render_template("index.html", summary=summary, data=pr_number_to_info.values(), perf_stats=perf_stats, color_mapping=status_colors)
+    for pr_result in pr_results:
+        if pr_result.number in pr_number_to_result:
+            raise ValueError(
+                f"PR number {pr_result.number} has multiple results.")
+        pr_number_to_result[pr_result.number] = pr_result
+    return render_template("index.html", summary=summary, data=pr_results, color_mapping=status_colors)
 
 
 @app.route('/pr<int:number>')
 def pr_page(number):
-    global pr_number_to_info
-    pr_number_to_info = compute_pr_number_to_info(get_log_files())
-    pr_info = pr_number_to_info[number]
-    perf_stats = compute_perf_stats(pr_info.entries)
-    return render_template('pr.html', pr_info=pr_info, perf_stats=perf_stats)
+    pr_result = pr_number_to_result[int(number)]
+    perf_stats = compute_perf_stats(pr_result.entries)
+    return render_template('pr.html', pr_result=pr_result, perf_stats=perf_stats)
 
 
 if __name__ == "__main__":
