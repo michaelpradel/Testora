@@ -14,14 +14,13 @@ from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.Exceptions import BugGPTException
 from buggpt.util.PullRequest import PullRequest
-from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt35_model
+from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4omini_model
 from buggpt.util.Logs import start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json, read_old_logs, keep_newest_logs_for_pr_numbers
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.evaluation import EvalTaskManager
 from buggpt import Config
 
-gpt4 = LLMCache(OpenAIGPT(gpt4o_model))
-gpt35 = LLMCache(OpenAIGPT(gpt35_model))
+llm = LLMCache(OpenAIGPT(gpt4omini_model))
 
 
 def clean_output(output):
@@ -165,22 +164,22 @@ def generate_tests(pr, github_repo, changed_functions):
         prompt_full_diff = RegressionTestGeneratorPrompt(
             github_repo.name, changed_functions, full_diff)
         all_tests.extend(generate_tests_with_prompt(
-            pr, prompt_full_diff, gpt4))
+            pr, prompt_full_diff, llm))
 
         # full diff with GPT3.5
-        all_tests.extend(generate_tests_with_prompt(
-            pr, prompt_full_diff, gpt35, nb_samples=10))
+        # all_tests.extend(generate_tests_with_prompt(
+        #     pr, prompt_full_diff, gpt35, nb_samples=10))
 
     if len(filtered_diff.split("\n")) <= 200 and filtered_diff != full_diff:
         # filtered diff with GPT4
         prompt_filtered_diff = RegressionTestGeneratorPrompt(
             github_repo.name, changed_functions, filtered_diff)
         all_tests.extend(generate_tests_with_prompt(
-            pr, prompt_filtered_diff, gpt4))
+            pr, prompt_filtered_diff, llm))
 
         # filtered diff with GPT3.5
-        all_tests.extend(generate_tests_with_prompt(
-            pr, prompt_filtered_diff, gpt35, nb_samples=10))
+        # all_tests.extend(generate_tests_with_prompt(
+        #     pr, prompt_filtered_diff, gpt35, nb_samples=10))
 
     # de-dup tests
     nb_tests_before_dedup_and_cleaning = len(all_tests)
@@ -263,7 +262,7 @@ def check_if_present_in_main(cloned_repo_manager, pr, new_execution):
 def classify_regression(project_name, pr, changed_functions, old_execution, new_execution):
     prompt = RegressionClassificationPrompt(
         project_name, pr, changed_functions, old_execution.code, old_execution.output, new_execution.output)
-    raw_answer = gpt4.query(prompt)
+    raw_answer = llm.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     is_relevant_change, is_deterministic, is_public, is_legal, is_surprising = prompt.parse_answer(
@@ -285,7 +284,7 @@ def select_expected_behavior(project_name, pr, old_execution, new_execution, doc
     """Ask LLM which of two possible outputs is the expected behavior."""
     prompt = SelectExpectedBehaviorPrompt(
         project_name, old_execution.code, old_execution.output, new_execution.output, docstrings)
-    raw_answer = gpt4.query(prompt)
+    raw_answer = llm.query(prompt)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     expected_behavior = prompt.parse_answer(raw_answer)
@@ -442,7 +441,7 @@ def filter_and_sort_prs_by_risk(github_prs, cloned_repo_manager):
     all_medium_risk_prs = []
     for chunk in chunks:
         prompt = PRRegressionBugRanking(chunk, cloned_repo_manager.repo_name)
-        raw_answer = gpt4.query(prompt)
+        raw_answer = llm.query(prompt)
         append_event(LLMEvent(pr_nb=0,
                               message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
         ranking_result = prompt.parse_answer(raw_answer)
@@ -480,7 +479,10 @@ def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
             github_prs.append(github_repo.get_pull(pr_nb))
             print(f"Added PR {pr_nb}")
 
-    github_prs = filter_and_sort_prs_by_risk(github_prs, cloned_repo_manager)
+    if Config.llm_risk_assessment:
+        github_prs = filter_and_sort_prs_by_risk(
+            github_prs, cloned_repo_manager)
+
     for github_pr in github_prs:
         pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 
