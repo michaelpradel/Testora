@@ -7,9 +7,9 @@ import mysql.connector
 import argparse
 
 config = {
-    "user": "buggpt_user_w",
-    "host": "sql702.your-server.de",
-    "database": "buggpt_db"
+    "user": "user_name",
+    "host": "sql141.your-server.de",
+    "database": "regression_finder_db"
 }
 with open(".db_token", "r") as f:
     config["password"] = f.read().strip()
@@ -18,27 +18,22 @@ with open(".worker_id", "r") as f:
     my_worker_id = f.read().strip()
 
 
-def write_tasks(name_to_task: Dict[str, str]):
+def connect_and_do(func):
     try:
         conn = mysql.connector.connect(**config)
         print("Database connection established!")
-
         cursor = conn.cursor()
 
-        insert_query = "INSERT INTO experiments (name, task) VALUES (%s, %s)"
-        for name, task in name_to_task.items():
-            print(f"Inserting {name} with task {task}")
-            cursor.execute(insert_query, (name, task))
+        result = func(conn, cursor)
 
         conn.commit()
         print("Data inserted successfully!")
-
+        return result
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         if conn.is_connected():
             conn.rollback()
             print("Transaction rolled back")
-
     finally:
         if conn.is_connected():
             cursor.close()
@@ -46,84 +41,58 @@ def write_tasks(name_to_task: Dict[str, str]):
             print("MySQL connection is closed")
 
 
+def write_tasks(project_name, pr_nbs: List[int]):
+    def inner(connection, cursor):
+        insert_query = "INSERT INTO tasks (project, pr) VALUES (%s, %s)"
+        for pr_nb in pr_nbs:
+            print(f"Inserting task for PR {pr_nb} of {project_name}")
+            cursor.execute(insert_query, (project_name, pr_nb))
+
+    connect_and_do(inner)
+
+
 def fetch_task():
-    task_filter = "scikit-learn%"  # note: SQL wildcard syntax
+    def inner(connection, cursor):
+        connection.start_transaction()
 
-    try:
-        conn = mysql.connector.connect(**config)
-        print("Database connection established!")
-
-        cursor = conn.cursor()
-        conn.start_transaction()
-
-        # check if there's already a task assigned to this container; if yes, resume it
-        select_query = "SELECT name, task FROM experiments WHERE worker=%s AND result IS NULL"
+        # check if there's already an unfinished task assigned to this container; if yes, work on it
+        select_query = "SELECT project, pr FROM tasks WHERE worker=%s AND result IS NULL"
         cursor.execute(select_query, (my_worker_id,))
         row = cursor.fetchone()
         if row:
             return row[0], row[1]
 
         # otherwise, fetch a new task and mark it as assigned to this container
-        select_query = "SELECT name, task FROM experiments WHERE worker IS NULL AND name LIKE %s LIMIT 1"
-        cursor.execute(select_query, (task_filter,))
+        select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL LIMIT 1"
+        cursor.execute(select_query)
         row = cursor.fetchone()
 
         if row:
-            name, task = row[0], row[1]
-            update_query = "UPDATE experiments SET worker=%s WHERE name=%s"
-            cursor.execute(update_query, (my_worker_id, name))
-            conn.commit()
-            return name, task
+            project, pr = row[0], row[1]
+            update_query = "UPDATE tasks SET worker=%s WHERE project=%s AND pr=%s AND worker IS NULL"
+            cursor.execute(update_query, (my_worker_id, project, pr))
+            connection.commit()
+            return project, pr
         else:
             print("No task found.")
             return None, None
 
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        if conn.is_connected():
-            conn.rollback()
-            print("Transaction rolled back")
-
-    finally:
-        if conn.is_connected():
-            cursor.close()
-            conn.close()
-            print("MySQL connection is closed")
-
-    return None, None
+    return connect_and_do(inner)
 
 
-def write_results(name_to_result: Dict[str, str]):
-    try:
-        conn = mysql.connector.connect(**config)
-        print("Database connection established!")
+def write_results(project, pr, result):
+    def inner(connection, cursor):
+        insert_query = "UPDATE tasks SET result=%s WHERE project=%s AND pr=%s"
+        cursor.execute(insert_query, (project, pr, result))
 
-        cursor = conn.cursor()
-
-        insert_query = "UPDATE experiments SET result=%s WHERE name=%s"
-        for name, result in name_to_result.items():
-            print(f"Inserting {name} with result of length {len(result)}")
-            cursor.execute(insert_query, (result, name))
-
-        conn.commit()
-        print("Data inserted successfully!")
-
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        if conn.is_connected():
-            conn.rollback()
-            print("Transaction rolled back")
-
-    finally:
-        if conn.is_connected():
-            cursor.close()
-            conn.close()
-            print("MySQL connection is closed")
+    connect_and_do(inner)
 
 
 def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
     existing_results = [f.replace("results_", "").replace(
         ".json", "") for f in existing_result_files]
+    
+    # TODO: update
 
     # 1) find results we have not yet downloaded
     try:
@@ -137,7 +106,7 @@ def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
         cursor.execute(select_query)
         rows = cursor.fetchall()
         names_to_download: List[str] = [row[0]
-                             for row in rows if row[0] not in existing_results]
+                                        for row in rows if row[0] not in existing_results]
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         if conn.is_connected():
@@ -178,21 +147,6 @@ def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
                 print("MySQL connection is closed")
 
     return name_to_result
-
-
-def repair_result(name, result_as_str):
-    # past bug has added one level too much of nested lists
-    result = json.loads(result_as_str)
-    if len(result) > 1 and type(result[0]) == list:
-        # the result entry needs fixing
-        print(f"Fixing format of result for {name}")
-        fixed_result = []
-        for entry in result:
-            for evt in entry:
-                fixed_result.append(evt)
-        return json.dumps(fixed_result)
-    else:
-        return result_as_str
 
 
 def sort_results():

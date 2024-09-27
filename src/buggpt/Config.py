@@ -12,6 +12,8 @@ single_parent_PRs_only = False
 # use program merger to merge programs
 use_program_merger = False
 
+# filter PRs based on LLM-provided risk assessment
+llm_risk_assessment = False
 
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())

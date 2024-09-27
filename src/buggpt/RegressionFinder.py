@@ -15,7 +15,7 @@ from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.Exceptions import BugGPTException
 from buggpt.util.PullRequest import PullRequest
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4omini_model
-from buggpt.util.Logs import start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, events_as_json, read_old_logs, keep_newest_logs_for_pr_numbers
+from buggpt.util.Logs import start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.evaluation import EvalTaskManager
 from buggpt import Config
@@ -460,14 +460,6 @@ def filter_and_sort_prs_by_risk(github_prs, cloned_repo_manager):
     return result
 
 
-def get_prs_to_process():
-    name, raw_task = EvalTaskManager.fetch_task()
-    if name is None:
-        return None, None
-    pr_numbers = json.loads(raw_task)
-    return name, pr_numbers
-
-
 def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
     done_pr_numbers = find_prs_checked_in_past()
     print(f"Already checked {len(done_pr_numbers)} PRs")
@@ -484,20 +476,6 @@ def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
             github_prs, cloned_repo_manager)
 
     for github_pr in github_prs:
-        pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
-
-        append_event(PREvent(pr_nb=pr.number,
-                             message="Starting to check PR",
-                             title=pr.github_pr.title, url=pr.github_pr.html_url))
-        try:
-            check_pr(github_repo, cloned_repo_manager, pr)
-        except BugGPTException as e:
-            append_event(ErrorEvent(
-                pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
-            continue
-        append_event(PREvent(pr_nb=pr.number,
-                             message="Done with PR",
-                             title=pr.github_pr.title, url=pr.github_pr.html_url))
 
 
 def get_repo(project_name):
@@ -540,32 +518,35 @@ def get_repo(project_name):
 
 def main():
     start_logging()
-    task_name, pr_numbers = get_prs_to_process()
-    while task_name:
-        append_event(
-            Event(pr_nb=0, message=f"Starting to work on task {task_name}"))
+    project, pr = EvalTaskManager.fetch_task()
+    while project and pr:
+        github_repo, cloned_repo_manager = get_repo(project)
+        github_pr = github_repo.get_pull(pr)
+        pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 
-        project_name = "_".join(task_name.split("_")[:-2])
-        github_repo, cloned_repo_manager = get_repo(project_name)
+        # check the PR
+        append_event(PREvent(pr_nb=pr.number,
+                             message="Starting to check PR",
+                             title=pr.github_pr.title, url=pr.github_pr.html_url))
+        try:
+            check_pr(github_repo, cloned_repo_manager, pr)
+        except BugGPTException as e:
+            append_event(ErrorEvent(
+                pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
+            continue
+        append_event(PREvent(pr_nb=pr.number,
+                             message="Done with PR",
+                             title=pr.github_pr.title, url=pr.github_pr.html_url))
 
-        # process a specific chunk of PRs
-        work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers)
+        # store log on disk and into DB
+        store_logs()
+        log = get_logs_as_json()
+        EvalTaskManager.write_results(project, pr, log)
+        reset_logs()
 
-        # store logs (both from current run and from recent runs on this task) into database
-        current_events_as_json = events_as_json()
-        current_events = json.loads(current_events_as_json)
-        old_events = read_old_logs()
-        merged_log = keep_newest_logs_for_pr_numbers(
-            current_events + old_events, pr_numbers)
-        merged_log_as_json = json.dumps(merged_log, indent=2)
-        EvalTaskManager.write_results({task_name: merged_log_as_json})
+        project, pr = EvalTaskManager.fetch_task()
 
-        append_event(Event(pr_nb=0, message=f"Done with task {task_name}"))
-
-        # fetch the next task
-        task_name, pr_numbers = get_prs_to_process()
-
-    append_event(Event(pr_nb=0, message=f"No more tasks to work on"))
+    print("No more tasks to work on")
 
 
 if __name__ == "__main__":

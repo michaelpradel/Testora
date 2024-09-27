@@ -68,7 +68,7 @@ def append_event(evt):
         last_time_stored = datetime.now()
 
 
-def events_as_json():
+def get_logs_as_json():
     return json.dumps([evt.dict() for evt in events], indent=2)
 
 
@@ -85,55 +85,10 @@ def store_logs():
     last_file_stored_to = out_file
 
 
-def read_old_logs():
+def reset_logs():
+    global events
     events = []
-
-    # find all logs*.json files in current directory
-    current_dir = os.getcwd()
-    all_files = os.listdir(current_dir)
-    log_files = [f for f in all_files if fnmatch.fnmatch(f, "logs*.json")]
-
-    # read them and append to events
-    for log_file in log_files:
-        with open(log_file) as f:
-            events += json.load(f)
-
-    return events
-
-
-def keep_newest_logs_for_pr_numbers(events, pr_numbers):
-    # gather completed runs for each PR
-    pr_to_logs = {}
-    current_pr = None
-    current_pr_events = None
-    for event in events:
-        if event["message"] == "Starting to check PR":
-            current_pr = event["pr_nb"]
-            current_pr_events = [event]
-            continue
-
-        if current_pr is not None:
-            current_pr_events.append(event)
-            if event["message"] == "Done with PR":
-                logs_for_pr = pr_to_logs.get(current_pr, [])
-                logs_for_pr.append(current_pr_events)
-                pr_to_logs[current_pr] = logs_for_pr
-                current_pr = None
-
-    # keep last run for each PR
-    events_to_keep = []
-    for pr in pr_numbers:
-        logs_for_pr = pr_to_logs.get(pr, [])
-        if not logs_for_pr:
-            print(f"Warning: No logs found for PR {pr}")
-            continue
-        logs_for_pr.sort(
-            key=lambda log: log[0]["timestamp"])
-        most_recent_log = logs_for_pr[-1]
-        for event in most_recent_log:
-            events_to_keep.append(event)
-
-    return events_to_keep
+    last_file_stored_to = None
 
 
 def start_logging():
