@@ -83,7 +83,7 @@ def fetch_task():
 def write_results(project, pr, result):
     def inner(connection, cursor):
         insert_query = "UPDATE tasks SET result=%s WHERE project=%s AND pr=%s"
-        cursor.execute(insert_query, (project, pr, result))
+        cursor.execute(insert_query, (result, project, pr))
 
     connect_and_do(inner)
 
