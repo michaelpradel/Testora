@@ -27,7 +27,7 @@ def connect_and_do(func):
         result = func(conn, cursor)
 
         conn.commit()
-        print("Data inserted successfully!")
+        print("Query executed successfully!")
         return result
     except mysql.connector.Error as err:
         print(f"Error: {err}")
