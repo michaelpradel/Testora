@@ -21,13 +21,13 @@ with open(".worker_id", "r") as f:
 def connect_and_do(func):
     try:
         conn = mysql.connector.connect(**config)
-        print("Database connection established!")
+        print("Database connection established")
         cursor = conn.cursor()
 
         result = func(conn, cursor)
 
         conn.commit()
-        print("Query executed successfully!")
+        print("Query executed successfully")
         return result
     except mysql.connector.Error as err:
         print(f"Error: {err}")
