@@ -500,33 +500,33 @@ def get_repo(project_name):
 
 def main():
     start_logging()
-    project, pr = EvalTaskManager.fetch_task()
-    while project and pr:
+    project, pr_nb = EvalTaskManager.fetch_task()
+    while project and pr_nb:
         github_repo, cloned_repo_manager = get_repo(project)
-        github_pr = github_repo.get_pull(pr)
+        github_pr = github_repo.get_pull(pr_nb)
         pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
 
         # check the PR
-        append_event(PREvent(pr_nb=pr.number,
+        append_event(PREvent(pr_nb=pr_nb,
                              message="Starting to check PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
         try:
             check_pr(github_repo, cloned_repo_manager, pr)
         except BugGPTException as e:
             append_event(ErrorEvent(
-                pr_nb=pr.number, message="Caught BugGPTError; will continue with next PR", details=str(e)))
+                pr_nb=pr_nb, message="Caught BugGPTError; will continue with next PR", details=str(e)))
             continue
-        append_event(PREvent(pr_nb=pr.number,
+        append_event(PREvent(pr_nb=pr_nb,
                              message="Done with PR",
                              title=pr.github_pr.title, url=pr.github_pr.html_url))
 
         # store log on disk and into DB
         store_logs()
         log = get_logs_as_json()
-        EvalTaskManager.write_results(project, pr, log)
+        EvalTaskManager.write_results(project, pr_nb, log)
         reset_logs()
 
-        project, pr = EvalTaskManager.fetch_task()
+        project, pr_nb = EvalTaskManager.fetch_task()
 
     print("No more tasks to work on")
 
