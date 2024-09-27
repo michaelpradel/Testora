@@ -139,6 +139,9 @@ class PRResult:
 
             return f"{self.nb_generated_tests} generated tests, {self.nb_test_executions} test executions, {self.nb_test_failures} failures ({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), {len(self.classification_results)} differences ({nb_intended_changes} intended, {nb_coincidental_fixes} coincidental, {nb_regressions} regressions)"
 
+    def __str__(self):
+        return f"PR {self.number}: {self.status()} -- {self.summary()}"
+
 
 def parse_log_files(log_files):
     pr_results = []
@@ -181,6 +184,16 @@ def parse_time_stamp(time_stamp):
         except ValueError:
             pass
     raise ValueError(f"Could not parse time stamp: {time_stamp}")
+
+
+def pr_results_as_dict(pr_results):
+    pr_number_to_result = {}
+    for pr_result in pr_results:
+        if pr_result.number in pr_number_to_result:
+            raise ValueError(
+                f"PR number {pr_result.number} has multiple results.")
+        pr_number_to_result[pr_result.number] = pr_result
+    return pr_number_to_result
 
 
 def write_as_log(pr_nbs: list[int]):

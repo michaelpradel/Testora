@@ -3,7 +3,7 @@ from typing import Dict, List
 from flask import Flask, render_template
 import argparse
 from datetime import timedelta
-from buggpt.util.LogParser import PRResult, parse_log_files, parse_time_stamp
+from buggpt.util.LogParser import PRResult, parse_log_files, parse_time_stamp, pr_results_as_dict
 
 app = Flask("BugGPT Web UI")
 
@@ -98,14 +98,10 @@ app.jinja_env.filters["escape_tags"] = escape_tags
 
 @app.route('/')
 def main_page():
-    global pr_results
+    global pr_results, pr_number_to_result
     pr_results, _ = parse_log_files(args.files)
     summary = summarize_status()
-    for pr_result in pr_results:
-        if pr_result.number in pr_number_to_result:
-            raise ValueError(
-                f"PR number {pr_result.number} has multiple results.")
-        pr_number_to_result[pr_result.number] = pr_result
+    pr_number_to_result = pr_results_as_dict(pr_results)
     return render_template("index.html", summary=summary, data=pr_results, color_mapping=status_colors)
 
 
