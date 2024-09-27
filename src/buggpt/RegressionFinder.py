@@ -460,24 +460,6 @@ def filter_and_sort_prs_by_risk(github_prs, cloned_repo_manager):
     return result
 
 
-def work_on_pr_numbers(github_repo, cloned_repo_manager, pr_numbers):
-    done_pr_numbers = find_prs_checked_in_past()
-    print(f"Already checked {len(done_pr_numbers)} PRs")
-    github_prs = []
-    for pr_nb in pr_numbers:
-        if pr_nb in done_pr_numbers:
-            print(f"Skipping PR {pr_nb} because already analyzed")
-        else:
-            github_prs.append(github_repo.get_pull(pr_nb))
-            print(f"Added PR {pr_nb}")
-
-    if Config.llm_risk_assessment:
-        github_prs = filter_and_sort_prs_by_risk(
-            github_prs, cloned_repo_manager)
-
-    for github_pr in github_prs:
-
-
 def get_repo(project_name):
     if project_name == "pandas":
         cloned_repo_manager = ClonedRepoManager(
