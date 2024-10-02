@@ -5,6 +5,7 @@ import json
 from typing import Dict, List
 import mysql.connector
 import argparse
+from pathlib import Path
 
 config = {
     "user": "user_name",
@@ -63,8 +64,17 @@ def fetch_task():
             return row[0], row[1]
 
         # otherwise, fetch a new task and mark it as assigned to this container
-        select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL LIMIT 1"
-        cursor.execute(select_query)
+        target_project_file = Path(".target_project")
+        if target_project_file.exists():
+            # if we have a target project, only fetch tasks from that project
+            with open(target_project_file, "r") as f:
+                target_project = f.read().strip()
+            select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL AND project=%s LIMIT 1"
+            cursor.execute(select_query, (target_project,))
+        else:
+            select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL LIMIT 1"
+            cursor.execute(select_query)
+        
         row = cursor.fetchone()
 
         if row:
