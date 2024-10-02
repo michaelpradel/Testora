@@ -7,6 +7,7 @@ from typing import Dict, List
 import mysql.connector
 import argparse
 from pathlib import Path
+from buggpt.evaluation.ResultsManager import current_results
 
 config = {
     "user": "user_name",
@@ -283,8 +284,25 @@ def show_status():
 
     connect_and_do(inner)
 
+
 def fetch_results():
     def inner(connection, cursor):
+        projects_query = "SELECT DISTINCT project FROM tasks"
+        cursor.execute(projects_query)
+        projects = [row[0] for row in cursor.fetchall()]
+
+        already_downloaded_results = current_results()
+
+        # CONT HERE <<<<<<<<<<<<<
+
+        for project in projects:
+            print(f"Fetching results for {project}")
+            done_prs_query = "SELECT pr FROM tasks WHERE project=%s AND result IS NOT NULL"
+            cursor.execute(done_prs_query, (project,))
+            done_prs = [row[0] for row in cursor.fetchall()]
+
+
+
         select_query = "SELECT project, pr, result FROM tasks WHERE worker=%s AND result IS NOT NULL"
         cursor.execute(select_query, (my_worker_id,))
         rows = cursor.fetchall()
@@ -307,7 +325,7 @@ if __name__ == "__main__":
     parser.add_argument("--status", action="store_true",
                         help="Show status of tasks")
     parser.add_argument("--fetch", action="store_true",
-                    help="Fetch results of finished tasks")
+                        help="Fetch results of finished tasks")
 
     args = parser.parse_args()
     if args.status:
