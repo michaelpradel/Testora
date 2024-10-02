@@ -1,3 +1,4 @@
+from collections import Counter
 import fnmatch
 from os.path import exists
 from os import listdir, getcwd
@@ -75,7 +76,7 @@ def fetch_task():
         else:
             select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL LIMIT 1"
             cursor.execute(select_query)
-        
+
         row = cursor.fetchone()
 
         if row:
@@ -99,65 +100,65 @@ def write_results(project, pr, result):
     connect_and_do(inner)
 
 
-def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
-    existing_results = [f.replace("results_", "").replace(
-        ".json", "") for f in existing_result_files]
-    
-    # TODO: update
+# def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
+#     existing_results = [f.replace("results_", "").replace(
+#         ".json", "") for f in existing_result_files]
 
-    # 1) find results we have not yet downloaded
-    try:
-        conn = mysql.connector.connect(**config)
-        print("Database connection established!")
+#     # TODO: update
 
-        cursor = conn.cursor()
-        conn.start_transaction()
+#     # 1) find results we have not yet downloaded
+#     try:
+#         conn = mysql.connector.connect(**config)
+#         print("Database connection established!")
 
-        select_query = "SELECT name FROM experiments WHERE result is not NULL"
-        cursor.execute(select_query)
-        rows = cursor.fetchall()
-        names_to_download: List[str] = [row[0]
-                                        for row in rows if row[0] not in existing_results]
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        if conn.is_connected():
-            conn.rollback()
-            print("Transaction rolled back")
+#         cursor = conn.cursor()
+#         conn.start_transaction()
 
-    finally:
-        if conn.is_connected():
-            cursor.close()
-            conn.close()
-            print("MySQL connection is closed")
+#         select_query = "SELECT name FROM experiments WHERE result is not NULL"
+#         cursor.execute(select_query)
+#         rows = cursor.fetchall()
+#         names_to_download: List[str] = [row[0]
+#                                         for row in rows if row[0] not in existing_results]
+#     except mysql.connector.Error as err:
+#         print(f"Error: {err}")
+#         if conn.is_connected():
+#             conn.rollback()
+#             print("Transaction rolled back")
 
-    # 2) download new results
-    name_to_result = {}
-    for name_to_download in names_to_download:
-        print(f"Downloading result for {name_to_download}")
-        try:
-            conn = mysql.connector.connect(**config)
-            print("Database connection established!")
+#     finally:
+#         if conn.is_connected():
+#             cursor.close()
+#             conn.close()
+#             print("MySQL connection is closed")
 
-            cursor = conn.cursor()
-            conn.start_transaction()
+#     # 2) download new results
+#     name_to_result = {}
+#     for name_to_download in names_to_download:
+#         print(f"Downloading result for {name_to_download}")
+#         try:
+#             conn = mysql.connector.connect(**config)
+#             print("Database connection established!")
 
-            select_query = "SELECT result FROM experiments WHERE name=%s"
-            cursor.execute(select_query, (name_to_download,))
-            rows = cursor.fetchall()
-            name_to_result[name_to_download] = rows[0][0]
-        except mysql.connector.Error as err:
-            print(f"Error: {err}")
-            if conn.is_connected():
-                conn.rollback()
-                print("Transaction rolled back")
+#             cursor = conn.cursor()
+#             conn.start_transaction()
 
-        finally:
-            if conn.is_connected():
-                cursor.close()
-                conn.close()
-                print("MySQL connection is closed")
+#             select_query = "SELECT result FROM experiments WHERE name=%s"
+#             cursor.execute(select_query, (name_to_download,))
+#             rows = cursor.fetchall()
+#             name_to_result[name_to_download] = rows[0][0]
+#         except mysql.connector.Error as err:
+#             print(f"Error: {err}")
+#             if conn.is_connected():
+#                 conn.rollback()
+#                 print("Transaction rolled back")
 
-    return name_to_result
+#         finally:
+#             if conn.is_connected():
+#                 cursor.close()
+#                 conn.close()
+#                 print("MySQL connection is closed")
+
+#     return name_to_result
 
 
 def sort_results():
@@ -233,31 +234,102 @@ def find_existing_result_files():
     return log_files
 
 
+def show_status():
+    def inner(connection, cursor):
+        def count_per_project(query):
+            project_to_count = Counter()
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            for row in rows:
+                project_to_count[row[0]] = row[1]
+            return project_to_count
+
+        count_all = """
+            SELECT project, COUNT(*) AS total_count
+            FROM tasks
+            GROUP BY project;"""
+        project_to_count_all = count_per_project(count_all)
+
+        count_assigned = """
+            SELECT project, COUNT(*) AS assigned_count
+            FROM tasks
+            WHERE worker IS NOT NULL AND result IS NULL
+            GROUP BY project;"""
+        project_to_count_assigned = count_per_project(count_assigned)
+
+        count_unassigned = """
+            SELECT project, COUNT(*) AS unassigned_count
+            FROM tasks
+            WHERE result IS NULL AND worker IS NULL
+            GROUP BY project;"""
+        project_to_count_unassigned = count_per_project(count_unassigned)
+
+        count_done = """
+            SELECT project, COUNT(*) AS done_count
+            FROM tasks
+            WHERE result IS NOT NULL
+            GROUP BY project;"""
+        project_to_count_done = count_per_project(count_done)
+
+        print("############################")
+        for project, total_count in project_to_count_all.items():
+            assigned_count = project_to_count_assigned.get(project, 0)
+            unassigned_count = project_to_count_unassigned.get(project, 0)
+            done_count = project_to_count_done.get(project, 0)
+
+            print(f"{project}: {done_count}/{total_count} done, {
+                  assigned_count} assigned, {unassigned_count} unassigned")
+        print("############################")
+
+    connect_and_do(inner)
+
+def fetch_results():
+    def inner(connection, cursor):
+        select_query = "SELECT project, pr, result FROM tasks WHERE worker=%s AND result IS NOT NULL"
+        cursor.execute(select_query, (my_worker_id,))
+        rows = cursor.fetchall()
+        for row in rows:
+            project, pr, result = row[0], row[1], row[2]
+            write_results(project, pr, result)
+
+    connect_and_do(inner)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Manage experiments/tasks via MySQL database")
-    parser.add_argument("--fetch_results", action="store_true",
-                        help="Fetch results for all finished tasks")
-    parser.add_argument("--sort_results", action="store_true",
-                        help="Sort result files by last timestamp in log")
-    parser.add_argument("--show_unfinished", action="store_true",
-                        help="Show tasks that are not assigned or finished yet")
+    # parser.add_argument("--fetch_results", action="store_true",
+    #                     help="Fetch results for all finished tasks")
+    # parser.add_argument("--sort_results", action="store_true",
+    #                     help="Sort result files by last timestamp in log")
+    # parser.add_argument("--show_unfinished", action="store_true",
+    #                     help="Show tasks that are not assigned or finished yet")
+    parser.add_argument("--status", action="store_true",
+                        help="Show status of tasks")
+    parser.add_argument("--fetch", action="store_true",
+                    help="Fetch results of finished tasks")
 
     args = parser.parse_args()
-    if args.fetch_results:
-        existing_result_files = find_existing_result_files()
-        name_to_result = fetch_results(existing_result_files)
-        for name, result in name_to_result.items():
-            result = repair_result(name, result)
-            out_file = f"results_{name}.json"
-            if not exists(out_file):
-                print(f"Write new result to file {out_file}")
-                with open(out_file, "w") as f:
-                    f.write(result)
-    elif args.sort_results:
-        sort_results()
-    elif args.show_unfinished:
-        show_unfinished_tasks()
+    if args.status:
+        show_status()
+    elif args.fetch:
+        fetch_results()
+
+    # TODO update or remove:
+    # if args.fetch_results:
+    #     existing_result_files = find_existing_result_files()
+    #     name_to_result = fetch_results(existing_result_files)
+    #     for name, result in name_to_result.items():
+    #         result = repair_result(name, result)
+    #         out_file = f"results_{name}.json"
+    #         if not exists(out_file):
+    #             print(f"Write new result to file {out_file}")
+    #             with open(out_file, "w") as f:
+    #                 f.write(result)
+    # elif args.sort_results:
+    #     sort_results()
+    # elif args.show_unfinished:
+    #     show_unfinished_tasks()
 
     else:
         print("Nothing do to (use --fetch_results to fetch results)")

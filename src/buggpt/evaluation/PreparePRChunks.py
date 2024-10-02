@@ -9,8 +9,8 @@ def write_PR_tasks_into_database(project_name, project_id):
     github = Github(auth=Auth.Token(token))
     
     github_repo = github.get_repo(project_id)
-    github_prs = get_recent_prs(github_repo, nb=5)
-    recent_pr_nbs = [pr.number for pr in github_prs]
+    github_prs = get_recent_prs(github_repo, nb=30)
+    recent_pr_nbs = [pr.number for pr in github_prs][6:]
 
     EvalTaskManager.write_tasks(project_name, recent_pr_nbs)
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     write_PR_tasks_into_database("scipy", "scipy/scipy")
     # write_PR_tasks_into_database("numpy", "numpy/numpy")
     # write_PR_tasks_into_database("transformers", "huggingface/transformers")
-    write_PR_tasks_into_database("keras", "keras-team/keras")
-    write_PR_tasks_into_database("marshmallow", "marshmallow-code/marshmallow")
+    # write_PR_tasks_into_database("keras", "keras-team/keras")
+    # write_PR_tasks_into_database("marshmallow", "marshmallow-code/marshmallow")
     # write_PR_tasks_into_database("pytorch_geometric", "pyg-team/pytorch_geometric")
     # write_PR_tasks_into_database("scapy", "secdev/scapy")
