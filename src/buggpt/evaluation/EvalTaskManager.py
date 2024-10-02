@@ -21,6 +21,7 @@ with open(".worker_id", "r") as f:
 
 def connect_and_do(func):
     try:
+        conn = None
         conn = mysql.connector.connect(**config)
         print("Database connection established")
         cursor = conn.cursor()
@@ -36,7 +37,7 @@ def connect_and_do(func):
             conn.rollback()
             print("Transaction rolled back")
     finally:
-        if conn.is_connected():
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
             print("MySQL connection is closed")
