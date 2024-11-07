@@ -128,12 +128,14 @@ def show_status():
 
         print("############################")
         for project, total_count in project_to_count_all.items():
-            assigned_count = project_to_count_assigned.get(project, 0)
-            unassigned_count = project_to_count_unassigned.get(project, 0)
-            done_count = project_to_count_done.get(project, 0)
+            assigned = project_to_count_assigned.get(project, 0)
+            unassigned = project_to_count_unassigned.get(project, 0)
+            done = project_to_count_done.get(project, 0)
 
-            print(f"{project}: {done_count}/{total_count} done, {
-                  assigned_count} assigned, {unassigned_count} unassigned")
+            print(f"""{project}:
+  {done}/{total_count} done,
+  {assigned} assigned,
+  {unassigned} unassigned""")
         print("############################")
 
     connect_and_do(inner)
