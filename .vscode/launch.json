@@ -6,5 +6,12 @@
             "request": "launch",
             "module": "buggpt.RegressionFinder",
         },
+        {
+            "name": "EvalTaskManager",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "buggpt.evaluation.EvalTaskManager",
+            "args": ["--fetch"],
+        },
     ]
 }

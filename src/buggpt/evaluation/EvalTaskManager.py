@@ -7,7 +7,7 @@ from typing import Dict, List
 import mysql.connector
 import argparse
 from pathlib import Path
-from buggpt.evaluation.ResultsManager import current_results
+from buggpt.evaluation.ResultsManager import current_results, add_result
 
 config = {
     "user": "user_name",
@@ -91,14 +91,6 @@ def fetch_task():
             return None, None
 
     return connect_and_do(inner)
-
-
-def write_results(project, pr, result):
-    def inner(connection, cursor):
-        insert_query = "UPDATE tasks SET result=%s WHERE project=%s AND pr=%s"
-        cursor.execute(insert_query, (result, project, pr))
-
-    connect_and_do(inner)
 
 
 # def fetch_results(existing_result_files: List[str]) -> Dict[str, str]:
@@ -291,24 +283,31 @@ def fetch_results():
         cursor.execute(projects_query)
         projects = [row[0] for row in cursor.fetchall()]
 
-        already_downloaded_results = current_results()
-
-        # CONT HERE <<<<<<<<<<<<<
+        project_to_prs_and_timestamps = current_results()
+        print(f"Found {
+              sum([len(rs) for _, rs in project_to_prs_and_timestamps.items()])} existing results")
 
         for project in projects:
+            prs_and_timestamps = project_to_prs_and_timestamps[project]
+
             print(f"Fetching results for {project}")
-            done_prs_query = "SELECT pr FROM tasks WHERE project=%s AND result IS NOT NULL"
-            cursor.execute(done_prs_query, (project,))
-            done_prs = [row[0] for row in cursor.fetchall()]
+            done_prs_and_timestamps_query = "SELECT pr, timestamp FROM tasks WHERE project=%s AND result IS NOT NULL"
+            cursor.execute(done_prs_and_timestamps_query, (project,))
+            done_prs_and_timestamps = [[str(row[0]), str(row[1])]
+                                       for row in cursor.fetchall()]
 
+            nb_new_results = 0
+            for pr, timestamp in done_prs_and_timestamps:
+                if [pr, timestamp] not in prs_and_timestamps:
+                    select_query = "SELECT result FROM tasks WHERE project=%s AND pr=%s AND timestamp=%s"
+                    cursor.execute(
+                        select_query, (project, pr, timestamp))
+                    result = cursor.fetchone()[0]
+                    add_result(
+                        project, pr, timestamp, result)
+                    nb_new_results += 1
 
-
-        select_query = "SELECT project, pr, result FROM tasks WHERE worker=%s AND result IS NOT NULL"
-        cursor.execute(select_query, (my_worker_id,))
-        rows = cursor.fetchall()
-        for row in rows:
-            project, pr, result = row[0], row[1], row[2]
-            write_results(project, pr, result)
+            print(f"Added {nb_new_results} new results for {project}")
 
     connect_and_do(inner)
 

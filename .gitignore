@@ -2,6 +2,7 @@ __pycache__
 data/llm_cache*
 data/repos
 data/pr_chunks
+data/results
 /tmp
 .github_token
 logs_*.json
