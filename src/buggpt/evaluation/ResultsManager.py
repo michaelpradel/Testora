@@ -5,6 +5,12 @@ from datetime import datetime
 base_dir = "data/results/"
 
 
+def result_files():
+    for project_dir in os.listdir(base_dir):
+        for pr_result_file in os.listdir(os.path.join(base_dir, project_dir)):
+            if pr_result_file.endswith(".json"):
+                yield os.path.join(base_dir, project_dir, pr_result_file)
+
 def current_results():
     project_to_prs_and_timestamps = {}
     for project_dir in os.listdir(base_dir):
