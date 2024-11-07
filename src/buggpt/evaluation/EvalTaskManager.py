@@ -89,6 +89,14 @@ def fetch_task():
     return connect_and_do(inner)
 
 
+def write_results(project, pr, result):
+    def inner(connection, cursor):
+        insert_query = "UPDATE tasks SET result=%s WHERE project=%s AND pr=%s"
+        cursor.execute(insert_query, (result, project, pr))
+
+    connect_and_do(inner)
+
+
 def show_status():
     def inner(connection, cursor):
         def count_per_project(query):
