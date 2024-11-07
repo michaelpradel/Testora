@@ -19,6 +19,8 @@ def current_results():
 
 
 def add_result(project_name, pr_nb, timestamp, result):
+    old_results = current_results()
+    
     # Write new result to file
     if not os.path.exists(os.path.join(base_dir, project_name)):
         os.makedirs(os.path.join(base_dir, project_name))
@@ -28,7 +30,6 @@ def add_result(project_name, pr_nb, timestamp, result):
         f.write(result)
     
     # Check if it replaces an old result (if yes, move old result to archive)
-    old_results = current_results()
     for old_pr_nb, old_timestamp in old_results[project_name]:
         if old_pr_nb == pr_nb:
             old_target_file = os.path.join(base_dir, project_name, f"{old_pr_nb}_{old_timestamp}.json")
