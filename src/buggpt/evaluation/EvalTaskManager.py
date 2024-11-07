@@ -148,8 +148,9 @@ def fetch_results():
         projects = [row[0] for row in cursor.fetchall()]
 
         project_to_prs_and_timestamps = current_results()
-        print(f"Found {
-              sum([len(rs) for _, rs in project_to_prs_and_timestamps.items()])} existing results")
+        nb_results = sum([len(rs)
+                         for _, rs in project_to_prs_and_timestamps.items()])
+        print(f"Found {nb_results} existing results")
 
         for project in projects:
             prs_and_timestamps = project_to_prs_and_timestamps[project]
