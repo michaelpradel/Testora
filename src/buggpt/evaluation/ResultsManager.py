@@ -38,8 +38,8 @@ def add_result(project_name, pr_nb, timestamp, result):
     if not os.path.exists(os.path.join(base_dir, project_name)):
         os.makedirs(os.path.join(base_dir, project_name))
 
-    target_file = os.path.join(base_dir, project_name, f"{
-                               pr_nb}_{timestamp}.json")
+    target_file = os.path.join(base_dir, project_name,
+                               f"{pr_nb}_{timestamp}.json")
     with open(target_file, "w") as f:
         f.write(result)
 
