@@ -319,6 +319,12 @@ def check_pr(github_repo, cloned_repo_manager, pr):
             Event(pr_nb=pr.number, message="Ignoring because only comments changed"))
         return
 
+    # ignore if labeled as documentation-only change
+    if pr.title.startswith("DOC"):
+        append_event(
+            Event(pr_nb=pr.number, message="Ignoring because labeled as 'DOC'"))
+        return
+
     # extract diff and names of changed functions
     changed_functions = pr.get_changed_function_names()
 

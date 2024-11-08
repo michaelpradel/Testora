@@ -10,6 +10,7 @@ class PullRequest:
         self.github_pr = github_pr
         self.cloned_repo_manager = cloned_repo_manager
         self.number = github_pr.number
+        self.title = github_pr.title
         self.post_commit = github_pr.merge_commit_sha
         self.parents = github_repo.get_commit(self.post_commit).parents
         self.pre_commit = self.parents[0].sha
