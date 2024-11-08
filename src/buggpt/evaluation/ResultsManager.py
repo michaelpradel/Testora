@@ -46,8 +46,8 @@ def add_result(project_name, pr_nb, timestamp, result):
     # Check if it replaces an old result (if yes, move old result to archive)
     for old_pr_nb, old_timestamp in old_results[project_name]:
         if old_pr_nb == pr_nb:
-            old_target_file = os.path.join(base_dir, project_name, f"{
-                                           old_pr_nb}_{old_timestamp}.json")
+            old_target_file = os.path.join(base_dir, project_name,
+                                           f"{old_pr_nb}_{old_timestamp}.json")
             archive_dir = os.path.join(base_dir, project_name, "archive")
             if not os.path.exists(archive_dir):
                 os.makedirs(archive_dir)
