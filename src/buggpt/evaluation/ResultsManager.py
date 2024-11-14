@@ -12,9 +12,14 @@ def result_files():
                 yield os.path.join(base_dir, project_dir, pr_result_file)
 
 
-def result_files_for_project(project_name):
+def result_files_for_project(project_name, minimum_timestamp=None):
     for pr_result_file in os.listdir(os.path.join(base_dir, project_name)):
         if pr_result_file.endswith(".json"):
+            if minimum_timestamp:
+                pr_timestamp = pr_result_file.replace(".json", "").split("_")[1]
+                if datetime.strptime(pr_timestamp, "%Y-%m-%d %H:%M:%S") < datetime.strptime(minimum_timestamp, "%Y-%m-%d %H:%M:%S"):
+                    continue
+
             yield os.path.join(base_dir, project_name, pr_result_file)
 
 

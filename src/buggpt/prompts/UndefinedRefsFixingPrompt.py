@@ -14,6 +14,10 @@ Respond only with Python code wrapped into ```python ... ```. Give no explanatio
         instruction_multiple = """
 This Python code has undefined references to: <REF>. Fix it.
 
+```python
+<CODE>
+```
+
 Respond only with Python code wrapped into ```python ... ```. Give no explanations.
 """
         if len(self.undefined_refs) == 1:
@@ -22,6 +26,8 @@ Respond only with Python code wrapped into ```python ... ```. Give no explanatio
         else:
             prompt = instruction_multiple.replace(
                 "<REF>", ", ".join(self.undefined_refs))
+
+        prompt = prompt.replace("<CODE>", self.code)
 
         return prompt
 
