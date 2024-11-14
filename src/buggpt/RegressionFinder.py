@@ -360,7 +360,7 @@ def check_pr(github_repo, cloned_repo_manager, pr):
                 fixed_tests.append(fixed_test)
             else:
                 fixed_tests.append(test)
-        generate_tests = fixed_tests
+        generated_tests = fixed_tests
 
     # execute tests
     old_executions = [TestExecution(t) for t in generated_tests]

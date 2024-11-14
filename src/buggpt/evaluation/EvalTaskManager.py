@@ -187,7 +187,7 @@ def fetch_results():
 
 
 def schedule_target_prs():
-    for project, target_pr_nbs in project_to_target_prs.items():
+    for project, target_pr_nbs in project_to_target_prs().items():
         write_tasks(project, target_pr_nbs)
 
 
