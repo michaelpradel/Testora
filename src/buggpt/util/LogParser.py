@@ -37,6 +37,7 @@ class PRResult:
         self.nb_generated_tests = 0
         self.nb_test_executions = 0
         self.nb_test_failures = 0
+        self.nb_different_behavior = 0
         self.classification_results = []
 
         # fill details with proper values
@@ -59,6 +60,9 @@ class PRResult:
                 self.nb_test_executions += 1
                 if "Traceback (most recent call last)" in entry["output"]:
                     self.nb_test_failures += 1
+
+            if entry["message"] == "Different outputs":
+                self.nb_different_behavior += 1
 
         start_time = parse_time_stamp(entries[0]["timestamp"])
         end_time = parse_time_stamp(entries[-1]["timestamp"])

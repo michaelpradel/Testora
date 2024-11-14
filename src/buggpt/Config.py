@@ -15,6 +15,9 @@ use_program_merger = False
 # filter PRs based on LLM-provided risk assessment
 llm_risk_assessment = False
 
+# try to fix undefined references in generated tests
+fix_undefined_refs = True
+
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())
 config_parameters = current_globals - initial_globals

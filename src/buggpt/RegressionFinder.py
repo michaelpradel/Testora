@@ -6,6 +6,7 @@ from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.execution.ProgramMerger import merge_programs, separate_outputs
 from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
+from buggpt.prompts import UndefinedRefsFixingPrompt
 from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
 from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
@@ -17,6 +18,7 @@ from buggpt.util.PullRequest import PullRequest
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4omini_model
 from buggpt.util.Logs import start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
+from buggpt.util.UndefinedRefsFinder import get_undefined_references
 from buggpt.evaluation import EvalTaskManager
 from buggpt import Config
 
@@ -344,6 +346,21 @@ def check_pr(github_repo, cloned_repo_manager, pr):
             else:
                 updated_tests.append(test)
         generated_tests = updated_tests
+
+    # ask LLM to fix undefined references in tests
+    if Config.fix_undefined_refs:
+        fixed_tests = []
+        for test in generated_tests:
+            undefined_refs = get_undefined_references(test)
+            if undefined_refs:
+                prompt = UndefinedRefsFixingPrompt(test, undefined_refs)
+                fixed_test = llm.query(prompt)
+                append_event(LLMEvent(pr_nb=pr.number,
+                                      message="Fixed undefined references", content=fixed_test))
+                fixed_tests.append(fixed_test)
+            else:
+                fixed_tests.append(test)
+        generate_tests = fixed_tests
 
     # execute tests
     old_executions = [TestExecution(t) for t in generated_tests]

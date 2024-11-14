@@ -9,10 +9,10 @@ def write_PR_tasks_into_database(project_name, project_id):
     github = Github(auth=Auth.Token(token))
 
     github_repo = github.get_repo(project_id)
-    github_prs = get_recent_prs(github_repo, nb=75)
+    github_prs = get_recent_prs(github_repo, nb=280)
     recent_pr_nbs = [pr.number for pr in github_prs]
 
-    recent_pr_nbs = [n for n in recent_pr_nbs if n < 59926]
+    recent_pr_nbs = [n for n in recent_pr_nbs if n < 59760]
 
     EvalTaskManager.write_tasks(project_name, recent_pr_nbs)
 
