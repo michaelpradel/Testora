@@ -21,7 +21,12 @@ for pr_result in pr_results:
                     error_ctr[error_type] += 1
 
                 if "NameError" in last_line:
-                    print(last_line)
+                    # print(last_line)
+                    print(entry["code"])
+                    print(">>>")
+                    print(entry["output"])
+                    print("--------------------------------------------\n")
+
 
 print("\n\n\n")
 
