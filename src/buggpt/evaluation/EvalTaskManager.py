@@ -4,6 +4,7 @@ import mysql.connector
 import argparse
 from pathlib import Path
 from buggpt.evaluation.ResultsManager import current_results, add_result
+from buggpt.evaluation.TargetPRs import project_to_target_prs
 
 config = {
     "user": "user_name",
@@ -185,6 +186,11 @@ def fetch_results():
     connect_and_do(inner)
 
 
+def schedule_target_prs():
+    for project, target_pr_nbs in project_to_target_prs.items():
+        write_tasks(project, target_pr_nbs)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Manage experiments/tasks via MySQL database")
@@ -192,12 +198,15 @@ if __name__ == "__main__":
                         help="Show status of tasks")
     parser.add_argument("--fetch", action="store_true",
                         help="Fetch results of finished tasks")
+    parser.add_argument("--schedule", action="store_true",
+                        help="Schedule target PRs for another round of evaluation")
 
     args = parser.parse_args()
     if args.status:
         show_status()
     elif args.fetch:
         fetch_results()
-
+    elif args.schedule:
+        schedule_target_prs()
     else:
-        print("Nothing do to (use --fetch_results to fetch results)")
+        print("Must pass an argument.")
