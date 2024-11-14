@@ -2,6 +2,7 @@ class UndefinedRefsFixingPrompt:
     def __init__(self, code, undefined_refs):
         self.code = code
         self.undefined_refs = undefined_refs
+        self.use_json_output = False
 
     def create_prompt(self):
         instruction_single = """
