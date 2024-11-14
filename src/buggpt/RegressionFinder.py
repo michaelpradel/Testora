@@ -6,7 +6,7 @@ from buggpt.execution.DockerExecutor import DockerExecutor
 from buggpt.execution.ProgramMerger import merge_programs, separate_outputs
 from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
-from buggpt.prompts import UndefinedRefsFixingPrompt
+from buggpt.prompts.UndefinedRefsFixingPrompt import UndefinedRefsFixingPrompt
 from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
 from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
