@@ -191,6 +191,14 @@ def schedule_target_prs():
         write_tasks(project, target_pr_nbs)
 
 
+def remove_unfinished(project):
+    def inner(connection, cursor):
+        delete_query = "DELETE FROM tasks WHERE project=%s AND result IS NULL"
+        cursor.execute(delete_query, (project,))
+
+    connect_and_do(inner)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Manage experiments/tasks via MySQL database")
@@ -200,6 +208,8 @@ if __name__ == "__main__":
                         help="Fetch results of finished tasks")
     parser.add_argument("--schedule", action="store_true",
                         help="Schedule target PRs for another round of evaluation")
+    parser.add_argument("--remove_unfinished", type=str,
+                        help="Remove all unfinished tasks for a specific project")
 
     args = parser.parse_args()
     if args.status:
@@ -208,5 +218,7 @@ if __name__ == "__main__":
         fetch_results()
     elif args.schedule:
         schedule_target_prs()
+    elif args.remove_unfinished:
+        remove_unfinished(args.remove_unfinished)
     else:
         print("Must pass an argument.")

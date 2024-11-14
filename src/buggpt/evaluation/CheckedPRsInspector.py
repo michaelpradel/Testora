@@ -19,7 +19,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
 print("\n\n===========================\n\n")
 
 # print new results as csv
-minimum_timestamp = "2024-11-14 09:50:00"
+minimum_timestamp = "2024-11-14 10:40:00"
 print("Project, PR, Generated tests, Executed tests, Failures, Differences")
 for project, target_prs in project_to_target_prs().items():
     pr_results, _ = parse_log_files(
