@@ -186,9 +186,9 @@ def fetch_results():
     connect_and_do(inner)
 
 
-def schedule_target_prs():
-    for project, target_pr_nbs in project_to_target_prs().items():
-        write_tasks(project, target_pr_nbs)
+def schedule_target_prs(project):
+    target_pr_nbs = project_to_target_prs()[project]
+    write_tasks(project, target_pr_nbs)
 
 
 def remove_unfinished(project):
@@ -206,8 +206,8 @@ if __name__ == "__main__":
                         help="Show status of tasks")
     parser.add_argument("--fetch", action="store_true",
                         help="Fetch results of finished tasks")
-    parser.add_argument("--schedule", action="store_true",
-                        help="Schedule target PRs for another round of evaluation")
+    parser.add_argument("--schedule", type=str,
+                        help="Schedule target PRs of a specific project for another round of evaluation")
     parser.add_argument("--remove_unfinished", type=str,
                         help="Remove all unfinished tasks for a specific project")
 
@@ -217,7 +217,7 @@ if __name__ == "__main__":
     elif args.fetch:
         fetch_results()
     elif args.schedule:
-        schedule_target_prs()
+        schedule_target_prs(args.schedule)
     elif args.remove_unfinished:
         remove_unfinished(args.remove_unfinished)
     else:
