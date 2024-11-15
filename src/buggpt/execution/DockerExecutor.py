@@ -47,9 +47,9 @@ class DockerExecutor:
         coverage_files = ",".join(f"\"{f}\"" for f in self.coverage_files)
         # -u to avoid non-deterministic buffering
         command = (
-            f"timeout 300s coverage run "
+            f"timeout 300s python -u -m coverage run "
             f"--include={coverage_files} "
-            f"--data-file /tmp/coverage_report -u /tmp/BugGPT/BugGPT_test_code.py"
+            f"--data-file /tmp/coverage_report /tmp/BugGPT/BugGPT_test_code.py"
         )
 
         # for scipy and numpy, make sure we run inside the their dev environment
