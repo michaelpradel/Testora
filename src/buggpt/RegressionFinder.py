@@ -354,7 +354,10 @@ def check_pr(github_repo, cloned_repo_manager, pr):
             undefined_refs = get_undefined_references(test)
             if undefined_refs:
                 prompt = UndefinedRefsFixingPrompt(test, undefined_refs)
-                fixed_test = llm.query(prompt)[0]
+                raw_answer = llm.query(prompt)[0]
+                append_event(LLMEvent(pr_nb=pr.number,
+                          message="Raw answer", content=raw_answer))
+                fixed_test = prompt.parse_answer(raw_answer)
                 append_event(LLMEvent(pr_nb=pr.number,
                                       message="Fixed undefined references", content=fixed_test))
                 fixed_tests.append(fixed_test)
