@@ -46,18 +46,25 @@ class DockerExecutor:
         self.copy_code_to_container(code, "/tmp/BugGPT/BugGPT_test_code.py")
         coverage_files = ",".join(f"\"{f}\"" for f in self.coverage_files)
         # -u to avoid non-deterministic buffering
-        command = f"timeout 300s coverage run --include={
-            coverage_files} --data-file /tmp/coverage_report -u /tmp/BugGPT/BugGPT_test_code.py"
+        command = (
+            f"timeout 300s coverage run "
+            f"--include={coverage_files} "
+            f"--data-file /tmp/coverage_report -u /tmp/BugGPT/BugGPT_test_code.py"
+        )
 
         # for scipy and numpy, make sure we run inside the their dev environment
         if self.container.name.startswith("scipy-dev"):
-            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh"
-            command += " && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev"
-            command += " && {command}'"
+            command = (
+                f"bash -c 'source /root/conda/etc/profile.d/conda.sh"
+                f" && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev"
+                f" && {command}'"
+            )
         elif self.container.name.startswith("numpy-dev"):
-            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh"
-            command += " && source /root/conda/etc/profile.d/mamba.sh"
-            command += "' && mamba activate numpy-dev && {command}'"
+            command = (
+                f"bash -c 'source /root/conda/etc/profile.d/conda.sh"
+                f" && source /root/conda/etc/profile.d/mamba.sh"
+                f"' && mamba activate numpy-dev && {command}'"
+            )
 
         exec_result = self.container.exec_run(command)
         output = exec_result.output.decode("utf-8")
