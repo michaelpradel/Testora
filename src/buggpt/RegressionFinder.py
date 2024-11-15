@@ -16,11 +16,12 @@ from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.Exceptions import BugGPTException
 from buggpt.util.PullRequest import PullRequest
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4omini_model
-from buggpt.util.Logs import start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
+from buggpt.util.Logs import CoverageEvent, start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.util.UndefinedRefsFinder import get_undefined_references
 from buggpt.evaluation import EvalTaskManager
 from buggpt import Config
+from buggpt.execution.CoverageAnalyzer import summarize_coverage
 
 llm = LLMCache(OpenAIGPT(gpt4omini_model))
 
@@ -62,7 +63,9 @@ def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
     merged_code = merge_programs([test.code for test in test_executions])
     append_event(ErrorEvent(
         pr_nb=-1, message="Merged code", details=merged_code))
-    merged_outputs = docker_executor.execute_python_code(merged_code)
+    # TODO: in case we ever revive this code, use the coverage report provided here
+    merged_outputs, coverage_report = docker_executor.execute_python_code(
+        merged_code)
     append_event(ErrorEvent(
         pr_nb=-1, message="Merged output", details=merged_outputs))
     merged_outputs = clean_output(merged_outputs)
@@ -85,16 +88,19 @@ def merge_tests_and_execute(test_executions, docker_executor) -> List[str]:
 
 
 def execute_test(test_execution, docker_executor):
-    output = docker_executor.execute_python_code(test_execution.code)
+    output, coverage_report = docker_executor.execute_python_code(
+        test_execution.code)
     output = clean_output(output)
     test_execution.output = output
+    test_execution.coverage_report = coverage_report
 
 
-def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, commit):
+def execute_tests_on_commit(cloned_repo_manager, pr, test_executions, commit):
     cloned_repo = cloned_repo_manager.get_cloned_repo(
         commit)
     container_name = cloned_repo.container_name
-    docker_executor = DockerExecutor(container_name)
+    docker_executor = DockerExecutor(container_name,
+                                     coverage_files=pr.non_test_modified_python_files)
 
     append_event(
         Event(pr_nb=-1, message=f"Compiling {cloned_repo_manager.repo_name} at commit {commit} in container {container_name}"))
@@ -104,7 +110,7 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
         f"import {cloned_repo_manager.module_name}")
 
     append_event(
-        Event(pr_nb=pr_number, message=f"Done with compiling {cloned_repo_manager.repo_name} at commit {commit}"))
+        Event(pr_nb=pr.number, message=f"Done with compiling {cloned_repo_manager.repo_name} at commit {commit}"))
 
     try:
         if Config.use_program_merger:
@@ -112,14 +118,14 @@ def execute_tests_on_commit(cloned_repo_manager, pr_number, test_executions, com
             assert len(outputs) == len(test_executions)
             for output, test_execution in zip(outputs, test_executions):
                 test_execution.output = output
-                append_event(TestExecutionEvent(pr_nb=pr_number,
+                append_event(TestExecutionEvent(pr_nb=pr.number,
                                                 message="Test execution",
                                                 code=test_execution.code,
                                                 output=output))
         else:
             for test_execution in test_executions:
                 execute_test(test_execution, docker_executor)
-                append_event(TestExecutionEvent(pr_nb=pr_number,
+                append_event(TestExecutionEvent(pr_nb=pr.number,
                                                 message="Test execution",
                                                 code=test_execution.code,
                                                 output=test_execution.output))
@@ -203,10 +209,10 @@ def validate_output_difference(cloned_repo_manager, pr, old_execution, new_execu
     for _ in range(10):
         old_execution_repeated = TestExecution(old_execution.code)
         execute_tests_on_commit(cloned_repo_manager,
-                                pr.number, [old_execution_repeated], pr.pre_commit)
+                                pr, [old_execution_repeated], pr.pre_commit)
         new_execution_repeated = TestExecution(new_execution.code)
         execute_tests_on_commit(cloned_repo_manager,
-                                pr.number, [new_execution_repeated], pr.post_commit)
+                                pr, [new_execution_repeated], pr.post_commit)
         if old_execution.output != old_execution_repeated.output:
             return False
         if new_execution.output != new_execution_repeated.output:
@@ -230,9 +236,9 @@ def reduce_test(cloned_repo_manager, pr, old_execution, new_execution):
     # execute all variants
     old_executions = [TestExecution(t) for t in increasingly_smaller_tests]
     new_executions = [TestExecution(t) for t in increasingly_smaller_tests]
-    execute_tests_on_commit(cloned_repo_manager, pr.number,
+    execute_tests_on_commit(cloned_repo_manager, pr,
                             old_executions, pr.pre_commit)
-    execute_tests_on_commit(cloned_repo_manager, pr.number,
+    execute_tests_on_commit(cloned_repo_manager, pr,
                             new_executions, pr.post_commit)
 
     # find the last test that still shows a difference
@@ -256,7 +262,7 @@ def reduce_test(cloned_repo_manager, pr, old_execution, new_execution):
 
 def check_if_present_in_main(cloned_repo_manager, pr, new_execution):
     main_execution = TestExecution(new_execution.code)
-    execute_tests_on_commit(cloned_repo_manager, pr.number, [
+    execute_tests_on_commit(cloned_repo_manager, pr, [
                             main_execution], "main")
     return main_execution.output == new_execution.output
 
@@ -356,7 +362,7 @@ def check_pr(github_repo, cloned_repo_manager, pr):
                 prompt = UndefinedRefsFixingPrompt(test, undefined_refs)
                 raw_answer = llm.query(prompt)[0]
                 append_event(LLMEvent(pr_nb=pr.number,
-                          message="Raw answer", content=raw_answer))
+                                      message="Raw answer", content=raw_answer))
                 fixed_test = prompt.parse_answer(raw_answer)
                 append_event(LLMEvent(pr_nb=pr.number,
                                       message="Fixed undefined references", content=fixed_test))
@@ -369,13 +375,29 @@ def check_pr(github_repo, cloned_repo_manager, pr):
     old_executions = [TestExecution(t) for t in generated_tests]
     new_executions = [TestExecution(t) for t in generated_tests]
 
-    execute_tests_on_commit(cloned_repo_manager, pr.number,
+    execute_tests_on_commit(cloned_repo_manager, pr,
                             old_executions, pr.pre_commit)
-    execute_tests_on_commit(cloned_repo_manager, pr.number,
+    execute_tests_on_commit(cloned_repo_manager, pr,
                             new_executions, pr.post_commit)
 
     assert None not in [e.output for e in old_executions]
 
+    # analyze coverage during test execution
+    for (old_execution, new_execution) in zip(old_executions, new_executions):
+        assert old_execution.coverage_report is not None
+        assert new_execution.coverage_report is not None
+
+        diff_coverage_old = summarize_coverage(
+            pr, old_execution, is_old_version=True)
+        diff_coverage_new = summarize_coverage(
+            pr, new_execution, is_old_version=False)
+
+        details = f"Old: {diff_coverage_old}, New: {diff_coverage_new}"
+        append_event(CoverageEvent(pr_nb=pr.number,
+                                   message="Diff coverage",
+                                   details=details))
+
+    # analyze behavior of executions
     for (old_execution, new_execution) in zip(old_executions, new_executions):
         assert old_execution.output is not None
         assert new_execution.output is not None

@@ -6,3 +6,4 @@ from typing import Optional
 class TestExecution:
     code: str
     output: Optional[str] = None
+    coverage_report: Optional[str] = None

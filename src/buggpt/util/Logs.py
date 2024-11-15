@@ -51,6 +51,10 @@ class ErrorEvent(Event):
     details: str
 
 
+class CoverageEvent(Event):
+    details: str
+
+
 events: List = []
 last_time_stored = datetime.now()
 last_file_stored_to: Optional[str] = None

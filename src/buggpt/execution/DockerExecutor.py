@@ -6,10 +6,11 @@ from os import chdir, getcwd
 
 
 class DockerExecutor:
-    def __init__(self, container_name):
+    def __init__(self, container_name, coverage_files):
         client = docker.from_env()
         self.container = client.containers.get(container_name)
         self.container.start()
+        self.coverage_files = coverage_files
 
     def copy_code_to_container(self, code, target_file_path):
         target_dir = target_file_path.rsplit("/", 1)[0]
@@ -31,23 +32,38 @@ class DockerExecutor:
             data = open(tar_file, "rb").read()
             self.container.put_archive(target_dir, data)
 
+    def copy_file_from_container(self, file_path_in_container, target_file_path):
+        data, _ = self.container.get_archive(file_path_in_container)
+        with open(target_file_path, "wb") as f:
+            for d in data:
+                f.write(d)
+
     def execute_python_code(self, code):
         # create a fresh directory to get rid of any old state
         self.container.exec_run("rm -rf /tmp/BugGPT")
         self.container.exec_run("mkdir /tmp/BugGPT")
 
         self.copy_code_to_container(code, "/tmp/BugGPT/BugGPT_test_code.py")
-        command = "timeout 300s python -u /tmp/BugGPT/BugGPT_test_code.py"  # -u to avoid non-deterministic buffering
-        
+        coverage_files = ",".join(f"\"{f}\"" for f in self.coverage_files)
+        # -u to avoid non-deterministic buffering
+        command = f"timeout 300s coverage run --include={coverage_files} --data-file /tmp/coverage_report -u /tmp/BugGPT/BugGPT_test_code.py"
+
         # for scipy and numpy, make sure we run inside the their dev environment
         if self.container.name.startswith("scipy-dev"):
-            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev && {command}'"
+            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev && {
+                command}'"
         elif self.container.name.startswith("numpy-dev"):
-            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate numpy-dev && {command}'"
-        
+            command = f"bash -c 'source /root/conda/etc/profile.d/conda.sh && source /root/conda/etc/profile.d/mamba.sh && mamba activate numpy-dev && {
+                command}'"
+
         exec_result = self.container.exec_run(command)
         output = exec_result.output.decode("utf-8")
-        return output
+
+        self.copy_file_from_container("/tmp/coverage_report", "coverage_report")
+        with open("coverage_report", "r") as f:
+            coverage_report = f.read()
+
+        return output, coverage_report
 
 
 if __name__ == "__main__":
@@ -59,6 +75,6 @@ x.foo()
 print("never reach this")
 """
 
-    executor = DockerExecutor("pandas-dev")
+    executor = DockerExecutor("pandas-dev", coverage_files=[])
     output = executor.execute_python_code(code)
     print(output)
