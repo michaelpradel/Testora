@@ -14,3 +14,4 @@ unidiff==0.7.5
 mypy
 mysql-connector-python
 requests
+coverage
