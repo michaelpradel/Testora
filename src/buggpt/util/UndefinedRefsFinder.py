@@ -21,6 +21,8 @@ def get_undefined_references(src):
 
 if __name__ == "__main__":
     code = """
+from xx import bar
+    
 def foo(l):
     l()
 
