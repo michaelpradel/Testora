@@ -13,3 +13,5 @@ results_*.json
 .worker_id
 candidate_projects*.csv
 .target_project
+.coverage
+coverage.json
