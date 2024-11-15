@@ -8,6 +8,10 @@ class UndefinedRefsFixingPrompt:
         instruction_single = """
 This Python code has an undefined reference to: <REF>. Fix it.
 
+```python
+<CODE>
+```
+
 Respond only with Python code wrapped into ```python ... ```. Give no explanations.
 """
 
