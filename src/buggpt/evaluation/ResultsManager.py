@@ -24,12 +24,13 @@ def result_files_for_project(project_name, minimum_timestamp=None):
             yield os.path.join(base_dir, project_name, pr_result_file)
 
 
-def current_results():
+def current_results(include_archive=True):
     project_to_prs_and_timestamps = {}
     for project_dir in os.listdir(base_dir):
         project_to_prs_and_timestamps[project_dir] = []
-        result_dirs = [os.path.join(base_dir, project_dir), os.path.join(
-            base_dir, project_dir, "archive")]
+        result_dirs = [os.path.join(base_dir, project_dir)]
+        if include_archive:
+            result_dirs.append(os.path.join(base_dir, project_dir, "archive"))
         for result_dir in result_dirs:
             for pr_result_file in os.listdir(result_dir):
                 if pr_result_file.endswith(".json"):
@@ -41,10 +42,11 @@ def current_results():
 
 
 def add_result(project_name, pr_nb, timestamp, result):
-    old_results = current_results()
+    all_old_results = current_results()
+    non_archive_old_results = current_results(False)
 
     # check if result already exists
-    for old_pr_nb, old_timestamp in old_results[project_name]:
+    for old_pr_nb, old_timestamp in all_old_results[project_name]:
         if old_pr_nb == pr_nb and old_timestamp == timestamp:
             return
 
@@ -58,7 +60,7 @@ def add_result(project_name, pr_nb, timestamp, result):
         f.write(result)
 
     # Check if it replaces an old result (if yes, move old result to archive)
-    for old_pr_nb, old_timestamp in old_results[project_name]:
+    for old_pr_nb, old_timestamp in non_archive_old_results[project_name]:
         if old_pr_nb == pr_nb:
             old_target_file = os.path.join(base_dir, project_name,
                                            f"{old_pr_nb}_{old_timestamp}.json")
