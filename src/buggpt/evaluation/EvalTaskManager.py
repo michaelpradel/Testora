@@ -187,11 +187,27 @@ def fetch_results():
 
 
 def schedule_target_prs(project):
+    if project == "all":
+        for project in project_to_target_prs().keys():
+            schedule_target_prs_for_project(project)
+    else:
+        schedule_target_prs_for_project(project)
+
+
+def schedule_target_prs_for_project(project):
     target_pr_nbs = project_to_target_prs()[project]
     write_tasks(project, target_pr_nbs)
 
 
 def remove_unfinished(project):
+    if project == "all":
+        for project in project_to_target_prs().keys():
+            remove_unfinished_for_project(project)
+    else:
+        remove_unfinished_for_project(project)
+
+
+def remove_unfinished_for_project(project):
     def inner(connection, cursor):
         delete_query = "DELETE FROM tasks WHERE project=%s AND result IS NULL"
         cursor.execute(delete_query, (project,))
