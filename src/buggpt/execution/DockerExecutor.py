@@ -33,7 +33,7 @@ class DockerExecutor:
             data = open(tar_file, "rb").read()
             self.container.put_archive(target_dir, data)
 
-    def copy_file_from_container(self, file_path_in_container, target_file_path):
+    def copy_file_from_container(self, file_path_in_container, target_dir):
         data, _ = self.container.get_archive(file_path_in_container)
         temp_tar_file = "temp.tar"
         with open(temp_tar_file, "wb") as f:
@@ -41,7 +41,7 @@ class DockerExecutor:
                 f.write(d)
         
         with tarfile.open(temp_tar_file, mode="r") as tar:
-            tar.extractall(target_file_path)
+            tar.extract(target_dir)
 
         os.remove(temp_tar_file)
 
@@ -77,7 +77,7 @@ class DockerExecutor:
         output = exec_result.output.decode("utf-8")
 
         self.copy_file_from_container(
-            "/tmp/coverage_report", "coverage_report")
+            "/tmp/coverage_report", ".")
         with open("coverage_report", "rb") as f:
             coverage_report = f.read()
 
