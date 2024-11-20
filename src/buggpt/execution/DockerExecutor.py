@@ -7,11 +7,13 @@ from os import chdir, getcwd
 
 
 class DockerExecutor:
-    def __init__(self, container_name, coverage_files):
+    def __init__(self, container_name, project_name, coverage_files):
         client = docker.from_env()
         self.container = client.containers.get(container_name)
         self.container.start()
-        self.coverage_files = coverage_files
+
+        # adapt paths of coverage files to the container's file system
+        self.coverage_files = [f"/home/{project_name}/{f}" for f in coverage_files]
 
     def copy_code_to_container(self, code, target_file_path):
         target_dir = target_file_path.rsplit("/", 1)[0]
@@ -93,6 +95,6 @@ x.foo()
 print("never reach this")
 """
 
-    executor = DockerExecutor("pandas-dev", coverage_files=[])
+    executor = DockerExecutor("pandas-dev", "pandas", coverage_files=[])
     output = executor.execute_python_code(code)
     print(output)

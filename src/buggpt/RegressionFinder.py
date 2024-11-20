@@ -100,6 +100,7 @@ def execute_tests_on_commit(cloned_repo_manager, pr, test_executions, commit):
         commit)
     container_name = cloned_repo.container_name
     docker_executor = DockerExecutor(container_name,
+                                     project_name=cloned_repo_manager.repo_name,
                                      coverage_files=pr.non_test_modified_python_files)
 
     append_event(

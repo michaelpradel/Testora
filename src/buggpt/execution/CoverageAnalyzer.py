@@ -22,6 +22,7 @@ def summarize_coverage(pr, test_execution, is_old_version):
     with open(tmp_coverage_file, "wb") as f:
         f.write(test_execution.coverage_report)
     coverage_data = CoverageData(tmp_coverage_file)
+    coverage_data.read()
 
     print(f"Measured files: {coverage_data.measured_files()}")
     return DiffCoverage(0, 0, 0)
