@@ -1,3 +1,4 @@
+import os
 import docker
 import tarfile
 import tempfile
@@ -34,9 +35,15 @@ class DockerExecutor:
 
     def copy_file_from_container(self, file_path_in_container, target_file_path):
         data, _ = self.container.get_archive(file_path_in_container)
-        with open(target_file_path, "wb") as f:
+        temp_tar_file = "temp.tar"
+        with open(temp_tar_file, "wb") as f:
             for d in data:
                 f.write(d)
+        
+        with tarfile.open(temp_tar_file, mode="r") as tar:
+            tar.extractall(target_file_path)
+
+        os.remove(temp_tar_file)
 
     def execute_python_code(self, code):
         # create a fresh directory to get rid of any old state
