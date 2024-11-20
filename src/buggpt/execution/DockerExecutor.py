@@ -41,7 +41,7 @@ class DockerExecutor:
                 f.write(d)
         
         with tarfile.open(temp_tar_file, mode="r") as tar:
-            tar.extract(target_dir)
+            tar.extractall(target_dir)
 
         os.remove(temp_tar_file)
 
