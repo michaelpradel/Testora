@@ -32,7 +32,7 @@ class PullRequest:
         modified_python_files = [
             f for f in self.patch.modified_files if f.path.endswith(".py") or f.path.endswith(".pyx")]
         self.non_test_modified_python_files = [
-            f.path for f in modified_python_files if "test" not in f.path and f.path.startswith(module_name)]
+            f.path for f in modified_python_files if "test" not in f.path and (f.path.startswith(module_name) or f.path.startswith(f"src/{module_name}"))]
 
         # Python and other PLs
         modified_code_files = [
