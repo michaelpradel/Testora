@@ -1,6 +1,9 @@
 from dataclasses import dataclass
+import io
 import sqlite3
 from coverage.data import CoverageData
+
+from buggpt.util.Exceptions import BugGPTException
 
 
 @dataclass
@@ -15,20 +18,19 @@ class DiffCoverage:
 
 def summarize_coverage(pr, test_execution, is_old_version):
     # get coverage data
-    # Load the binary data into an in-memory SQLite database
-    conn = sqlite3.connect(":memory:")
-    # Decode if stored as a string
-    conn.executescript(test_execution.coverage_report.decode())
-
-    # Initialize `CoverageData` with the SQLite connection
-    coverage_data = CoverageData()
-    coverage_data.read_from_connection(conn)
+    tmp_coverage_file = "coverage_report"
+    with open(tmp_coverage_file, "wb") as f:
+        f.write(test_execution.coverage_report)
+    coverage_data = CoverageData(tmp_coverage_file)
 
     total_modified_lines = 0
     total_covered_modified_lines = 0
     target_files = pr.non_test_modified_code_files
     for target_file in target_files:
         covered_lines = coverage_data.lines(target_file)
+        if covered_lines is None:
+            raise BugGPTException(
+                f"Coverage data for {target_file} not found.")
 
         # get modified lines
         if is_old_version:

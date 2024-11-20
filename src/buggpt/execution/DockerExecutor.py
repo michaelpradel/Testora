@@ -78,7 +78,7 @@ class DockerExecutor:
 
         self.copy_file_from_container(
             "/tmp/coverage_report", ".")
-        with open("coverage_report", "r") as f:
+        with open("coverage_report", "rb") as f:
             coverage_report = f.read()
 
         return output, coverage_report
