@@ -144,7 +144,7 @@ class PullRequest:
                 for line in hunk:
                     if line.is_removed:
                         self.old_file_path_to_modified_lines.setdefault(
-                            patched_file.path, []).append(line.target_line_no)
+                            patched_file.path, []).append(line.source_line_no)
                     elif line.is_added:
                         self.new_file_path_to_modified_lines.setdefault(
-                            patched_file.path, []).append(line.source_line_no)
+                            patched_file.path, []).append(line.target_line_no)
