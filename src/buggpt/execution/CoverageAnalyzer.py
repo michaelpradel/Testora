@@ -33,16 +33,17 @@ def summarize_coverage(pr, test_execution, is_old_version):
     total_covered_modified_lines = 0
     target_files = pr.non_test_modified_python_files
     for target_file in target_files:
-        covered_lines = coverage_data.lines(file_prefix + target_file)
-        if covered_lines is None:
-            raise BugGPTException(
-                f"Coverage data for {target_file} not found.")
-
         # get modified lines
         if is_old_version:
             modified_lines = pr.old_file_path_to_modified_lines[target_file]
         else:
             modified_lines = pr.new_file_path_to_modified_lines[target_file]
+
+        # get covered lines
+        covered_lines = coverage_data.lines(file_prefix + target_file)
+        if covered_lines is None:
+            # happens, e.g., when generated test doesn't invoke the tested project
+            covered_lines = set()
 
         total_modified_lines += len(modified_lines)
         total_covered_modified_lines += len(set(modified_lines)

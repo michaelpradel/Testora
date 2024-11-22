@@ -38,6 +38,7 @@ class PRResult:
         self.nb_test_executions = 0
         self.nb_test_failures = 0
         self.nb_diff_covered_tests = 0
+        self.avg_diff_coverage = 0.0
         self.nb_different_behavior = 0
         self.classification_results = []
 
@@ -160,7 +161,7 @@ class PRResult:
                 f"{self.nb_test_executions} test executions, "
                 f"{self.nb_diff_covered_tests} tests covered diff "
                 f"({100 * self.nb_diff_covered_tests /
-                    self.nb_test_executions:.1f}%), "
+                    self.nb_generated_tests:.1f}%), "
                 f"{self.nb_test_failures} failures "
                 f"({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), "
                 f"{len(self.classification_results)} differences ({
