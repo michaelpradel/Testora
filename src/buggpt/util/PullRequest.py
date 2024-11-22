@@ -16,8 +16,8 @@ class PullRequest:
         self.pre_commit = self.parents[0].sha
 
         self._pr_url_to_patch()
-        self._get_non_test_modified_files()
-        self._get_modified_lines()
+        self._compute_non_test_modified_files()
+        self._compute_modified_lines()
 
     def _pr_url_to_patch(self):
         diff_url = self.github_pr.html_url + ".diff"
@@ -25,7 +25,7 @@ class PullRequest:
         encoding = diff.headers.get_charsets()[0]
         self.patch = PatchSet(diff, encoding=encoding)
 
-    def _get_non_test_modified_files(self):
+    def _compute_non_test_modified_files(self):
         module_name = self.cloned_repo_manager.module_name
 
         # Python files only
@@ -129,7 +129,7 @@ class PullRequest:
         result = list(dict.fromkeys(result))
         return result
 
-    def _get_modified_lines(self):
+    def _compute_modified_lines(self):
         self.old_file_path_to_modified_lines = {}
         self.new_file_path_to_modified_lines = {}
 
@@ -140,11 +140,13 @@ class PullRequest:
         patch = PatchSet(diff)
 
         for patched_file in patch:
+            self.old_file_path_to_modified_lines[patched_file.path] = set()
+            self.new_file_path_to_modified_lines[patched_file.path] = set()
             for hunk in patched_file:
                 for line in hunk:
                     if line.is_removed:
-                        self.old_file_path_to_modified_lines.setdefault(
-                            patched_file.path, []).append(line.source_line_no)
+                        self.old_file_path_to_modified_lines[patched_file.path].add(
+                            line.source_line_no)
                     elif line.is_added:
-                        self.new_file_path_to_modified_lines.setdefault(
-                            patched_file.path, []).append(line.target_line_no)
+                        self.new_file_path_to_modified_lines[patched_file.path].add(
+                            line.target_line_no)
