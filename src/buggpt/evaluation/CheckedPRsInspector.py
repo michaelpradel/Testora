@@ -19,8 +19,8 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
 print("\n\n===========================\n\n")
 
 # print new results as csv
-minimum_timestamp = "2024-11-15 08:57:30"
-print("Project, PR, Generated tests, Executed tests, Failures, Differences")
+minimum_timestamp = "2024-11-22 09:05:00"
+print("Project, PR, Generated tests, Executed tests, Diff-covered tests, Failures, Differences")
 for project, target_prs in project_to_target_prs().items():
     pr_results, _ = parse_log_files(
         result_files_for_project(project, minimum_timestamp))
@@ -38,6 +38,7 @@ for project, target_prs in project_to_target_prs().items():
                 str(target_pr),
                 str(pr_result.nb_generated_tests),
                 str(pr_result.nb_test_executions),
+                str(pr_result.nb_diff_covered_tests),
                 str(pr_result.nb_test_failures),
                 str(pr_result.nb_different_behavior)
             ]

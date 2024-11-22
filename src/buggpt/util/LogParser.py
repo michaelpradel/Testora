@@ -37,6 +37,7 @@ class PRResult:
         self.nb_generated_tests = 0
         self.nb_test_executions = 0
         self.nb_test_failures = 0
+        self.nb_diff_covered_tests = 0
         self.nb_different_behavior = 0
         self.classification_results = []
 
@@ -63,6 +64,19 @@ class PRResult:
 
             if entry["message"] == "Different outputs":
                 self.nb_different_behavior += 1
+
+            if entry["message"] == "Diff coverage":
+                has_diff_coverage = False
+                old_coverage_results, new_coverage_results = entry["details"].split(
+                    ", ")
+                for coverage_results in [old_coverage_results, new_coverage_results]:
+                    pattern = r"\((\d+)/(\d+)\)"
+                    match = re.search(pattern, coverage_results)
+                    if int(match.group(1)) > 0:
+                        has_diff_coverage = True
+                        break
+                if has_diff_coverage:
+                    self.nb_diff_covered_tests += 1
 
         start_time = parse_time_stamp(entries[0]["timestamp"])
         end_time = parse_time_stamp(entries[-1]["timestamp"])
@@ -141,7 +155,19 @@ class PRResult:
                 elif cls.classification == Classification.REGRESSION:
                     nb_regressions += 1
 
-            return f"{self.nb_generated_tests} generated tests, {self.nb_test_executions} test executions, {self.nb_test_failures} failures ({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), {len(self.classification_results)} differences ({nb_intended_changes} intended, {nb_coincidental_fixes} coincidental, {nb_regressions} regressions)"
+            return (
+                f"{self.nb_generated_tests} generated tests, "
+                f"{self.nb_test_executions} test executions, "
+                f"{self.nb_diff_covered_tests} tests covered diff "
+                f"({100 * self.nb_diff_covered_tests /
+                    self.nb_test_executions:.1f}%), "
+                f"{self.nb_test_failures} failures "
+                f"({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), "
+                f"{len(self.classification_results)} differences ({
+                    nb_intended_changes} intended, "
+                f"{nb_coincidental_fixes} coincidental, {
+                    nb_regressions} regressions)"
+            )
 
     def __str__(self):
         return f"PR {self.number}: {self.status()} -- {self.summary()}"
