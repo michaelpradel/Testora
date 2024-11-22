@@ -268,7 +268,10 @@ def equal_modulo_docstrings(code1, code2):
 
 
 def get_locations_of_calls(code):
-    tree = cst.parse_module(code)
+    try:
+        tree = cst.parse_module(code)
+    except cst.ParserSyntaxError:
+        return []
     wrapper = cst.metadata.MetadataWrapper(tree)
     call_location_extractor = CallLocationExtractor()
     wrapper.visit(call_location_extractor)
