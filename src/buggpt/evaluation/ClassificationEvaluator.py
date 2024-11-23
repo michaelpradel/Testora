@@ -1,37 +1,23 @@
 import argparse
 
-from buggpt.util.LogParser import parse_log_files, PRResult, pr_results_as_dict
+from buggpt.util.LogParser import parse_log_files, PRResult
 
 
-def extract_case(log_file: str) -> PRResult:
-    # find PR number
-    pr_number = None
-    for segment in log_file.split("_"):
-        if segment.startswith("pr"):
-            pr_number = int(segment[2:].replace(".json", ""))
-            break
-    if pr_number is None:
-        raise ValueError(f"Could not find PR number in file name {log_file}")
+def create_ground_truth_template(log_file):
+    pr_results, _ = parse_log_files([log_file])
+    pr_result = pr_results[0]
 
-    # read logs
-    pr_to_info, _ = parse_log_files(log_files=[log_file])
-    pr_number_to_result = pr_results_as_dict(pr_to_info)
-    return pr_number_to_result[pr_number]
-
+    if pr_result.nb_different_behavior == 0:
+        print("No differentiating test case found in log file")
+        return
+    
+    # CONT: use pr_result.differentiating_tests (to be filled by improved logging)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tp_logs", nargs="+", required=True)
-    parser.add_argument("--fp_logs", nargs="+", required=True)
+    parser.add_argument('--create_ground_truth_template', type=str,
+                        help='Create a ground truth template from the given log file')
     args = parser.parse_args()
 
-    tp_cases = [extract_case(log_file) for log_file in args.tp_logs]
-    fp_cases = [extract_case(log_file) for log_file in args.fp_logs]
-
-    print(f"Parsed {len(tp_cases)} TP cases and {len(fp_cases)} FP cases.")
-    print("TP cases:")
-    for case in tp_cases:
-        print(f"{case}\n")
-    print("FP cases:")
-    for case in fp_cases:
-        print(f"{case}\n")
+    if args.create_ground_truth_template:
+        create_ground_truth_template(args.create_ground_truth_template)

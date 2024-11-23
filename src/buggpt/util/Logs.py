@@ -29,6 +29,11 @@ class ComparisonEvent(Event):
     new_output: str
 
 
+class PreClassificationEvent(Event):
+    test_code: str
+    old_output: str
+    new_output: str
+
 class ClassificationEvent(Event):
     is_relevant_change: Optional[bool]
     is_deterministic: Optional[bool]

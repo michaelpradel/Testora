@@ -16,7 +16,7 @@ from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.Exceptions import BugGPTException
 from buggpt.util.PullRequest import PullRequest
 from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4omini_model
-from buggpt.util.Logs import CoverageEvent, start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
+from buggpt.util.Logs import CoverageEvent, PreClassificationEvent, start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.util.UndefinedRefsFinder import get_undefined_references
 from buggpt.evaluation import EvalTaskManager
@@ -269,6 +269,12 @@ def check_if_present_in_main(cloned_repo_manager, pr, new_execution):
 
 
 def classify_regression(project_name, pr, changed_functions, old_execution, new_execution):
+    append_event(PreClassificationEvent(pr_nb=pr.number,
+                                        message="Pre-classification",
+                                        test_code=old_execution.code,
+                                        old_output=old_execution.output,
+                                        new_output=new_execution.output))
+
     prompt = RegressionClassificationPrompt(
         project_name, pr, changed_functions, old_execution.code, old_execution.output, new_execution.output)
     raw_answer = llm.query(prompt)

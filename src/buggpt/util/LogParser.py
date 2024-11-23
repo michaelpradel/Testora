@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 import json
@@ -23,6 +24,12 @@ class ClassificationResult:
         self.new_output = new_output
         self.classification: Classification = Classification.UNKNOWN
 
+@dataclass
+class DifferentiatingTest:
+    test_code: str
+    old_output: str
+    new_output: str
+
 
 class PRResult:
     def __init__(self, number, entries):
@@ -40,6 +47,7 @@ class PRResult:
         self.nb_diff_covered_tests = 0
         self.avg_diff_coverage = 0.0
         self.nb_different_behavior = 0
+        self.differentiating_tests = []
         self.classification_results = []
 
         # fill details with proper values
