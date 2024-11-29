@@ -46,8 +46,10 @@ def connect_and_do(func):
 
 def write_tasks(project_name, pr_nbs: List[int]):
     def inner(connection, cursor):
-        insert_query = f"INSERT INTO {
-            table_name} (project, pr) VALUES (%s, %s)"
+        insert_query = (
+            f"INSERT INTO {table_name} (project, pr) "
+            f"VALUES (%s, %s)"
+        )
         for pr_nb in pr_nbs:
             print(f"Inserting task for PR {pr_nb} of {project_name}")
             cursor.execute(insert_query, (project_name, pr_nb))
@@ -60,8 +62,10 @@ def fetch_task(table_name="tasks"):
         connection.start_transaction()
 
         # check if there's already an unfinished task assigned to this container; if yes, work on it
-        select_query = f"SELECT project, pr FROM {
-            table_name} WHERE worker=%s AND result IS NULL"
+        select_query = (
+            f"SELECT project, pr FROM {table_name} "
+            f"WHERE worker=%s AND result IS NULL"
+        )
         cursor.execute(select_query, (my_worker_id,))
         row = cursor.fetchone()
         if row:
@@ -71,17 +75,20 @@ def fetch_task(table_name="tasks"):
         target_project_file = Path(".target_project")
         with open(target_project_file, "r") as f:
             target_project = f.read().strip()
-        target_project = get_target_project()
-        select_query = f"SELECT project, pr FROM {
-            table_name} WHERE worker IS NULL AND project=%s LIMIT 1"
+        select_query = (
+            f"SELECT project, pr FROM {table_name} "
+            f"WHERE worker IS NULL AND project=%s LIMIT 1"
+        )
         cursor.execute(select_query, (target_project,))
 
         row = cursor.fetchone()
 
         if row:
             project, pr = row[0], row[1]
-            update_query = f"UPDATE {
-                table_name} SET worker=%s WHERE project=%s AND pr=%s AND worker IS NULL"
+            update_query = (
+                f"UPDATE {table_name} SET worker = %s "
+                f"WHERE project = %s AND pr = %s AND worker IS NULL"
+            )
             cursor.execute(update_query, (my_worker_id, project, pr))
             connection.commit()
             return project, pr
@@ -167,8 +174,10 @@ def fetch_results():
             prs_and_timestamps = project_to_prs_and_timestamps[project]
 
             print(f"Fetching results for {project}")
-            done_prs_and_timestamps_query = f"SELECT pr, timestamp FROM {
-                table_name} WHERE project=%s AND result IS NOT NULL"
+            done_prs_and_timestamps_query = (
+                f"SELECT pr, timestamp FROM {table_name} "
+                f"WHERE project = %s AND result IS NOT NULL"
+            )
             cursor.execute(done_prs_and_timestamps_query, (project,))
             done_prs_and_timestamps = [[str(row[0]), str(row[1])]
                                        for row in cursor.fetchall()]
@@ -176,8 +185,10 @@ def fetch_results():
             nb_new_results = 0
             for pr, timestamp in done_prs_and_timestamps:
                 if [pr, timestamp] not in prs_and_timestamps:
-                    select_query = f"SELECT result FROM {
-                        table_name} WHERE project=%s AND pr=%s AND timestamp=%s"
+                    select_query = (
+                        f"SELECT result FROM {table_name} "
+                        f"WHERE project = %s AND pr = %s AND timestamp = %s"
+                    )
                     cursor.execute(
                         select_query, (project, pr, timestamp))
                     result = cursor.fetchone()[0]
@@ -218,8 +229,10 @@ def remove_unfinished(project):
 
 def remove_unfinished_for_project(project):
     def inner(connection, cursor):
-        delete_query = f"DELETE FROM {
-            table_name} WHERE project=%s AND result IS NULL"
+        delete_query = (
+            f"DELETE FROM {table_name} "
+            f"WHERE project = %s AND result IS NULL"
+        )
         cursor.execute(delete_query, (project,))
 
     connect_and_do(inner)

@@ -88,8 +88,8 @@ def create_ground_truth_template(log_file):
     target_file = f"{target_dir}/{pr_result.number}.json"
 
     if os.path.exists(target_file):
-        print(f"Warning: Ground truth template already exists at {
-              target_file}. Remove it first if you want to create a new one.")
+        print(f"Warning: Ground truth template already exists at "
+              f"{target_file}. Remove it first if you want to create a new one.")
         return
 
     with open(target_file, "w") as f:

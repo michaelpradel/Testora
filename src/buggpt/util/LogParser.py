@@ -190,14 +190,13 @@ class PRResult:
                 f"{self.nb_generated_tests} generated tests, "
                 f"{self.nb_test_executions} test executions, "
                 f"{self.nb_diff_covered_tests} tests covered diff "
-                f"({100 * self.nb_diff_covered_tests /
-                    self.nb_generated_tests:.1f}%), "
+                f"({100 * self.nb_diff_covered_tests / self.nb_generated_tests:.1f}%), "
                 f"{self.nb_test_failures} failures "
                 f"({100 * self.nb_test_failures / self.nb_test_executions:.1f}%), "
-                f"{len(self.classification_results)} differences ({
-                    nb_intended_changes} intended, "
-                f"{nb_coincidental_fixes} coincidental, {
-                    nb_regressions} regressions)"
+                f"{len(self.classification_results)} differences("
+                f"{nb_intended_changes} intended, "
+                f"{nb_coincidental_fixes} coincidental, "
+                f"{nb_regressions} regressions)"
             )
 
     def __str__(self):
@@ -275,12 +274,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     pr_results, meta_results = parse_log_files(args.files)
-    print(f"Found {len(pr_results)} PRs and {
-          len(meta_results)} meta-results in log files.")
+    print(f"Found {len(pr_results)} PRs and "
+          f"{len(meta_results)} meta-results in log files.")
     print()
     for pr_result in pr_results:
-        print(f"PR {pr_result.number}: {len(pr_result.entries)} entries, {
-              len(pr_result.classification_results)} classification results")
+        print(f"PR {pr_result.number}: {len(pr_result.entries)} entries, "
+              f"{len(pr_result.classification_results)} classification results")
         print(f"Status: {pr_result.status()}")
         print(f"Summary: {pr_result.summary()}")
         print()

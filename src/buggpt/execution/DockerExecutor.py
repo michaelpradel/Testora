@@ -83,7 +83,7 @@ class DockerExecutor:
         with open("coverage_report", "rb") as f:
             coverage_report = f.read()
 
-        return output, coverage_report
+            return output, coverage_report
 
 
 if __name__ == "__main__":

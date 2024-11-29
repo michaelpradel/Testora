@@ -13,5 +13,12 @@
             "module": "buggpt.evaluation.EvalTaskManager",
             "args": ["--fetch"],
         },
+        {
+            "name": "ClassificationEvaluator",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "buggpt.evaluation.ClassificationEvaluator",
+            "args": ["--evaluate"],
+        },
     ]
 }
