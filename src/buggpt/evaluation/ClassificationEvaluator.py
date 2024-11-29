@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List
 
 from buggpt.evaluation import EvalTaskManager
+from buggpt.evaluation.EvalTaskManager import classification_pr_nb
 from buggpt.execution.TestExecution import TestExecution
 from buggpt.util.LogParser import DifferentiatingTest, parse_log_files
 from buggpt.RegressionFinder import classify_regression, get_repo
@@ -166,7 +167,7 @@ def evaluate():
     # store results in DB
     store_logs()
     log = get_logs_as_json()
-    EvalTaskManager.write_results(target_project, pr.number,
+    EvalTaskManager.write_results(target_project, classification_pr_nb,
                                   log, table_name="classification_tasks")
     reset_logs()
 
