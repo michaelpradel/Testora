@@ -128,7 +128,7 @@ def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
 
     append_event(ClassifierEvalEvent(
         pr_nb=pr.number,
-        message=(f"Predicted as unintended: {predicted_as_unintended}"
+        message=(f"Predicted as unintended: {predicted_as_unintended}; "
                  f"Ground truth label: {diff_test.label}")
     ))
 
