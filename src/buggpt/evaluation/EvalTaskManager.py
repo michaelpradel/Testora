@@ -17,6 +17,8 @@ with open(".db_token", "r") as f:
 with open(".worker_id", "r") as f:
     my_worker_id = f.read().strip()
 
+classification_pr_nb = -23
+
 
 def connect_and_do(func):
     try:
@@ -44,7 +46,8 @@ def connect_and_do(func):
 
 def write_tasks(project_name, pr_nbs: List[int]):
     def inner(connection, cursor):
-        insert_query = "INSERT INTO tasks (project, pr) VALUES (%s, %s)"
+        insert_query = f"INSERT INTO {
+            table_name} (project, pr) VALUES (%s, %s)"
         for pr_nb in pr_nbs:
             print(f"Inserting task for PR {pr_nb} of {project_name}")
             cursor.execute(insert_query, (project_name, pr_nb))
@@ -52,12 +55,13 @@ def write_tasks(project_name, pr_nbs: List[int]):
     connect_and_do(inner)
 
 
-def fetch_task():
+def fetch_task(table_name="tasks"):
     def inner(connection, cursor):
         connection.start_transaction()
 
         # check if there's already an unfinished task assigned to this container; if yes, work on it
-        select_query = "SELECT project, pr FROM tasks WHERE worker=%s AND result IS NULL"
+        select_query = f"SELECT project, pr FROM {
+            table_name} WHERE worker=%s AND result IS NULL"
         cursor.execute(select_query, (my_worker_id,))
         row = cursor.fetchone()
         if row:
@@ -65,21 +69,19 @@ def fetch_task():
 
         # otherwise, fetch a new task and mark it as assigned to this container
         target_project_file = Path(".target_project")
-        if target_project_file.exists():
-            # if we have a target project, only fetch tasks from that project
-            with open(target_project_file, "r") as f:
-                target_project = f.read().strip()
-            select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL AND project=%s LIMIT 1"
-            cursor.execute(select_query, (target_project,))
-        else:
-            select_query = "SELECT project, pr FROM tasks WHERE worker IS NULL LIMIT 1"
-            cursor.execute(select_query)
+        with open(target_project_file, "r") as f:
+            target_project = f.read().strip()
+        target_project = get_target_project()
+        select_query = f"SELECT project, pr FROM {
+            table_name} WHERE worker IS NULL AND project=%s LIMIT 1"
+        cursor.execute(select_query, (target_project,))
 
         row = cursor.fetchone()
 
         if row:
             project, pr = row[0], row[1]
-            update_query = "UPDATE tasks SET worker=%s WHERE project=%s AND pr=%s AND worker IS NULL"
+            update_query = f"UPDATE {
+                table_name} SET worker=%s WHERE project=%s AND pr=%s AND worker IS NULL"
             cursor.execute(update_query, (my_worker_id, project, pr))
             connection.commit()
             return project, pr
@@ -90,9 +92,9 @@ def fetch_task():
     return connect_and_do(inner)
 
 
-def write_results(project, pr, result):
+def write_results(project, pr, result, table_name="tasks"):
     def inner(connection, cursor):
-        insert_query = "UPDATE tasks SET result=%s WHERE project=%s AND pr=%s"
+        insert_query = "UPDATE {table_name} SET result=%s WHERE project=%s AND pr=%s"
         cursor.execute(insert_query, (result, project, pr))
 
     connect_and_do(inner)
@@ -108,29 +110,29 @@ def show_status():
                 project_to_count[row[0]] = row[1]
             return project_to_count
 
-        count_all = """
+        count_all = f"""
             SELECT project, COUNT(*) AS total_count
-            FROM tasks
+            FROM {table_name}
             GROUP BY project;"""
         project_to_count_all = count_per_project(count_all)
 
-        count_assigned = """
+        count_assigned = f"""
             SELECT project, COUNT(*) AS assigned_count
-            FROM tasks
+            FROM {table_name}
             WHERE worker IS NOT NULL AND result IS NULL
             GROUP BY project;"""
         project_to_count_assigned = count_per_project(count_assigned)
 
-        count_unassigned = """
+        count_unassigned = f"""
             SELECT project, COUNT(*) AS unassigned_count
-            FROM tasks
+            FROM {table_name}
             WHERE result IS NULL AND worker IS NULL
             GROUP BY project;"""
         project_to_count_unassigned = count_per_project(count_unassigned)
 
-        count_done = """
+        count_done = f"""
             SELECT project, COUNT(*) AS done_count
-            FROM tasks
+            FROM {table_name}
             WHERE result IS NOT NULL
             GROUP BY project;"""
         project_to_count_done = count_per_project(count_done)
@@ -152,7 +154,7 @@ def show_status():
 
 def fetch_results():
     def inner(connection, cursor):
-        projects_query = "SELECT DISTINCT project FROM tasks"
+        projects_query = f"SELECT DISTINCT project FROM {table_name}"
         cursor.execute(projects_query)
         projects = [row[0] for row in cursor.fetchall()]
 
@@ -165,7 +167,8 @@ def fetch_results():
             prs_and_timestamps = project_to_prs_and_timestamps[project]
 
             print(f"Fetching results for {project}")
-            done_prs_and_timestamps_query = "SELECT pr, timestamp FROM tasks WHERE project=%s AND result IS NOT NULL"
+            done_prs_and_timestamps_query = f"SELECT pr, timestamp FROM {
+                table_name} WHERE project=%s AND result IS NOT NULL"
             cursor.execute(done_prs_and_timestamps_query, (project,))
             done_prs_and_timestamps = [[str(row[0]), str(row[1])]
                                        for row in cursor.fetchall()]
@@ -173,7 +176,8 @@ def fetch_results():
             nb_new_results = 0
             for pr, timestamp in done_prs_and_timestamps:
                 if [pr, timestamp] not in prs_and_timestamps:
-                    select_query = "SELECT result FROM tasks WHERE project=%s AND pr=%s AND timestamp=%s"
+                    select_query = f"SELECT result FROM {
+                        table_name} WHERE project=%s AND pr=%s AND timestamp=%s"
                     cursor.execute(
                         select_query, (project, pr, timestamp))
                     result = cursor.fetchone()[0]
@@ -199,6 +203,11 @@ def schedule_target_prs_for_project(project):
     write_tasks(project, target_pr_nbs)
 
 
+def schedule_classification_tasks():
+    for project in project_to_target_prs().keys():
+        write_tasks(project, [classification_pr_nb])
+
+
 def remove_unfinished(project):
     if project == "all":
         for project in project_to_target_prs().keys():
@@ -209,7 +218,8 @@ def remove_unfinished(project):
 
 def remove_unfinished_for_project(project):
     def inner(connection, cursor):
-        delete_query = "DELETE FROM tasks WHERE project=%s AND result IS NULL"
+        delete_query = f"DELETE FROM {
+            table_name} WHERE project=%s AND result IS NULL"
         cursor.execute(delete_query, (project,))
 
     connect_and_do(inner)
@@ -226,14 +236,20 @@ if __name__ == "__main__":
                         help="Schedule target PRs of a specific project for another round of evaluation")
     parser.add_argument("--remove_unfinished", type=str,
                         help="Remove all unfinished tasks for a specific project")
+    parser.add_argument("--classification", action="store_true",
+                        help="Apply to classification tasks")
 
     args = parser.parse_args()
+    table_name = "classification_tasks" if args.classification else "tasks"
     if args.status:
         show_status()
     elif args.fetch:
         fetch_results()
     elif args.schedule:
-        schedule_target_prs(args.schedule)
+        if args.classification:
+            schedule_classification_tasks()
+        else:
+            schedule_target_prs(args.schedule)
     elif args.remove_unfinished:
         remove_unfinished(args.remove_unfinished)
     else:

@@ -24,11 +24,26 @@ class ClassificationResult:
         self.new_output = new_output
         self.classification: Classification = Classification.UNKNOWN
 
+
 @dataclass
 class DifferentiatingTest:
     test_code: str
     old_output: str
     new_output: str
+
+    def to_json(self):
+        return {
+            'test_code': self.test_code,
+            'old_output': self.old_output,
+            'new_output': self.new_output
+        }
+
+    def from_json(json):
+        return DifferentiatingTest(
+            test_code=json['test_code'],
+            old_output=json['old_output'],
+            new_output=json['new_output']
+        )
 
 
 class PRResult:
@@ -70,6 +85,13 @@ class PRResult:
                 self.nb_test_executions += 1
                 if "Traceback (most recent call last)" in entry["output"]:
                     self.nb_test_failures += 1
+
+            if entry["message"] == "Pre-classification":
+                diff_test = DifferentiatingTest(
+                    entry["test_code"],
+                    entry["old_output"],
+                    entry["new_output"])
+                self.differentiating_tests.append(diff_test)
 
             if entry["message"] == "Different outputs":
                 self.nb_different_behavior += 1

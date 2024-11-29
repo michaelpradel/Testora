@@ -1,23 +1,165 @@
 import argparse
+from dataclasses import dataclass
+import json
+import os
+from pathlib import Path
+from typing import List
 
-from buggpt.util.LogParser import parse_log_files, PRResult
+from buggpt.execution.TestExecution import TestExecution
+from buggpt.util.LogParser import DifferentiatingTest, parse_log_files
+from buggpt.RegressionFinder import classify_regression, get_repo
+from buggpt.util.PullRequest import PullRequest
+
+
+@dataclass
+class ClassificationGroundTruth:
+    @dataclass
+    class LabeledDifferentiatingTest:
+        test: DifferentiatingTest
+        label: str
+        comment: str
+
+        def to_json(self):
+            return {
+                'test': self.test.to_json(),
+                'label': self.label,
+                'comment': self.comment
+            }
+
+        def from_json(json):
+            return ClassificationGroundTruth.LabeledDifferentiatingTest(
+                test=DifferentiatingTest.from_json(json['test']),
+                label=json['label'],
+                comment=json['comment']
+            )
+
+    pr_number: int
+    log_file: str
+    differentiating_tests: List[LabeledDifferentiatingTest]
+
+    def to_json(self):
+        return {
+            'pr_number': self.pr_number,
+            'log_file': self.log_file,
+            'differentiating_tests': [test.to_json() for test in self.differentiating_tests],
+        }
+
+    def from_json(json):
+        return ClassificationGroundTruth(
+            pr_number=json['pr_number'],
+            log_file=json['log_file'],
+            differentiating_tests=[ClassificationGroundTruth.LabeledDifferentiatingTest.from_json(
+                test) for test in json['differentiating_tests']]
+        )
 
 
 def create_ground_truth_template(log_file):
+    project_name = log_file.split("/")[-2]
+
+    target_dir = f"data/ground_truth/{project_name}"
+    os.makedirs(target_dir, exist_ok=True)
+
+    print(f"\nTrying to create ground truth template from {log_file}")
+
     pr_results, _ = parse_log_files([log_file])
     pr_result = pr_results[0]
+
+    assert pr_result.nb_different_behavior == len(
+        pr_result.differentiating_tests)
 
     if pr_result.nb_different_behavior == 0:
         print("No differentiating test case found in log file")
         return
-    
-    # CONT: use pr_result.differentiating_tests (to be filled by improved logging)
+
+    labeled_diff_tests = []
+    for diff_test in pr_result.differentiating_tests:
+        labeled_diff_test = ClassificationGroundTruth.LabeledDifferentiatingTest(
+            test=diff_test,
+            label="TODO",
+            comment=""
+        )
+        labeled_diff_tests.append(labeled_diff_test)
+
+    ground_truth = ClassificationGroundTruth(
+        pr_number=pr_result.number,
+        log_file=log_file,
+        differentiating_tests=labeled_diff_tests
+    )
+    target_file = f"{target_dir}/{pr_result.number}.json"
+
+    if os.path.exists(target_file):
+        print(f"Warning: Ground truth template already exists at {
+              target_file}. Remove it first if you want to create a new one.")
+        return
+
+    with open(target_file, "w") as f:
+        json.dump(ground_truth.to_json(), f, indent=4)
+    print(f"Ground truth template created at {target_file}")
+
+
+def read_ground_truth(project_name):
+    ground_truth_dir = f"data/ground_truth/{project_name}"
+    ground_truths = []
+    for file in os.listdir(ground_truth_dir):
+        if file.endswith(".json"):
+            ground_truth_file = f"{ground_truth_dir}/{file}"
+            ground_truth = ClassificationGroundTruth.from_json(
+                json.load(ground_truth_file))
+            ground_truths.append(ground_truth)
+    return ground_truths
+
+
+def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
+    changed_functions = pr.get_changed_function_names()
+    old_execution = TestExecution(
+        code=diff_test.test.test_code,
+        output=diff_test.test.old_output)
+    new_execution = TestExecution(
+        code=diff_test.test.test_code,
+        output=diff_test.test.new_output)
+
+    predicted_as_unintended = classify_regression(project_name, pr,
+                                                  changed_functions,
+                                                  old_execution, new_execution)
+
+    print(f"predicted_as_unintended: {predicted_as_unintended}")
+    print(f"ground_truth.label: {diff_test.label}")
+    print()
+
+
+def evaluate():
+    # read ground truth files
+    target_project_file = Path(".target_project")
+    with open(target_project_file, "r") as f:
+        target_project = f.read().strip()
+    ground_truths = read_ground_truth(target_project)
+
+    # run classifier and compare against ground truth
+    for ground_truth in ground_truths:
+        github_repo, cloned_repo_manager = get_repo(target_project)
+        github_pr = github_repo.get_pull(ground_truth.pr_number)
+        pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
+
+        for diff_test in ground_truth.differentiating_tests:
+            if diff_test.label == "TODO":
+                print(f"Skipping test because ground truth not yet annotated")
+                continue
+            else:
+                evaluate_against_ground_truth(
+                    ground_truth, target_project, pr, diff_test)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--create_ground_truth_template', type=str,
-                        help='Create a ground truth template from the given log file')
+                        help='Create a ground truth template from the given log file(s)',
+                        nargs='+')
+    parser.add_argument('--evaluate', action='store_true',
+                        help="Fetch classification tasks from DB and perform them")
     args = parser.parse_args()
 
     if args.create_ground_truth_template:
-        create_ground_truth_template(args.create_ground_truth_template)
+        for log_file in args.create_ground_truth_template:
+            create_ground_truth_template(log_file)
+    elif args.evaluate:
+        evaluate()
