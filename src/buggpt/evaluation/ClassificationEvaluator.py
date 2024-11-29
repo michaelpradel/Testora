@@ -103,8 +103,9 @@ def read_ground_truth(project_name):
     for file in os.listdir(ground_truth_dir):
         if file.endswith(".json"):
             ground_truth_file = f"{ground_truth_dir}/{file}"
-            ground_truth = ClassificationGroundTruth.from_json(
-                json.load(ground_truth_file))
+            with open(ground_truth_file, "r") as fp:
+                ground_truth = ClassificationGroundTruth.from_json(
+                    json.load(fp))
             ground_truths.append(ground_truth)
     return ground_truths
 
