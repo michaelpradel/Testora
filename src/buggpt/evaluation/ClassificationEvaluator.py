@@ -127,7 +127,8 @@ def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
 
     append_event(ClassifierEvalEvent(
         pr_nb=pr.number,
-        message=f"Predicted as unintended: {predicted_as_unintended}",
+        message=(f"Predicted as unintended: {predicted_as_unintended}"
+                 f"Ground truth label: {diff_test.label}")
     ))
 
     print(f"predicted_as_unintended: {predicted_as_unintended}")
@@ -144,6 +145,12 @@ def evaluate():
 
     # run classifier and compare against ground truth
     for ground_truth in ground_truths:
+        # optimization to avoid pulling when we don't have any ground truth labels anyway
+        skip_all = all([diff_test.label ==
+                        "TODO" for diff_test in ground_truth.differentiating_tests])
+        if skip_all:
+            continue
+
         github_repo, cloned_repo_manager = get_repo(target_project)
         github_pr = github_repo.get_pull(ground_truth.pr_number)
         pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
