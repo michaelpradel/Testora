@@ -5,9 +5,11 @@ import os
 from pathlib import Path
 from typing import List
 
+from buggpt.evaluation import EvalTaskManager
 from buggpt.execution.TestExecution import TestExecution
 from buggpt.util.LogParser import DifferentiatingTest, parse_log_files
 from buggpt.RegressionFinder import classify_regression, get_repo
+from buggpt.util.Logs import ClassifierEvalEvent, get_logs_as_json, reset_logs, store_logs, append_event
 from buggpt.util.PullRequest import PullRequest
 
 
@@ -122,6 +124,11 @@ def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
                                                   changed_functions,
                                                   old_execution, new_execution)
 
+    append_event(ClassifierEvalEvent(
+        pr_nb=pr.number,
+        message=f"Predicted as unintended: {predicted_as_unintended}",
+    ))
+
     print(f"predicted_as_unintended: {predicted_as_unintended}")
     print(f"ground_truth.label: {diff_test.label}")
     print()
@@ -147,6 +154,13 @@ def evaluate():
             else:
                 evaluate_against_ground_truth(
                     ground_truth, target_project, pr, diff_test)
+
+    # store results in DB
+    store_logs()
+    log = get_logs_as_json()
+    EvalTaskManager.write_results(target_project, pr.number,
+                                  log, table_name="classification_tasks")
+    reset_logs()
 
 
 if __name__ == '__main__':

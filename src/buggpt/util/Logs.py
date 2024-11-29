@@ -34,6 +34,7 @@ class PreClassificationEvent(Event):
     old_output: str
     new_output: str
 
+
 class ClassificationEvent(Event):
     is_relevant_change: Optional[bool]
     is_deterministic: Optional[bool]
@@ -58,6 +59,10 @@ class ErrorEvent(Event):
 
 class CoverageEvent(Event):
     details: str
+
+
+class ClassifierEvalEvent(Event):
+    pass
 
 
 events: List = []
