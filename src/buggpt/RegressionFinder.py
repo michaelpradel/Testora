@@ -23,7 +23,7 @@ from buggpt.evaluation import EvalTaskManager
 from buggpt import Config
 from buggpt.execution.CoverageAnalyzer import summarize_coverage
 
-llm = LLMCache(OpenAIGPT(gpt35_model))
+llm = LLMCache(OpenAIGPT(gpt4omini_model))
 
 
 def clean_output(output):
