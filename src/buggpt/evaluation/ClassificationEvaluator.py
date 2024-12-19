@@ -134,10 +134,6 @@ def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
         prediction=prediction
     ))
 
-    print(f"predicted_as_unintended: {predicted_as_unintended}")
-    print(f"ground_truth.label: {diff_test.label}")
-    print()
-
 
 def evaluate():
     # read ground truth files
