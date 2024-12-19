@@ -62,7 +62,8 @@ class CoverageEvent(Event):
 
 
 class ClassifierEvalEvent(Event):
-    pass
+    label: str
+    prediction: str
 
 
 events: List = []

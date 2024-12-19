@@ -12,7 +12,8 @@ def result_files():
                 yield os.path.join(base_dir, project_dir, pr_result_file)
 
 
-def result_files_for_project(project_name, minimum_timestamp=None):
+def result_files_for_project(project_name, minimum_timestamp=None, is_classification=False):
+    base_dir = classification_base_dir if is_classification else base_dir
     for pr_result_file in os.listdir(os.path.join(base_dir, project_name)):
         if pr_result_file.endswith(".json"):
             if minimum_timestamp:

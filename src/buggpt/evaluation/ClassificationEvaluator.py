@@ -125,11 +125,13 @@ def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
     predicted_as_unintended = classify_regression(project_name, pr,
                                                   changed_functions,
                                                   old_execution, new_execution)
+    prediction = "unintended" if predicted_as_unintended else "intended"
 
     append_event(ClassifierEvalEvent(
         pr_nb=pr.number,
-        message=(f"Predicted as unintended: {predicted_as_unintended}; "
-                 f"Ground truth label: {diff_test.label}")
+        message="Classification result",
+        label=diff_test.label,
+        prediction=prediction
     ))
 
     print(f"predicted_as_unintended: {predicted_as_unintended}")
