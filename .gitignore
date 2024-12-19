@@ -3,6 +3,7 @@ data/llm_cache*
 data/repos
 data/pr_chunks
 data/results
+data/classification_results
 data/ground_truth
 /tmp
 .github_token

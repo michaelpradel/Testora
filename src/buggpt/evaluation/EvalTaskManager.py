@@ -159,7 +159,7 @@ def show_status():
     connect_and_do(inner)
 
 
-def fetch_results():
+def fetch_results(is_classification):
     def inner(connection, cursor):
         projects_query = f"SELECT DISTINCT project FROM {table_name}"
         cursor.execute(projects_query)
@@ -193,7 +193,7 @@ def fetch_results():
                         select_query, (project, pr, timestamp))
                     result = cursor.fetchone()[0]
                     add_result(
-                        project, pr, timestamp, result)
+                        project, pr, timestamp, result, is_classification)
                     nb_new_results += 1
 
             print(f"Added {nb_new_results} new results for {project}")
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     if args.status:
         show_status()
     elif args.fetch:
-        fetch_results()
+        fetch_results(args.classification)
     elif args.schedule:
         if args.classification:
             schedule_classification_tasks()

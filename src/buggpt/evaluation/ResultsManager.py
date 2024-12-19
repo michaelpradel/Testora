@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 base_dir = "data/results/"
-
+classification_base_dir = "data/classification_results/"
 
 def result_files():
     for project_dir in os.listdir(base_dir):
@@ -41,7 +41,9 @@ def current_results(include_archive=True):
     return project_to_prs_and_timestamps
 
 
-def add_result(project_name, pr_nb, timestamp, result):
+def add_result(project_name, pr_nb, timestamp, result, is_classification):
+    base_dir = classification_base_dir if is_classification else base_dir
+
     all_old_results = current_results()
     non_archive_old_results = current_results(False)
 
