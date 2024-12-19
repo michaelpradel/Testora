@@ -1,6 +1,6 @@
 # Helper script to inspect logs of test failures and identify the root cause of the failure
 
-from typing import Counter
+from collections import Counter
 from buggpt.evaluation.ResultsManager import result_files
 from buggpt.util.LogParser import parse_log_files
 
