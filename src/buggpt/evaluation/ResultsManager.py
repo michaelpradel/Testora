@@ -2,18 +2,19 @@ import os
 from datetime import datetime
 
 
-base_dir = "data/results/"
-classification_base_dir = "data/classification_results/"
+results_base_dir = "data/results/"
+classification_results_base_dir = "data/classification_results/"
+
 
 def result_files():
-    for project_dir in os.listdir(base_dir):
-        for pr_result_file in os.listdir(os.path.join(base_dir, project_dir)):
+    for project_dir in os.listdir(results_base_dir):
+        for pr_result_file in os.listdir(os.path.join(results_base_dir, project_dir)):
             if pr_result_file.endswith(".json"):
-                yield os.path.join(base_dir, project_dir, pr_result_file)
+                yield os.path.join(results_base_dir, project_dir, pr_result_file)
 
 
 def result_files_for_project(project_name, minimum_timestamp=None, is_classification=False):
-    base_dir = classification_base_dir if is_classification else base_dir
+    base_dir = classification_results_base_dir if is_classification else results_base_dir
     for pr_result_file in os.listdir(os.path.join(base_dir, project_name)):
         if pr_result_file.endswith(".json"):
             if minimum_timestamp:
@@ -27,11 +28,12 @@ def result_files_for_project(project_name, minimum_timestamp=None, is_classifica
 
 def current_results(include_archive=True):
     project_to_prs_and_timestamps = {}
-    for project_dir in os.listdir(base_dir):
+    for project_dir in os.listdir(results_base_dir):
         project_to_prs_and_timestamps[project_dir] = []
-        result_dirs = [os.path.join(base_dir, project_dir)]
+        result_dirs = [os.path.join(results_base_dir, project_dir)]
         if include_archive:
-            result_dirs.append(os.path.join(base_dir, project_dir, "archive"))
+            result_dirs.append(os.path.join(
+                results_base_dir, project_dir, "archive"))
         for result_dir in result_dirs:
             for pr_result_file in os.listdir(result_dir):
                 if pr_result_file.endswith(".json"):
@@ -43,7 +45,7 @@ def current_results(include_archive=True):
 
 
 def add_result(project_name, pr_nb, timestamp, result, is_classification):
-    base_dir = classification_base_dir if is_classification else base_dir
+    base_dir = classification_results_base_dir if is_classification else base_dir
 
     all_old_results = current_results()
     non_archive_old_results = current_results(False)
