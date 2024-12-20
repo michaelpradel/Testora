@@ -44,7 +44,7 @@ def connect_and_do(func):
             print("MySQL connection is closed")
 
 
-def write_tasks(project_name, pr_nbs: List[int]):
+def write_tasks(project_name, pr_nbs: List[int], table_name):
     def inner(connection, cursor):
         insert_query = (
             f"INSERT INTO {table_name} (project, pr) "
@@ -211,12 +211,12 @@ def schedule_target_prs(project):
 
 def schedule_target_prs_for_project(project):
     target_pr_nbs = project_to_target_prs()[project]
-    write_tasks(project, target_pr_nbs)
+    write_tasks(project, target_pr_nbs, table_name)
 
 
 def schedule_classification_tasks():
     for project in project_to_target_prs().keys():
-        write_tasks(project, [classification_pr_nb])
+        write_tasks(project, [classification_pr_nb], table_name)
 
 
 def remove_unfinished(project):
