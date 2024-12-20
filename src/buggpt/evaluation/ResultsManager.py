@@ -47,7 +47,7 @@ def current_results(include_archive=True, is_classification=False):
 
 
 def add_result(project_name, pr_nb, timestamp, result, is_classification):
-    base_dir = classification_results_base_dir if is_classification else base_dir
+    base_dir = classification_results_base_dir if is_classification else results_base_dir
 
     all_old_results = current_results(is_classification=is_classification)
     non_archive_old_results = current_results(False, is_classification=is_classification)
