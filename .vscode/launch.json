@@ -11,7 +11,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "buggpt.evaluation.EvalTaskManager",
-            "args": ["--fetch"],
+            "args": ["--fetch", "--classification"],
         },
         {
             "name": "ClassificationEvaluator",
