@@ -108,6 +108,7 @@ Explain your reasoning and then give your answers in the following format:
         if len(query) < 10000:
             return query
 
+        # too long, try with filtered diff
         query = template.format(project_name=self.project_name,
                                 pr_title=self.pr.github_pr.title,
                                 fut_qualified_names=", ".join(
@@ -120,6 +121,7 @@ Explain your reasoning and then give your answers in the following format:
         if len(query) < 10000:
             return query
 
+        # still too long, try without diff
         query = template.format(project_name=self.project_name,
                                 pr_title=self.pr.github_pr.title,
                                 fut_qualified_names=", ".join(
@@ -129,6 +131,25 @@ Explain your reasoning and then give your answers in the following format:
                                 test_code=self.test_code,
                                 old_output=self.old_output,
                                 new_output=self.new_output)
+        if len(query) < 10000:
+            return query
+
+        # still too long, omit some PR details
+        chars_to_save = len(query) - 10000
+        full_pr_details = self.extract_pr_details()
+        shortened_pr_details = full_pr_details[:(
+            len(full_pr_details) - chars_to_save)]
+
+        query = template.format(project_name=self.project_name,
+                                pr_title=self.pr.github_pr.title,
+                                fut_qualified_names=", ".join(
+                                    self.fut_qualified_names),
+                                pr_details=shortened_pr_details,
+                                diff="(omitted due to length)",
+                                test_code=self.test_code,
+                                old_output=self.old_output,
+                                new_output=self.new_output)
+
         return query
 
     def parse_answer(self, raw_answer):
