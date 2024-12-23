@@ -23,6 +23,8 @@ fix_undefined_refs = True
 model_version = "gpt-4o-mini-2024-07-18"
 # model_version = "gpt-4o-2024-08-06"
 
+classification_temp = 1.0
+
 
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())

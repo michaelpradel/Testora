@@ -277,7 +277,7 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
 
     prompt = RegressionClassificationPrompt(
         project_name, pr, changed_functions, docstrings, old_execution.code, old_execution.output, new_execution.output)
-    raw_answer = llm.query(prompt, temperature=0)
+    raw_answer = llm.query(prompt, temperature=Config.classification_temp)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     is_relevant_change, is_deterministic, is_public, is_legal, is_surprising, correct_output = prompt.parse_answer(
@@ -300,7 +300,7 @@ def select_expected_behavior(project_name, pr, old_execution, new_execution, doc
     """Ask LLM which of two possible outputs is the expected behavior."""
     prompt = SelectExpectedBehaviorPrompt(
         project_name, old_execution.code, old_execution.output, new_execution.output, docstrings)
-    raw_answer = llm.query(prompt, temperature=0)
+    raw_answer = llm.query(prompt, temperature=Config.classification_temp)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     expected_behavior = prompt.parse_answer(raw_answer)
