@@ -8,6 +8,7 @@ from typing import List
 from buggpt.evaluation import EvalTaskManager
 from buggpt.evaluation.EvalTaskManager import classification_pr_nb
 from buggpt.execution.TestExecution import TestExecution
+from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.LogParser import DifferentiatingTest, parse_log_files
 from buggpt.RegressionFinder import classify_regression, get_repo
 from buggpt.util.Logs import ClassifierEvalEvent, get_logs_as_json, reset_logs, store_logs, append_event
@@ -113,7 +114,7 @@ def read_ground_truth(project_name):
     return ground_truths
 
 
-def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
+def evaluate_against_ground_truth(cloned_repo_manager, project_name, pr, diff_test):
     changed_functions = pr.get_changed_function_names()
     old_execution = TestExecution(
         code=diff_test.test.test_code,
@@ -122,8 +123,15 @@ def evaluate_against_ground_truth(ground_truth, project_name, pr, diff_test):
         code=diff_test.test.test_code,
         output=diff_test.test.new_output)
 
+    # find docstrings
+    cloned_repo_of_new_commit = cloned_repo_manager.get_cloned_repo(
+        pr.post_commit)
+    docstrings = retrieve_relevant_docstrings(
+        cloned_repo_of_new_commit, new_execution.code)
+
     predicted_as_unintended = classify_regression(project_name, pr,
                                                   changed_functions,
+                                                  docstrings,
                                                   old_execution, new_execution)
     prediction = "unintended" if predicted_as_unintended else "intended"
 
@@ -160,7 +168,7 @@ def evaluate():
                 continue
             else:
                 evaluate_against_ground_truth(
-                    ground_truth, target_project, pr, diff_test)
+                    cloned_repo_manager, target_project, pr, diff_test)
 
     # store results in DB
     store_logs()
