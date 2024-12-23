@@ -21,22 +21,22 @@ def write_PR_tasks_into_database(project_name, project_id, pr_numbers=None):
 
 if __name__ == "__main__":
     # write_PR_tasks_into_database("pandas", "pandas-dev/pandas")
-    write_PR_tasks_into_database("pandas", "pandas-dev/pandas",
-                                 [57399, 57595, 56841,
-                                  58376, 55108, 57205,
-                                  57046, 57034])  # known true positives
+    # write_PR_tasks_into_database("pandas", "pandas-dev/pandas",
+    #                              [57399, 57595, 56841,
+    #                               58376, 55108, 57205,
+    #                               57046, 57034])  # known true positives
 
     # write_PR_tasks_into_database("scipy", "scipy/scipy")
-    write_PR_tasks_into_database("scipy", "scipy/scipy",
-                                 [20089, 20974, 21036,
-                                  20751, 21076, 19776,
-                                  19861, 19853, 19680,
-                                  19428, 19263, 21553])  # known true positives
+    # write_PR_tasks_into_database("scipy", "scipy/scipy",
+    #                              [20089, 20974, 21036,
+    #                               20751, 21076, 19776,
+    #                               19861, 19853, 19680,
+    #                               19428, 19263, 21553])  # known true positives
 
     # write_PR_tasks_into_database("keras", "keras-team/keras")
-    write_PR_tasks_into_database("keras", "keras-team/keras",
-                                 [19814])  # known true positives
+    # write_PR_tasks_into_database("keras", "keras-team/keras",
+    #                              [19814])  # known true positives
 
     # write_PR_tasks_into_database("marshmallow", "marshmallow-code/marshmallow")
-    write_PR_tasks_into_database("marshmallow", "marshmallow-code/marshmallow",
-                                 [1399, 2215])  # known true positives
+    # write_PR_tasks_into_database("marshmallow", "marshmallow-code/marshmallow",
+    #                              [1399, 2215])  # known true positives
