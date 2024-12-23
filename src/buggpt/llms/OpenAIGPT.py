@@ -12,7 +12,7 @@ openai = OpenAI(api_key=openai_key)
 # gpt4o_model = "gpt-4o-2024-05-13"
 # gpt4_model = "gpt-4-0125-preview"
 gpt35_model = "gpt-3.5-turbo-0125"
-gpt4omini_model = "gpt-4o-mini"
+gpt4omini_model = "gpt-4o-mini-2024-07-18"
 
 class OpenAIGPT:
     def __init__(self, model):
