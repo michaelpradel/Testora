@@ -3,20 +3,17 @@ from typing import List
 from openai import OpenAI, RateLimitError
 from buggpt.prompts.PromptCommon import system_message
 from buggpt.util.Logs import append_event, LLMEvent
+from buggpt.Config import model_version
 
 with open(".openai_token_ExeCode", "r") as f:
     openai_key = f.read().strip()
 
 openai = OpenAI(api_key=openai_key)
 
-gpt4o_model = "gpt-4o-2024-08-06"
-# gpt4_model = "gpt-4-0125-preview"
-gpt35_model = "gpt-3.5-turbo-0125"
-gpt4omini_model = "gpt-4o-mini-2024-07-18"
 
 class OpenAIGPT:
-    def __init__(self, model):
-        self.model = model
+    def __init__(self):
+        self.model = model_version
 
     def query(self, prompt, nb_samples=1, temperature=1) -> List:
         user_message = prompt.create_prompt()

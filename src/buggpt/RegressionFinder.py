@@ -15,7 +15,7 @@ from buggpt.util.ClonedRepoManager import ClonedRepoManager
 from buggpt.util.DocstringRetrieval import retrieve_relevant_docstrings
 from buggpt.util.Exceptions import BugGPTException
 from buggpt.util.PullRequest import PullRequest
-from buggpt.llms.OpenAIGPT import OpenAIGPT, gpt4o_model, gpt4omini_model, gpt35_model
+from buggpt.llms.OpenAIGPT import OpenAIGPT
 from buggpt.util.Logs import CoverageEvent, PreClassificationEvent, start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
 from buggpt.util.PythonCodeUtil import has_private_accesses_or_fails_to_parse
 from buggpt.util.UndefinedRefsFinder import get_undefined_references
@@ -23,7 +23,7 @@ from buggpt.evaluation import EvalTaskManager
 from buggpt import Config
 from buggpt.execution.CoverageAnalyzer import summarize_coverage
 
-llm = LLMCache(OpenAIGPT(gpt4o_model))
+llm = LLMCache(OpenAIGPT())
 
 
 def clean_output(output):

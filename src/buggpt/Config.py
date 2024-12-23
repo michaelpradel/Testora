@@ -18,10 +18,17 @@ llm_risk_assessment = False
 # try to fix undefined references in generated tests
 fix_undefined_refs = True
 
+# model_version = "gpt-3.5-turbo-0125"
+# model_version = "gpt-4-0125-preview"
+model_version = "gpt-4o-mini-2024-07-18"
+# model_version = "gpt-4o-2024-08-06"
+
+
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())
 config_parameters = current_globals - initial_globals
-config_parameters = config_parameters - {"initial_globals", "current_globals", "config_parameters"}
+config_parameters = config_parameters - \
+    {"initial_globals", "current_globals", "config_parameters"}
 config_dict = {p: v for p, v in globals().items() if p in config_parameters}
 append_event(
     Event(pr_nb=0, message=f"Configuration: {config_dict}"))
