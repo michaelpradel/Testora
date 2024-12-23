@@ -1,8 +1,9 @@
 class RegressionClassificationPrompt:
-    def __init__(self, project_name, pr, fut_qualified_names, test_code, old_output, new_output):
+    def __init__(self, project_name, pr, fut_qualified_names, docstrings, test_code, old_output, new_output):
         self.project_name = project_name
         self.pr = pr
         self.fut_qualified_names = fut_qualified_names
+        self.docstrings = docstrings
         self.test_code = test_code
         self.old_output = old_output
         self.new_output = new_output
@@ -49,13 +50,16 @@ class RegressionClassificationPrompt:
 
     def create_prompt(self):
         template = """
-The pull request "{pr_title}" of the {project_name} project changes the {fut_qualified_names} function(s). Your task is to determine whether this change accidentally introduces a regression bug, i.e., an unintended change in behavior.
+The pull request "{pr_title}" of the {project_name} project changes the {fut_qualified_names} function(s).
 
 # Details about the pull request
 {pr_details}
 
 # Diff of the pull request
 {diff}
+
+# Docstrings of Relevant APIs
+{docstrings}
 
 # Usage example that changes its behavior
 ```python
@@ -69,12 +73,14 @@ The pull request "{pr_title}" of the {project_name} project changes the {fut_qua
 {new_output}
 
 # Task
-You should explain your reasoning and then answer five questions:
+You should explain your reasoning and then answer six questions:
 1) Is the different output a noteworthy change in behavior, such as a completely different value being computed, or is it a minor change, such as a change in a warning/error message or a change in formatting? Answer either "minor" or "noteworthy".
 2) Is the different output likely due to non-determinism, e.g., because of random sampling or a non-deterministically ordered set? Answer either "deterministic" or "non-deterministic".
 3) Does the usage example refer only to public APIs of {project_name}, or does it use any project-internal functionality? Answer either "public" or "project-internal".
 4) Does the usage example pass inputs as intended by the API documentation, or does it pass any illegal (e.g., type-incorrect) inputs? Answer either "legal" or "illegal".
 5) Is the different output intended by the developer of the pull request? A change is "intended" if it is in line with the description of the pull request or a logical consequence of it. If the change is not expected based on the pull request, it is "unintended". Answer either "intended" or "unintended".
+6) Which of the two outputs is the correct behavior? Answer either "Output 1" or "Output 2".
+
 Explain your reasoning and then give your answers in the following format:
 <THOUGHTS>
 ...
@@ -94,12 +100,16 @@ Explain your reasoning and then give your answers in the following format:
 <ANSWER5>
 ...
 </ANSWER5>
+<ANSWER6>
+...
+</ANSWER6>
 """
 
         query = template.format(project_name=self.project_name,
                                 pr_title=self.pr.github_pr.title,
                                 fut_qualified_names=", ".join(
                                     self.fut_qualified_names),
+                                docstrings=self.docstrings,
                                 pr_details=self.extract_pr_details(),
                                 diff=self.pr.get_full_diff(),
                                 test_code=self.test_code,
@@ -113,6 +123,7 @@ Explain your reasoning and then give your answers in the following format:
                                 pr_title=self.pr.github_pr.title,
                                 fut_qualified_names=", ".join(
                                     self.fut_qualified_names),
+                                docstrings=self.docstrings,
                                 pr_details=self.extract_pr_details(),
                                 diff=self.pr.get_filtered_diff(),
                                 test_code=self.test_code,
@@ -126,6 +137,7 @@ Explain your reasoning and then give your answers in the following format:
                                 pr_title=self.pr.github_pr.title,
                                 fut_qualified_names=", ".join(
                                     self.fut_qualified_names),
+                                docstrings=self.docstrings,
                                 pr_details=self.extract_pr_details(),
                                 diff="(omitted due to length)",
                                 test_code=self.test_code,
@@ -144,6 +156,7 @@ Explain your reasoning and then give your answers in the following format:
                                 pr_title=self.pr.github_pr.title,
                                 fut_qualified_names=", ".join(
                                     self.fut_qualified_names),
+                                docstrings=self.docstrings,
                                 pr_details=shortened_pr_details,
                                 diff="(omitted due to length)",
                                 test_code=self.test_code,
@@ -164,6 +177,7 @@ Explain your reasoning and then give your answers in the following format:
         is_public = None
         is_legal = None
         is_surprising = None
+        correct_output = -1
         for line in raw_answer.split("\n"):
             if in_answer == 1:
                 if line.strip() == "noteworthy":
@@ -190,6 +204,11 @@ Explain your reasoning and then give your answers in the following format:
                     is_surprising = False
                 elif line.strip() == "unintended":
                     is_surprising = True
+            elif in_answer == 6:
+                if line.strip() == "Output 1":
+                    correct_output = 1
+                elif line.strip() == "Output 2":
+                    correct_output = 2
 
             if line.strip() == "</ANSWER1>" or line.strip() == "</ANSWER2>" or line.strip() == "</ANSWER3>":
                 in_answer = 0
@@ -203,5 +222,7 @@ Explain your reasoning and then give your answers in the following format:
                 in_answer = 4
             if line.strip() == "<ANSWER5>":
                 in_answer = 5
+            if line.strip() == "<ANSWER6>":
+                in_answer = 6
 
-        return is_relevant_change, is_deterministic, is_public, is_legal, is_surprising
+        return is_relevant_change, is_deterministic, is_public, is_legal, is_surprising, correct_output

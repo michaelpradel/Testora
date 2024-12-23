@@ -41,6 +41,7 @@ class ClassificationEvent(Event):
     is_public: Optional[bool]
     is_legal: Optional[bool]
     is_surprising: Optional[bool]
+    correct_output: Optional[int]
     old_is_crash: bool
     new_is_crash: bool
 
