@@ -268,7 +268,7 @@ def check_if_present_in_main(cloned_repo_manager, pr, new_execution):
     return main_execution.output == new_execution.output
 
 
-def classify_regression(project_name, pr, changed_functions, docstrings, old_execution, new_execution):
+def classify_regression(project_name, pr, changed_functions, docstrings, old_execution, new_execution, no_cache=False):
     append_event(PreClassificationEvent(pr_nb=pr.number,
                                         message="Pre-classification",
                                         test_code=old_execution.code,
@@ -277,7 +277,9 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
 
     prompt = RegressionClassificationPrompt(
         project_name, pr, changed_functions, docstrings, old_execution.code, old_execution.output, new_execution.output)
-    raw_answer = llm.query(prompt, temperature=Config.classification_temp)
+    raw_answer = llm.query(prompt,
+                           temperature=Config.classification_temp,
+                           no_cache=no_cache)
     append_event(LLMEvent(pr_nb=pr.number,
                           message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
     is_relevant_change, is_deterministic, is_public, is_legal, is_surprising, correct_output = prompt.parse_answer(

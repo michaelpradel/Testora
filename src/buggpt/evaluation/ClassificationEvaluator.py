@@ -132,7 +132,8 @@ def evaluate_against_ground_truth(cloned_repo_manager, project_name, pr, diff_te
     predicted_as_unintended = classify_regression(project_name, pr,
                                                   changed_functions,
                                                   docstrings,
-                                                  old_execution, new_execution)
+                                                  old_execution, new_execution,
+                                                  no_cache=True)
     prediction = "unintended" if predicted_as_unintended else "intended"
 
     append_event(ClassifierEvalEvent(
