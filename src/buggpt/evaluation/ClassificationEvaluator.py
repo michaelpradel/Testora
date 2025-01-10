@@ -144,7 +144,7 @@ def evaluate_against_ground_truth(cloned_repo_manager, project_name, pr, diff_te
         pr_nb=pr.number,
         message="Classification result",
         label=diff_test.label,
-        predictions=",".join(predictions)
+        predictions="#".join(predictions)
     ))
 
 

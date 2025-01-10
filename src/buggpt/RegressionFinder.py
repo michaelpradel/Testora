@@ -288,7 +288,7 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
     all_results = []
     for raw_answer_sample in raw_answer:
         is_relevant_change, is_deterministic, is_public, is_legal, is_surprising, correct_output = prompt.parse_answer(
-            raw_answer_sample)
+            [raw_answer_sample])
         append_event(ClassificationEvent(pr_nb=pr.number,
                                          message="Classification",
                                          is_relevant_change=is_relevant_change,

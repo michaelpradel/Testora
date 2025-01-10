@@ -27,7 +27,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                                 raise ValueError(f"Invalid prediction: {
                                     entry['prediction']}")
                     elif entry["label"] == "intended":
-                        for prediction in entry["predictions"].split(","):
+                        for prediction in entry["predictions"].split("#"):
                             if prediction == "intended":
                                 results.append("TN")
                                 nb_tns += 1
