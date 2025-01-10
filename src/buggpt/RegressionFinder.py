@@ -8,7 +8,7 @@ from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
 from buggpt.prompts.UndefinedRefsFixingPrompt import UndefinedRefsFixingPrompt
 from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
-from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
+from buggpt.prompts.RegressionClassificationPromptV1 import RegressionClassificationPromptV1 as RegressionClassificationPrompt
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.ClonedRepoManager import ClonedRepoManager

@@ -9,7 +9,7 @@ nb_tps = 0
 nb_fns = 0
 nb_tns = 0
 variance_ctr = Counter()
-for project in ["keras"]: #, "marshmallow", "scipy", "pandas"]:
+for project in ["keras", "marshmallow", "scipy", "pandas"]:
     for result_file in result_files_for_project(project, is_classification=True):
         with open(result_file, "r") as f:
             result_json = json.load(f)

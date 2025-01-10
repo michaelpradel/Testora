@@ -1,5 +1,5 @@
 from openai import OpenAI
-from buggpt.prompts.RegressionClassificationPrompt import RegressionClassificationPrompt
+from buggpt.prompts.RegressionClassificationPromptV2 import RegressionClassificationPromptV2
 from buggpt.prompts.PromptCommon import system_message
 
 with open(".openai_token_ExeCode", "r") as f:
@@ -41,7 +41,7 @@ def call_model(prompt, temperature):
 if __name__ == "__main__":
     intended = [intended_prompt1, intended_prompt2, intended_prompt3]
     surprising = [surprising_prompt1, surprising_prompt2]
-    r = RegressionClassificationPrompt("", "", "", "", "", "")
+    r = RegressionClassificationPromptV2("", "", "", "", "", "")
 
     for idx, prompt in enumerate(intended):
         print(f"Intended prompt {idx + 1}:")
