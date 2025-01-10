@@ -7,7 +7,7 @@ nb_fps = 0
 nb_tps = 0
 nb_fns = 0
 nb_tns = 0
-for project in ["keras", "marshmallow", "scipy", "pandas"]:
+for project in ["keras"]: #, "marshmallow", "scipy", "pandas"]:
     for result_file in result_files_for_project(project, is_classification=True):
         with open(result_file, "r") as f:
             result_json = json.load(f)
@@ -16,7 +16,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                     # compare label and predictions
                     results = []
                     if entry["label"] in ["unintended", "coincidental fix"]:
-                        for prediction in entry["predictions"].split(","):
+                        for prediction in entry["predictions"].split("#"):
                             if prediction == "unintended":
                                 results.append("TP")
                                 nb_tps += 1
@@ -44,7 +44,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                     # print into CSV
                     print(f"{project}, "
                           f"{entry['pr_nb']}, "
-                          f"{entry['prediction']}, "
+                          f"{entry['predictions']}, "
                           f"{entry['label']}, "
                           f"{",".join(results)}"
                           )
