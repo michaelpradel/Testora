@@ -20,5 +20,11 @@
             "module": "buggpt.evaluation.ClassificationEvaluator",
             "args": ["--evaluate"],
         },
+        {
+            "name": "ClassificationResultsSummarizer",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "buggpt.evaluation.ClassificationResultsSummarizer",
+        },
     ]
 }

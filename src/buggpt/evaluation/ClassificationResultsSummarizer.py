@@ -50,5 +50,7 @@ for project in ["keras"]: #, "marshmallow", "scipy", "pandas"]:
                           )
 
 print(f"TP: {nb_tps}, FP: {nb_fps}, FN: {nb_fns}, TN: {nb_tns}")
-print(f"Precision: {nb_tps / (nb_tps + nb_fps)}")
-print(f"Recall: {nb_tps / (nb_tps + nb_fns)}")
+precision = 0 if (nb_tps + nb_fps) == 0 else nb_tps / (nb_tps + nb_fps)
+print(f"Precision: {precision}")
+recall = 0 if (nb_tps + nb_fns) == 0 else nb_tps / (nb_tps + nb_fns)
+print(f"Recall: {recall}")
