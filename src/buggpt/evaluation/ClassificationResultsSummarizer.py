@@ -13,40 +13,42 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
             result_json = json.load(f)
             for entry in result_json:
                 if entry["message"] == "Classification result":
-                    # compare label and prediction
-                    result = ""
+                    # compare label and predictions
+                    results = []
                     if entry["label"] in ["unintended", "coincidental fix"]:
-                        if entry["prediction"] == "unintended":
-                            result = "TP"
-                            nb_tps += 1
-                        elif entry["prediction"] == "intended":
-                            result = "FN"
-                            nb_fns += 1
-                        else:
-                            raise ValueError(f"Invalid prediction: {
-                                             entry['prediction']}")
+                        for prediction in entry["predictions"].split(","):
+                            if prediction == "unintended":
+                                results.append("TP")
+                                nb_tps += 1
+                            elif prediction == "intended":
+                                results.append("FN")
+                                nb_fns += 1
+                            else:
+                                raise ValueError(f"Invalid prediction: {
+                                    entry['prediction']}")
                     elif entry["label"] == "intended":
-                        if entry["prediction"] == "intended":
-                            result = "TN"
-                            nb_tns += 1
-                        elif entry["prediction"] == "unintended":
-                            result = "FP"
-                            nb_fps += 1
-                        else:
-                            raise ValueError(f"Invalid prediction: {
-                                             entry['prediction']}")
+                        for prediction in entry["predictions"].split(","):
+                            if prediction == "intended":
+                                results.append("TN")
+                                nb_tns += 1
+                            elif prediction == "unintended":
+                                results.append("FP")
+                                nb_fps += 1
+                            else:
+                                raise ValueError(f"Invalid prediction: {
+                                    entry['prediction']}")
                     else:
-                        raise ValueError(f"Invalid label: {entry['label']}, {entry["pr_nb"]}")
+                        raise ValueError(f"Invalid label: {
+                                         entry['label']}, {entry["pr_nb"]}")
 
                     # print into CSV
                     print(f"{project}, "
                           f"{entry['pr_nb']}, "
                           f"{entry['prediction']}, "
                           f"{entry['label']}, "
-                          f"{result}"
+                          f"{",".join(results)}"
                           )
-                    
+
 print(f"TP: {nb_tps}, FP: {nb_fps}, FN: {nb_fns}, TN: {nb_tns}")
 print(f"Precision: {nb_tps / (nb_tps + nb_fps)}")
 print(f"Recall: {nb_tps / (nb_tps + nb_fns)}")
-        

@@ -129,18 +129,22 @@ def evaluate_against_ground_truth(cloned_repo_manager, project_name, pr, diff_te
     docstrings = retrieve_relevant_docstrings(
         cloned_repo_of_new_commit, new_execution.code)
 
-    predicted_as_unintended = classify_regression(project_name, pr,
-                                                  changed_functions,
-                                                  docstrings,
-                                                  old_execution, new_execution,
-                                                  no_cache=True)
-    prediction = "unintended" if predicted_as_unintended else "intended"
+    all_predicted_as_unintended = classify_regression(project_name, pr,
+                                                      changed_functions,
+                                                      docstrings,
+                                                      old_execution, new_execution,
+                                                      no_cache=True,
+                                                      nb_samples=5)
+    predictions = []
+    for predicted_as_unintended in all_predicted_as_unintended:
+        predictions.append(
+            "unintended" if predicted_as_unintended else "intended")
 
     append_event(ClassifierEvalEvent(
         pr_nb=pr.number,
         message="Classification result",
         label=diff_test.label,
-        prediction=prediction
+        predictions=",".join(predictions)
     ))
 
 
