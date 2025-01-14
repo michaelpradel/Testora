@@ -17,7 +17,7 @@ class OpenAIGPT:
 
     def query(self, prompt, nb_samples=1, temperature=1) -> List:
         user_message = prompt.create_prompt()
-        if len(user_message) > 10000:
+        if len(user_message) > 30000:
             append_event(LLMEvent(pr_nb=-1,
                                   message=f"Query too long",
                                   content=f"System message:\n{system_message}\nUser message:\n{user_message}"))
