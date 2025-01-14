@@ -8,7 +8,9 @@ from buggpt.execution.TestExecution import TestExecution
 from buggpt.llms.LLMCache import LLMCache
 from buggpt.prompts.UndefinedRefsFixingPrompt import UndefinedRefsFixingPrompt
 from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
-from buggpt.prompts.RegressionClassificationPromptV1 import RegressionClassificationPromptV1 as RegressionClassificationPrompt
+from buggpt.prompts.RegressionClassificationPromptV1 import RegressionClassificationPromptV1
+from buggpt.prompts.RegressionClassificationPromptV2 import RegressionClassificationPromptV2
+from buggpt.prompts.RegressionClassificationPromptV3 import RegressionClassificationPromptV3
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.ClonedRepoManager import ClonedRepoManager
@@ -24,6 +26,13 @@ from buggpt import Config
 from buggpt.execution.CoverageAnalyzer import summarize_coverage
 
 llm = LLMCache(OpenAIGPT())
+
+if Config.classification_prompt_version == 1:
+    RegressionClassificationPrompt = RegressionClassificationPromptV1
+elif Config.classification_prompt_version == 2:
+    RegressionClassificationPrompt = RegressionClassificationPromptV2
+elif Config.classification_prompt_version == 3:
+    RegressionClassificationPrompt = RegressionClassificationPromptV3
 
 
 def clean_output(output):
