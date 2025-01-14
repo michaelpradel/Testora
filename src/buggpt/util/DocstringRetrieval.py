@@ -21,7 +21,8 @@ def retrieve_relevant_docstrings(cloned_repo: ClonedRepo, code: str) -> str:
         line = call_location.start.line - 1  # LSP lines are 0-based
         column = call_location.start.column
         doc = server.get_hover_text(code_path, line, column)
-        docs.append(doc)
+        if doc not in docs:
+            docs.append(doc)
 
     # enforce limits: max 2000 chars per docstring, max 6000 chars overall
     result = ""
