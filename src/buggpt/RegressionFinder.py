@@ -11,6 +11,7 @@ from buggpt.prompts.PRRegressionBugRanking import PRRegressionBugRanking
 from buggpt.prompts.RegressionClassificationPromptV1 import RegressionClassificationPromptV1
 from buggpt.prompts.RegressionClassificationPromptV2 import RegressionClassificationPromptV2
 from buggpt.prompts.RegressionClassificationPromptV3 import RegressionClassificationPromptV3
+from buggpt.prompts.RegressionClassificationPromptV4 import RegressionClassificationPromptV4
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.ClonedRepoManager import ClonedRepoManager
@@ -33,6 +34,8 @@ elif Config.classification_prompt_version == 2:
     RegressionClassificationPrompt = RegressionClassificationPromptV2
 elif Config.classification_prompt_version == 3:
     RegressionClassificationPrompt = RegressionClassificationPromptV3
+elif Config.classification_prompt_version == 4:
+    RegressionClassificationPrompt = RegressionClassificationPromptV4
 
 
 def clean_output(output):
