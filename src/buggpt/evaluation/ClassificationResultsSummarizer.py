@@ -9,10 +9,16 @@ nb_tps = 0
 nb_fns = 0
 nb_tns = 0
 variance_ctr = Counter()
+config_used = None
 for project in ["keras", "marshmallow", "scipy", "pandas"]:
     for result_file in result_files_for_project(project, is_classification=True):
         with open(result_file, "r") as f:
             result_json = json.load(f)
+            config_used_here = result_json[0]["message"]
+            if config_used is None:
+                config_used = config_used_here
+            else:
+                assert config_used == config_used_here, f"Config mismatch:\n{config_used}\nvs\n {config_used_here}"
             for entry in result_json:
                 if entry["message"] == "Classification result":
                     # compare label and predictions
@@ -56,6 +62,8 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                           f"{",".join(results)}"
                           )
 
+print(config_used)
+print()
 print(f"TP: {nb_tps}, FP: {nb_fps}, FN: {nb_fns}, TN: {nb_tns}")
 precision = 0 if (nb_tps + nb_fps) == 0 else nb_tps / (nb_tps + nb_fps)
 print(f"Precision: {precision}")
