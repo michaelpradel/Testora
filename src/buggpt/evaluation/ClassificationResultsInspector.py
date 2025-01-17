@@ -2,8 +2,8 @@ import json
 from buggpt.evaluation.ResultsManager import result_files_for_project
 
 
-project = "pandas"
-pr = 57046
+project = "scipy"
+pr = 21553
 test_case_to_skip = 0
 
 file = list(result_files_for_project(project, is_classification=True))[0]
