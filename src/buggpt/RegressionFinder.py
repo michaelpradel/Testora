@@ -43,11 +43,12 @@ elif Config.classification_prompt_version == 5:
 
 def clean_output(output):
     # remove warnings caused by coverage measurements
-    cleaned_output = []
+    cleaned_lines = []
     for line in output.split("\n"):
         if "CoverageWarning" in line:
             continue
-        cleaned_output.append(line)
+        cleaned_lines.append(line)
+    cleaned_output = "\n".join(cleaned_lines)
     
     # pandas-specific cleaning (to remove build output)
     result = []
