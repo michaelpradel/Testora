@@ -12,6 +12,7 @@ from buggpt.prompts.RegressionClassificationPromptV1 import RegressionClassifica
 from buggpt.prompts.RegressionClassificationPromptV2 import RegressionClassificationPromptV2
 from buggpt.prompts.RegressionClassificationPromptV3 import RegressionClassificationPromptV3
 from buggpt.prompts.RegressionClassificationPromptV4 import RegressionClassificationPromptV4
+from buggpt.prompts.RegressionClassificationPromptV5 import RegressionClassificationPromptV5
 from buggpt.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
 from buggpt.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from buggpt.util.ClonedRepoManager import ClonedRepoManager
@@ -36,12 +37,21 @@ elif Config.classification_prompt_version == 3:
     RegressionClassificationPrompt = RegressionClassificationPromptV3
 elif Config.classification_prompt_version == 4:
     RegressionClassificationPrompt = RegressionClassificationPromptV4
+elif Config.classification_prompt_version == 5:
+    RegressionClassificationPrompt = RegressionClassificationPromptV5
 
 
 def clean_output(output):
+    # remove warnings caused by coverage measurements
+    cleaned_output = []
+    for line in output.split("\n"):
+        if "CoverageWarning" in line:
+            continue
+        cleaned_output.append(line)
+    
     # pandas-specific cleaning (to remove build output)
     result = []
-    for line in output.split("\n"):
+    for line in cleaned_output.split("\n"):
         if line == "+ /usr/local/bin/ninja":
             continue
         # check if line starts with "[1/1]", "[2/4]", etc.
