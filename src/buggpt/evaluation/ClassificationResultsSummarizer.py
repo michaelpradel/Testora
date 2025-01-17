@@ -23,7 +23,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                 if entry["message"] == "Classification result":
                     # compare label and predictions
                     results = []
-                    if entry["label"] in ["unintended", "coincidental fix"]:
+                    if entry["label"] in ["unintended"]:
                         for prediction in entry["predictions"].split("#"):
                             if prediction == "unintended":
                                 results.append("TP")
@@ -34,7 +34,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                             else:
                                 raise ValueError(f"Invalid prediction: {
                                     entry['prediction']}")
-                    elif entry["label"] == "intended":
+                    elif entry["label"] in ["intended", "coincidental fix"]:
                         for prediction in entry["predictions"].split("#"):
                             if prediction == "intended":
                                 results.append("TN")
