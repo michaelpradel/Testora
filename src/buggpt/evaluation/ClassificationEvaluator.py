@@ -134,7 +134,7 @@ def evaluate_against_ground_truth(cloned_repo_manager, project_name, pr, diff_te
                                                       docstrings,
                                                       old_execution, new_execution,
                                                       no_cache=True,
-                                                      nb_samples=5)
+                                                      nb_samples=1)
     predictions = []
     for predicted_as_unintended in all_predicted_as_unintended:
         predictions.append(
