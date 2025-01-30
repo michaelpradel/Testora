@@ -49,7 +49,7 @@ def clean_output(output):
             continue
         cleaned_lines.append(line)
     cleaned_output = "\n".join(cleaned_lines)
-    
+
     # pandas-specific cleaning (to remove build output)
     result = []
     for line in cleaned_output.split("\n"):
@@ -499,13 +499,15 @@ def check_pr(github_repo, cloned_repo_manager, pr):
                 github_repo.name, pr, old_execution, new_execution, docstrings)
 
 
-def get_recent_prs(github_repo, nb=50):
+def get_merged_prs(github_repo, max_prs):
+    """First element is newest PR."""
     all_prs = github_repo.get_pulls(state="closed")
     merged_prs = []
     for github_pr in all_prs:
         if github_pr.is_merged():
             merged_prs.append(github_pr)
-        if len(merged_prs) >= nb:
+        print(f"Added {len(merged_prs)} merged PRs")
+        if len(merged_prs) >= max_prs:
             break
     return merged_prs
 
