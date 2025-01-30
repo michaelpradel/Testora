@@ -24,14 +24,13 @@ fix_undefined_refs = True
 # model_version = "gpt-4o-2024-08-06"
 model_version = "deepseek/deepseek-r1"
 
-# different prompts for classification task
-classification_prompt_version = 4
-
 # OpenAI's default: 1.0
 # classification_temp = 1.0
 # DeepSeek's recommended default: 0.6
 classification_temp = 0.6
 
+# different prompts for classification task
+classification_prompt_version = 4
 
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())
