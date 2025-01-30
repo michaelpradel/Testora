@@ -58,7 +58,10 @@ class OpenAIGPT:
                         n=nb_samples,
                         temperature=temperature
                     )
-                    break
+                    if completion.model is not None:
+                        break
+                    print("Failed to get completion, will try again in 1 second")
+                    time.sleep(1)
             except RateLimitError as e:
                 print("Rate limit exceeded:", e)
                 print("Will try again in 60 seconds")
