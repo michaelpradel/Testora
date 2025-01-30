@@ -27,7 +27,10 @@ model_version = "deepseek/deepseek-r1"
 # different prompts for classification task
 classification_prompt_version = 4
 
-classification_temp = 1.0
+# OpenAI's default: 1.0
+# classification_temp = 1.0
+# DeepSeek's recommended default: 0.6
+classification_temp = 0.6
 
 
 # KEEP THIS AT THE END: log the current configuration
