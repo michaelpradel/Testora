@@ -5,10 +5,15 @@ from buggpt.prompts.PromptCommon import system_message
 from buggpt.util.Logs import append_event, LLMEvent
 from buggpt.Config import model_version
 
-with open(".openai_token_ExeCode", "r") as f:
-    openai_key = f.read().strip()
-
-openai = OpenAI(api_key=openai_key)
+if model_version.startswith("gpt"):
+    with open(".openai_token_ExeCode", "r") as f:
+        openai_key = f.read().strip()
+        openai = OpenAI(api_key=openai_key)
+elif model_version.startswith("deepseek"):
+    with open(".openrouter_token", "r") as f:
+        openrouter_key = f.read().strip()
+        openai = OpenAI(api_key=openrouter_key,
+                        base_url="https://openrouter.ai/api/v1")
 
 
 class OpenAIGPT:
