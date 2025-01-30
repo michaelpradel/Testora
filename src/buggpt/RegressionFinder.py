@@ -325,8 +325,6 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
                                          new_is_crash=is_crash(new_execution.output)))
         result = is_relevant_change and is_deterministic and is_public and is_legal and is_surprising
         all_results.append(result)
-    if nb_samples == 1:
-        return all_results[0]
     return all_results
 
 
@@ -491,7 +489,7 @@ def check_pr(github_repo, cloned_repo_manager, pr):
         # if difference found, classify regression
         assert old_execution.code == new_execution.code
         is_regression_bug = classify_regression(
-            github_repo.name, pr, changed_functions, docstrings, old_execution, new_execution)
+            github_repo.name, pr, changed_functions, docstrings, old_execution, new_execution)[0]
 
         # if classified as regression bug, ask LLM which behavior is expected (to handle coincidental bug fixes)
         if is_regression_bug:
