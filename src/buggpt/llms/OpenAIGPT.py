@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 import time
 from typing import List
 from openai import OpenAI, RateLimitError
@@ -88,5 +89,10 @@ class OpenAIGPT:
                                       message=f"Rate limit exceeded",
                                       content=f"Will try again in 60 seconds"))
                 time.sleep(60)
+            except JSONDecodeError as e:
+                append_event(LLMEvent(pr_nb=-1,
+                                      message=f"JSON decode error",
+                                      content=f"Will try again in 1 second"))
+                time.sleep(1)
 
         raise Exception("Should not reach this point")
