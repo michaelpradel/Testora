@@ -41,7 +41,6 @@ class OpenAIGPT:
                             {"role": "system", "content": system_message},
                             {"role": "user", "content": user_message}
                         ],
-                        max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
                         n=nb_samples,
                         response_format={"type": "json_object"},
                         temperature=temperature
@@ -54,24 +53,41 @@ class OpenAIGPT:
                             {"role": "system", "content": system_message},
                             {"role": "user", "content": user_message}
                         ],
-                        max_tokens=4096,  # 4096 is the maximum token limit for gpt-4-0125-preview
+                        provider={"require_parameters": True},
                         n=nb_samples,
                         temperature=temperature
-                    )
-                    if completion.model is not None:
-                        break
-                    print("Failed to get completion, will try again in 1 second")
-                    time.sleep(1)
+                    )  # type: ignore[call-overload]
+
+                    # handle errors that lead to no model being called
+                    if completion.model is None:
+                        append_event(LLMEvent(pr_nb=-1,
+                                              message=f"Failed to get completion",
+                                              content=f"Will try again in 1 second"))
+                        time.sleep(1)
+                        continue
+
+                    append_event(LLMEvent(pr_nb=-1,
+                                          message=f"Token usage",
+                                          content=f"prompt={completion.usage.prompt_tokens}, completion={completion.usage.completion_tokens}"))
+
+                    answers = []
+                    for choice in completion.choices:
+                        answers.append(choice.message.content)
+
+                    # handle errors that lead to empty answers
+                    if "" in answers:
+                        append_event(LLMEvent(pr_nb=-1,
+                                              message=f"Empty answer",
+                                              content=f"Will try again in 1 second"))
+                        time.sleep(1)
+                        continue
+
+                    return answers
+
             except RateLimitError as e:
-                print("Rate limit exceeded:", e)
-                print("Will try again in 60 seconds")
+                append_event(LLMEvent(pr_nb=-1,
+                                      message=f"Rate limit exceeded",
+                                      content=f"Will try again in 60 seconds"))
                 time.sleep(60)
 
-        append_event(LLMEvent(pr_nb=-1,
-                              message=f"Token usage",
-                              content=f"prompt={completion.usage.prompt_tokens}, completion={completion.usage.completion_tokens}"))
-
-        answers = []
-        for choice in completion.choices:
-            answers.append(choice.message.content)
-        return answers
+        raise Exception("Should not reach this point")
