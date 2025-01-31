@@ -53,7 +53,6 @@ class OpenAIGPT:
                             {"role": "system", "content": system_message},
                             {"role": "user", "content": user_message}
                         ],
-                        provider={"require_parameters": True},
                         n=nb_samples,
                         temperature=temperature
                     )  # type: ignore[call-overload]
