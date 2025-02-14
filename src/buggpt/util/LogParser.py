@@ -60,12 +60,17 @@ class PRResult:
         self.nb_test_executions = 0
         self.nb_test_failures = 0
         self.nb_diff_covered_tests = 0
-        self.avg_diff_coverage = 0.0
+        self.avg_old_diff_coverage = 0.0
+        self.avg_new_diff_coverage = 0.0
         self.nb_different_behavior = 0
         self.differentiating_tests = []
         self.classification_results = []
+        self.input_tokens = 0
+        self.output_tokens = 0
 
         # fill details with proper values
+        old_diff_coverages = []
+        new_diff_coverages = []
         for entry in self.entries:
             if entry["message"].startswith("Starting to check PR"):
                 self.title = entry["title"]
@@ -97,17 +102,30 @@ class PRResult:
                 self.nb_different_behavior += 1
 
             if entry["message"] == "Diff coverage":
-                has_diff_coverage = False
                 old_coverage_results, new_coverage_results = entry["details"].split(
                     ", ")
-                for coverage_results in [old_coverage_results, new_coverage_results]:
-                    pattern = r"\((\d+)/(\d+)\)"
-                    match = re.search(pattern, coverage_results)
-                    if int(match.group(1)) > 0:
-                        has_diff_coverage = True
-                        break
-                if has_diff_coverage:
+
+                old_has_diff_coverage, old_diff_coverage = self._extract_coverage_details(
+                    old_coverage_results)
+                new_has_diff_coverage, new_diff_coverage = self._extract_coverage_details(
+                    new_coverage_results)
+                if old_has_diff_coverage or new_has_diff_coverage:
                     self.nb_diff_covered_tests += 1
+                old_diff_coverages.append(old_diff_coverage)
+                new_diff_coverages.append(new_diff_coverage)
+
+            if entry["message"] == "Token usage":
+                pattern = r"prompt=(\d+), completion=(\d+)"
+                match = re.search(pattern, entry["content"])
+                self.input_tokens += int(match.group(1))
+                self.output_tokens += int(match.group(2))
+
+        if len(old_diff_coverages) > 0:
+            self.avg_old_diff_coverage = sum(
+                old_diff_coverages) / len(old_diff_coverages)
+        if len(new_diff_coverages) > 0:
+            self.avg_new_diff_coverage = sum(
+                new_diff_coverages) / len(new_diff_coverages)
 
         start_time = parse_time_stamp(entries[0]["timestamp"])
         end_time = parse_time_stamp(entries[-1]["timestamp"])
@@ -150,6 +168,18 @@ class PRResult:
                         classification_result.classification = Classification.INTENDED_CHANGE
 
                 self.classification_results.append(classification_result)
+
+    def _extract_coverage_details(self, s):
+        has_diff_coverage = False
+        diff_coverage = 0.0
+
+        pattern = r"\((\d+)/(\d+)\)"
+        match = re.search(pattern, s)
+        has_diff_coverage = int(match.group(1)) > 0
+        diff_coverage = (int(match.group(1)) / int(match.group(2))
+                         ) if int(match.group(2)) > 0 else 0.0
+
+        return has_diff_coverage, diff_coverage
 
     def status(self):
         if self.ignored:
