@@ -166,4 +166,4 @@ Explain your reasoning and then give your answers in the following format:
             if line.strip() == "</ANSWER>":
                 break
 
-        return is_surprising
+        return True, True, True, True, is_surprising, -1
