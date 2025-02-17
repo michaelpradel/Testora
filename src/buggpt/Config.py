@@ -30,7 +30,7 @@ classification_temp = 1.0
 # classification_temp = 0.6
 
 # different prompts for classification task
-classification_prompt_version = 4
+classification_prompt_version = 6
 
 # KEEP THIS AT THE END: log the current configuration
 current_globals = set(globals().keys())
