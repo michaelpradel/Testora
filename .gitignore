@@ -19,3 +19,4 @@ candidate_projects*.csv
 coverage.json
 coverage_report
 .openrouter_token
+data/figures/*.pdf

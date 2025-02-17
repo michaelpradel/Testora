@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 import json
 import re
@@ -65,12 +65,45 @@ class PRResult:
         self.nb_different_behavior = 0
         self.differentiating_tests = []
         self.classification_results = []
+
         self.input_tokens = 0
         self.output_tokens = 0
+        self.input_tokens_test_gen = 0
+        self.output_tokens_test_gen = 0
+        self.input_tokens_test_refinement = 0
+        self.output_tokens_test_refinement = 0
+        self.input_tokens_test_exec = 0
+        self.output_tokens_test_exec = 0
+        self.input_tokens_classification = 0
+        self.output_tokens_classification = 0
 
         # fill details with proper values
         old_diff_coverages = []
         new_diff_coverages = []
+
+        self.time_taken = parse_time_stamp(self.entries[-1]["timestamp"]) - \
+            parse_time_stamp(self.entries[0]["timestamp"])
+        phase = "test_gen"  # test_gen, test_refinement, test_exec, classification
+        self.time_taken_test_gen = timedelta(0)
+        self.time_taken_test_refinement = timedelta(0)
+        self.time_taken_test_exec = timedelta(0)
+        self.time_taken_classification = timedelta(0)
+        last_used_time_stamp = parse_time_stamp(self.entries[0]["timestamp"])
+
+        def update_time_taken(entry):
+            nonlocal last_used_time_stamp, phase
+            current_time_stamp = parse_time_stamp(entry["timestamp"])
+            time_taken = current_time_stamp - last_used_time_stamp
+            last_used_time_stamp = current_time_stamp
+            if phase == "test_gen":
+                self.time_taken_test_gen += time_taken
+            elif phase == "test_refinement":
+                self.time_taken_test_refinement += time_taken
+            elif phase == "test_exec":
+                self.time_taken_test_exec += time_taken
+            elif phase == "classification":
+                self.time_taken_classification += time_taken
+
         for entry in self.entries:
             if entry["message"].startswith("Starting to check PR"):
                 self.title = entry["title"]
@@ -114,11 +147,46 @@ class PRResult:
                 old_diff_coverages.append(old_diff_coverage)
                 new_diff_coverages.append(new_diff_coverage)
 
+            # keep track of phase we're in and update time taken for each phase
+            if entry["message"].startswith("Querying"):
+                if "has an undefined reference" in entry["content"] and "Fix it" in entry["content"]:
+                    update_time_taken(entry)
+                    phase = "test_refinement"
+                    test_refinemement_start_time = parse_time_stamp(
+                        entry["timestamp"])
+            if entry["message"].startswith("Compiling"):
+                update_time_taken(entry)
+                phase = "test_exec"
+                test_exec_start_time = parse_time_stamp(entry["timestamp"])
+            if entry["message"] == "Pre-classification":
+                update_time_taken(entry)
+                phase = "classification"
+                classification_start_time = parse_time_stamp(
+                    entry["timestamp"])
+
             if entry["message"] == "Token usage":
                 pattern = r"prompt=(\d+), completion=(\d+)"
                 match = re.search(pattern, entry["content"])
-                self.input_tokens += int(match.group(1))
-                self.output_tokens += int(match.group(2))
+                input_tokens = int(match.group(1))
+                output_tokens = int(match.group(2))
+                self.input_tokens += input_tokens
+                self.output_tokens += output_tokens
+
+                # update token usage based on phase
+                if phase == "test_gen":
+                    self.input_tokens_test_gen += input_tokens
+                    self.output_tokens_test_gen += output_tokens
+                elif phase == "test_refinement":
+                    self.input_tokens_test_refinement += input_tokens
+                    self.output_tokens_test_refinement += output_tokens
+                elif phase == "test_exec":
+                    self.input_tokens_test_exec += input_tokens
+                    self.output_tokens_test_exec += output_tokens
+                elif phase == "classification":
+                    self.input_tokens_classification += input_tokens
+                    self.output_tokens_classification += output_tokens
+
+        update_time_taken(self.entries[-1])
 
         if len(old_diff_coverages) > 0:
             self.avg_old_diff_coverage = sum(
@@ -126,10 +194,6 @@ class PRResult:
         if len(new_diff_coverages) > 0:
             self.avg_new_diff_coverage = sum(
                 new_diff_coverages) / len(new_diff_coverages)
-
-        start_time = parse_time_stamp(entries[0]["timestamp"])
-        end_time = parse_time_stamp(entries[-1]["timestamp"])
-        self.time_taken = str(end_time - start_time)
 
         # extract classification details
         for entry_idx, entry in enumerate(self.entries):
