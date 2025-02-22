@@ -2,6 +2,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 import glob
 from os.path import join
+from statistics import mean
 from buggpt.util.LogParser import PRResult, parse_log_files, parse_time_stamp, pr_results_as_dict
 from buggpt.util.Logs import List
 import matplotlib.pyplot as plt
@@ -181,6 +182,11 @@ def print_and_plot_token_results(input_token_costs, output_token_costs):
     target_file = "data/figures/token_costs.pdf"
     plt.tight_layout()
     plt.savefig(target_file)
+
+    print(f"\\newcommand{{\\tokensTestGenPerPR}}{{{round(mean(total_token_costs.test_gen))}}}")
+    print(f"\\newcommand{{\\tokensTestRefinementPerPR}}{{{round(mean(total_token_costs.test_refinement))}}}")
+    print(f"\\newcommand{{\\tokensTestExecPerPR}}{{{round(mean(total_token_costs.test_exec))}}}")
+    print(f"\\newcommand{{\\tokensClassificationPerPR}}{{{round(mean(total_token_costs.classification))}}}")    
 
     avg_input_dollars, avg_output_dollars = avg_money_per_PR(
         input_token_costs, output_token_costs)
