@@ -39,6 +39,6 @@ docker run -t -d --name transformers-dev3 -v ${PWD}:/home/transformers python:3.
 docker exec -w /home/transformers transformers-dev3 pip install -e ".[dev]"
 echo "Done with third clone"
 
-cd ../../../BugGPT
+cd ../../../Testora
 
 

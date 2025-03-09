@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "buggpt"
+name = "Testora"
 version = "0.1.0"
 description = ""
 authors = [
@@ -14,7 +14,7 @@ dependencies = []
 
 [tool.hatch.build.targets.wheel]
 packages = [
-    "src/buggpt",
+    "src/testora",
 ]
 
 [tool.hatch.build.targets.sdist]

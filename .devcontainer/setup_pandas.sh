@@ -44,4 +44,4 @@ docker exec pandas-dev3 python -m pip install -ve . --no-build-isolation --confi
 docker exec pandas-dev3 python -m pip install coverage
 echo "Done with third clone"
 
-cd ../../../BugGPT
+cd ../../../Testora

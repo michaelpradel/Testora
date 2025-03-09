@@ -46,4 +46,4 @@ docker exec -w /home/keras keras-dev3 pip install -e ./
 docker exec -w /home/keras keras-dev3 pip install coverage
 echo "Done with third clone"
 
-cd ../../../BugGPT
+cd ../../../Testora

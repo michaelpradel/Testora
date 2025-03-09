@@ -41,4 +41,4 @@ docker run -t -d --name scapy-dev3 -v ${PWD}:/home/scapy python:3.10
 docker exec -w /home/scapy scapy-dev3 pip install -e .
 echo "Done with third clone"
 
-cd ../../../BugGPT
+cd ../../../Testora

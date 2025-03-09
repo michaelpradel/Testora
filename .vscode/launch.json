@@ -4,27 +4,27 @@
             "name": "RegressionFinder",
             "type": "debugpy",
             "request": "launch",
-            "module": "buggpt.RegressionFinder",
+            "module": "testora.RegressionFinder",
         },
         {
             "name": "EvalTaskManager",
             "type": "debugpy",
             "request": "launch",
-            "module": "buggpt.evaluation.EvalTaskManager",
+            "module": "testora.evaluation.EvalTaskManager",
             "args": ["--fetch", "--classification"],
         },
         {
             "name": "ClassificationEvaluator",
             "type": "debugpy",
             "request": "launch",
-            "module": "buggpt.evaluation.ClassificationEvaluator",
+            "module": "testora.evaluation.ClassificationEvaluator",
             "args": ["--evaluate"],
         },
         {
             "name": "ClassificationResultsSummarizer",
             "type": "debugpy",
             "request": "launch",
-            "module": "buggpt.evaluation.ClassificationResultsSummarizer",
+            "module": "testora.evaluation.ClassificationResultsSummarizer",
         },
     ]
 }

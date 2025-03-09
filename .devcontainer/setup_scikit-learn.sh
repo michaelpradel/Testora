@@ -43,4 +43,4 @@ docker exec -w /home/scikit-learn scikit-learn-dev3 pip install wheel numpy scip
 docker exec -w /home/scikit-learn scikit-learn-dev3 pip install --editable . --verbose --no-build-isolation --config-settings editable-verbose=true
 echo "Done with third clone"
 
-cd ../../../BugGPT
+cd ../../../Testora

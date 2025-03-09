@@ -41,4 +41,4 @@ docker run -t -d --name pytorch_geometric-dev3 -v ${PWD}:/home/pytorch_geometric
 docker exec -w /home/pytorch_geometric pytorch_geometric-dev3 pip install -e '.[dev,full]'
 echo "Done with third clone"
 
-cd ../../../BugGPT
+cd ../../../Testora
