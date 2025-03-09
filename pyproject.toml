@@ -7,7 +7,7 @@ name = "Testora"
 version = "0.1.0"
 description = ""
 authors = [
-    { name = "Michael Pradel", email = "michael@binaervarianz.de" }
+    { name = "XXX", email = "XXX" }
 ]
 license = "MIT"
 dependencies = []
