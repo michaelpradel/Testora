@@ -1,3 +1,0 @@
-project.id,bug.id,revision.id.buggy,revision.id.fixed,report.id,report.url
-JacksonDatabind,8,a399c540e540ac616fd3c19a8e46ce065ef71f8c,3b041e3bad5968ade7f7519daeef6695a8f6b7f9,667,https://github.com/FasterXML/jackson-databind/issues/667
-Jsoup,29,59fb5117a767ab75fe3baf5c37966c83430b02af,05ae97865c84536a6cfe7759ca6c382eb761ecb2,168,https://github.com/jhy/jsoup/issues/168
