@@ -2,7 +2,7 @@ from openai import OpenAI
 from testora.prompts.RegressionClassificationPromptV2 import RegressionClassificationPromptV2
 from testora.prompts.PromptCommon import system_message
 
-with open(".openai_token_ExeCode", "r") as f:
+with open(".openai_token", "r") as f:
     openai_key = f.read().strip()
 
 openai = OpenAI(api_key=openai_key)

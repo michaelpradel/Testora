@@ -47,26 +47,14 @@ def write_range_of_PR_tasks_into_database(project_name, project_id, start_pr_nb,
 
 
 if __name__ == "__main__":
-    # write_PR_tasks_into_database("pandas", "pandas-dev/pandas",
-    #                              [57399, 57595, 56841,
-    #                               58376, 55108, 57205,
-    #                               57046, 57034])  # known true positives
     write_range_of_PR_tasks_into_database(
         "pandas", "pandas-dev/pandas", 60322, 300)
 
-    # write_PR_tasks_into_database("scipy", "scipy/scipy",
-    #                              [20089, 20974, 21036,
-    #                               20751, 21076, 19776,
-    #                               19861, 19853, 19680,
-    #                               19428, 19263, 21553])  # known true positives
-    write_range_of_PR_tasks_into_database("scipy", "scipy/scipy", 22031, 300)
+    write_range_of_PR_tasks_into_database(
+        "scipy", "scipy/scipy", 22031, 300)
 
-    # write_PR_tasks_into_database("keras", "keras-team/keras",
-    #                              [19814])  # known true positives
     write_range_of_PR_tasks_into_database(
         "keras", "keras-team/keras", 20711, 300)
 
-    # write_PR_tasks_into_database("marshmallow", "marshmallow-code/marshmallow",
-    #                              [1399, 2215])  # known true positives
     write_range_of_PR_tasks_into_database(
         "marshmallow", "marshmallow-code/marshmallow", 2804, 300)

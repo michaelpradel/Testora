@@ -7,7 +7,7 @@ from testora.util.Logs import append_event, LLMEvent
 from testora.Config import model_version
 
 if model_version.startswith("gpt"):
-    with open(".openai_token_ExeCode", "r") as f:
+    with open(".openai_token", "r") as f:
         openai_key = f.read().strip()
         openai = OpenAI(api_key=openai_key)
 elif model_version.startswith("deepseek"):

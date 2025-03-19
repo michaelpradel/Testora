@@ -5,13 +5,11 @@ data/pr_chunks
 data/results
 data/classification_results
 data/ground_truth
-/tmp
 .github_token
 logs_*.json
 results_*.json
 .openai_token
 .db_token
-.openai_token_ExeCode
 .worker_id
 candidate_projects*.csv
 .target_project
