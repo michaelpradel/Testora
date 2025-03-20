@@ -26,7 +26,9 @@ To install and run Testora, follow these steps:
 
     This will take a couple of minutes, because in addition to Testora, it will set up three instances of the project under analysis. We use three instances to efficiently switch between the commits just before and just after a PR, as well as the latest commit in the main branch.
 
-4) In the main directory, create a file `.openai_token` with an OpenAI API key.
+4) In the main directory, create a file `.openai_token` with an OpenAI API key. This is required for invoking an LLM, which is an essential part of Testora.
+
+5) In the main directory, create a file `.github_token` with a (free to create) GitHub API key. This is required because Testora interacts with the GitHub API to retrieve details about the PRs to analyze.
 
 ## Running Testora on a Single Pull Request
 

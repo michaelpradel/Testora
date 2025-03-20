@@ -71,8 +71,8 @@ def compute_test_generation_stats(pr_results):
     checked_prs = [r for r in pr_results if not r.ignored]
 
     nbs_generated_tests = [r.nb_generated_tests for r in checked_prs]
-    gen_tests_out = f"{min(nbs_generated_tests)} & / & {round(sum(nbs_generated_tests) /
-                                                        len(nbs_generated_tests))} & / & {max(nbs_generated_tests)}"
+    gen_tests_out = f"""{min(nbs_generated_tests)} & / & {round(sum(nbs_generated_tests) /
+                                                        len(nbs_generated_tests))} & / & {max(nbs_generated_tests)}"""
     print(
         f"Generated tests: (min & avg & max) {gen_tests_out}")
 
@@ -183,10 +183,14 @@ def print_and_plot_token_results(input_token_costs, output_token_costs):
     plt.tight_layout()
     plt.savefig(target_file)
 
-    print(f"\\newcommand{{\\tokensTestGenPerPR}}{{{round(mean(total_token_costs.test_gen))}}}")
-    print(f"\\newcommand{{\\tokensTestRefinementPerPR}}{{{round(mean(total_token_costs.test_refinement))}}}")
-    print(f"\\newcommand{{\\tokensTestExecPerPR}}{{{round(mean(total_token_costs.test_exec))}}}")
-    print(f"\\newcommand{{\\tokensClassificationPerPR}}{{{round(mean(total_token_costs.classification))}}}")    
+    print(
+        f"\\newcommand{{\\tokensTestGenPerPR}}{{{round(mean(total_token_costs.test_gen))}}}")
+    print(
+        f"\\newcommand{{\\tokensTestRefinementPerPR}}{{{round(mean(total_token_costs.test_refinement))}}}")
+    print(
+        f"\\newcommand{{\\tokensTestExecPerPR}}{{{round(mean(total_token_costs.test_exec))}}}")
+    print(
+        f"\\newcommand{{\\tokensClassificationPerPR}}{{{round(mean(total_token_costs.classification))}}}")
 
     avg_input_dollars, avg_output_dollars = avg_money_per_PR(
         input_token_costs, output_token_costs)
@@ -197,7 +201,8 @@ def print_and_plot_token_results(input_token_costs, output_token_costs):
         input_token_costs, output_token_costs)
     print(f"\\newcommand{{\\inputTokensPerPR}}{{{round(avg_input_tokens)}}}")
     print(f"\\newcommand{{\\outputTokensPerPR}}{{{round(avg_output_tokens)}}}")
-    print(f"\\newcommand{{\\totalTokensPerPR}}{{{round(avg_input_tokens + avg_output_tokens)}}}")
+    print(
+        f"\\newcommand{{\\totalTokensPerPR}}{{{round(avg_input_tokens + avg_output_tokens)}}}")
 
 
 def print_and_plot_time_results(time_costs):
