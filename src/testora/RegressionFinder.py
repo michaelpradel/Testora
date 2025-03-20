@@ -1,3 +1,4 @@
+import argparse
 import glob
 import json
 from typing import List
@@ -593,27 +594,32 @@ def get_repo(project_name):
     return github_repo, cloned_repo_manager
 
 
-def main():
-    start_logging()
+def check_single_pr(project, pr_nb):
+    github_repo, cloned_repo_manager = get_repo(project)
+    github_pr = github_repo.get_pull(pr_nb)
+    pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
+
+    # check the PR
+    append_event(PREvent(pr_nb=pr_nb,
+                         message="Starting to check PR",
+                         title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+    check_pr(github_repo, cloned_repo_manager, pr)
+
+    append_event(PREvent(pr_nb=pr_nb,
+                         message="Done with PR",
+                         title=pr.github_pr.title, url=pr.github_pr.html_url))
+
+
+def fetch_and_check_prs():
     project, pr_nb = EvalTaskManager.fetch_task()
     while project and pr_nb:
-        github_repo, cloned_repo_manager = get_repo(project)
-        github_pr = github_repo.get_pull(pr_nb)
-        pr = PullRequest(github_pr, github_repo, cloned_repo_manager)
-
-        # check the PR
-        append_event(PREvent(pr_nb=pr_nb,
-                             message="Starting to check PR",
-                             title=pr.github_pr.title, url=pr.github_pr.html_url))
         try:
-            check_pr(github_repo, cloned_repo_manager, pr)
+            check_single_pr(project, pr_nb)
         except TestoraException as e:
             append_event(ErrorEvent(
                 pr_nb=pr_nb, message="Caught TestoraError; will continue with next PR", details=str(e)))
             continue
-        append_event(PREvent(pr_nb=pr_nb,
-                             message="Done with PR",
-                             title=pr.github_pr.title, url=pr.github_pr.html_url))
 
         # store log on disk and into DB
         store_logs()
@@ -624,6 +630,30 @@ def main():
         project, pr_nb = EvalTaskManager.fetch_task()
 
     print("No more tasks to work on")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Testora's main entry point")
+    parser.add_argument("--db", action="store_true",
+                        help="Run on PRs fetched from the database")
+    parser.add_argument("--project", type=str,
+                        help="Project to analyze",
+                        choices=["keras", "marshmallow", "pandas", "scipy"])
+    parser.add_argument("--pr", type=int,
+                        help="PR number to analyze")
+    args = parser.parse_args()
+
+    start_logging()
+    if args.db:
+        if args.project or args.pr:
+            raise ValueError("When using --db, cannot use --project and --pr")
+        fetch_and_check_prs()
+    else:
+        if not args.project or not args.pr:
+            raise ValueError("Must specify --project and --pr")
+        check_single_pr(args.project, args.pr)
+        store_logs()
 
 
 if __name__ == "__main__":

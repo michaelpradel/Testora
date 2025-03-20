@@ -1,25 +1,78 @@
-# Testora
+# Testora: Regression Testing with a Natural Language Oracle
 
-An automated approach to check behavioral changes introduced by a pull request against natural language information associated with the pull request.
+Testora is an automated approach to check behavioral changes introduced by a pull request against the title, description, etc. of the pull request.
 
-## Entry Points for Using Testora
-
-[testora.evaluation.PreparePRChunks.py](src/testora/evaluation/PreparePRChunks.py): Adds PRs to check into a database.
-
-[testora.RegressionFinder](src/testora/RegressionFinder.py): Fetches PRs to check from the database and applies the approach to each PR.
-
-[testora.evaluation.EvalTaskManager](src/testora/evaluation/EvalTaskManager.py): Use this to see the status of PRs to analyze and to fetch a local copy of results from the database.
-
-[testora.webui.WebUI](src/testora/webui/WebUI.py): Shows results of applying Testora in a web interface.
-
-## Docker Containers
+## Installation
 
 Testora uses two kinds of Docker containers:
 
-1) A Visual Studio Code Dev Container for running Testora itself. See [devcontainer.json](.devcontainer/devcontainer.json).
+* A Visual Studio Code Dev Container for running Testora itself. See [devcontainer.json](.devcontainer/devcontainer.json).
 
-2) Docker-in-docker containers for target projects to analyze with Testora. These containers are created when creating the dev container. See [postCreateCommands.sh](.devcontainer/postCreateCommands.sh).
+* Docker-in-docker containers for target projects to analyze with Testora. These containers are created when creating the dev container. See [postCreateCommands.sh](.devcontainer/postCreateCommands.sh).
 
-## Note
+To install and run Testora, follow these steps:
 
-This repository is not yet fully prepared for allowing others to use Testora.
+1) Install [Visual Studio Code](https://code.visualstudio.com/download) and its ["Dev Containers" extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+
+2) Open Testora in Visual Studio Code:
+   
+   ```code .```
+
+3) In Visual Studio Code, build the Dev Container and reopen the project in the container:
+
+    ```Ctrl + Shift + P```
+
+    ```Dev Containers: Rebuild and Reopen in Container```
+
+    This will take a couple of minutes, because in addition to Testora, it will set up three instances of the project under analysis. We use three instances to efficiently switch between the commits just before and just after a PR, as well as the latest commit in the main branch.
+
+4) In the main directory, create a file `.openai_token` with an OpenAI API key.
+
+## Running Testora on a Single Pull Request
+
+[testora.RegressionFinder](src/testora/RegressionFinder.py) is the main entry point to run Testora.
+To apply it to a specific PR of a project, run it like this:
+
+```python -m testora.RegressionFinder --project scipy --pr 21768```
+
+The project must be one of the projects that were set up while building the Dev Container. The above command produces a `logs_<timestamp>.json` file.
+
+## Inspecting Results in the Web UI
+
+We provide a Web UI to inspect detailed logs of Testora.
+
+1) Launch the web server:
+
+    ```python -m testora.webui.WebUI --files logs_*.json```
+
+2) Visit [http://localhost:4000/](http://localhost:4000/) in your browser.
+
+3) Click on the value in the "Status" column to inspect the detailed logs of a PR.
+
+## Running Testora on Many Pull Requests
+
+For large-scale experiments, we use an SQL database that stores PRs to analyze and, once a PR has been analyzed, stores the results of Testora on this PR.
+The database itself is *not* part of this public release, but you may replicate the setup with your own database using [these two database schemas](src/testora/evaluation/sql/).
+
+Assuming you have set up the database:
+
+1) Add PRs to check into the database:
+
+    ```python -m testora.evaluation.PreparePRChunks```
+
+2) Run [testora.RegressionFinder](src/testora/RegressionFinder.py) in database mode, which fetches PRs to check from the database and applies the approach to each PR.
+
+    ```python -m testora.RegressionFinder --db```
+
+    You can launch multiple instances of this command in parallel in different Dev Containers. Each of the parallel instances will fetch one PR at a time and write the result back into the database, until all PRs have been analyzed.
+
+3) Check the status of PRs to analyze:
+
+    ```python -m testora.evaluation.EvalTaskManager --status```
+
+4) Once some or all PRs have been analyzed, download the results (i.e., `logs_*.json` files) from the database for inspection:
+
+    ```python -m testora.evaluation.EvalTaskManager --fetch```
+
+    To inspect the logs, use the WebUI as described above.
+
