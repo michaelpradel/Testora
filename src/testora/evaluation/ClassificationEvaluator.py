@@ -196,4 +196,5 @@ if __name__ == '__main__':
         for log_file in args.create_ground_truth_template:
             create_ground_truth_template(log_file)
     elif args.evaluate:
+        EvalTaskManager.initialize()        
         evaluate()

@@ -10,7 +10,7 @@ classification_pr_nb = -23
 
 
 def initialize():
-    global config, my_worker_id, classification_pr_nb
+    global config, my_worker_id
 
     config = {
         "user": "user_name",
