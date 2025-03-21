@@ -1,0 +1,15 @@
+{
+    "pr_number": 21076,
+    "log_file": "data/old_results/results_scipy_21151_20231.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 10: Larger dataset\nimport numpy as np\nfrom scipy.stats import differential_entropy\n\nvalues = np.array([1, 1, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11])\nresult = differential_entropy(values)\nprint(f\"Entropy of a larger dataset: {result}\")",
+                "old_output": "Entropy of a larger dataset: 2.358820400183337\n",
+                "new_output": "Entropy of a larger dataset: 2.5285667498058793\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/scipy/scipy/issues/21192"
+        }
+    ]
+}

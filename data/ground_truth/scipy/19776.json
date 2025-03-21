@@ -1,0 +1,15 @@
+{
+    "pr_number": 19776,
+    "log_file": "data/old_results/results_scipy_19816_19725.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Corner Case Example 6: Using inf and -inf values\nimport numpy as np\nfrom scipy.stats import rankdata\n\ndata = np.array([10, np.inf, -np.inf, 25, 30])\nresult = rankdata(data, method='average')\nprint(result)",
+                "old_output": "[nan nan nan nan nan]\n",
+                "new_output": "[2. 5. 1. 3. 4.]\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

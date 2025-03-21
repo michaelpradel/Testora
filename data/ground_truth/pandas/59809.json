@@ -1,0 +1,78 @@
+{
+    "pr_number": 59809,
+    "log_file": "data/results/pandas/59809_2024-11-23 09:09:42.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 2:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(\"John\", 25, \"Chicago\"), (\"Jane\", 30, \"San Francisco\")],\n    dtype=[(\"name\", \"U10\"), (\"age\", \"i4\"), (\"city\", \"U15\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"name\", \"city\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   name  age           city\n0  John   25        Chicago\n1  Jane   30  San Francisco\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   name           city\n0  John        Chicago\n1  Jane  San Francisco\n"
+            },
+            "label": "intended",
+            "comment": "filtering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(\"Tom\", 55, \"Miami\"), (\"Rose\", 42, \"Boston\")],\n    dtype=[(\"name\", \"U10\"), (\"age\", \"i4\"), (\"city\", \"U15\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"city\", \"name\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   name  age    city\n0   Tom   55   Miami\n1  Rose   42  Boston\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n     city  name\n0   Miami   Tom\n1  Boston  Rose\n"
+            },
+            "label": "intended",
+            "comment": "filtering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(\"Tony\", 50, \"Dallas\"), (\"Nina\", 45, \"Austin\")],\n    dtype=[(\"name\", \"U10\"), (\"age\", \"i4\"), (\"city\", \"U15\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"name\", \"age\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   name  age    city\n0  Tony   50  Dallas\n1  Nina   45  Austin\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   name  age\n0  Tony   50\n1  Nina   45\n"
+            },
+            "label": "intended",
+            "comment": "filtering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(\"Eve\", 29, \"Denver\"), (\"Oscar\", 52, \"Phoenix\")],\n    dtype=[(\"name\", \"U10\"), (\"age\", \"i4\"), (\"city\", \"U15\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"age\", \"city\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n    name  age     city\n0    Eve   29   Denver\n1  Oscar   52  Phoenix\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   age     city\n0   29   Denver\n1   52  Phoenix\n"
+            },
+            "label": "intended",
+            "comment": "filtering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 8:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(\"Leo\", 31, \"San Diego\"), (\"Zoe\", 36, \"Philadelphia\")],\n    dtype=[(\"name\", \"U10\"), (\"age\", \"i4\"), (\"city\", \"U15\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"name\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n  name  age          city\n0  Leo   31     San Diego\n1  Zoe   36  Philadelphia\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n  name\n0  Leo\n1  Zoe\n"
+            },
+            "label": "intended",
+            "comment": "filtering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(\"Max\", 20, \"Detroit\"), (\"Kate\", 26, \"Portland\")],\n    dtype=[(\"name\", \"U10\"), (\"age\", \"i4\"), (\"city\", \"U15\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"age\", \"name\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   name  age      city\n0   Max   20   Detroit\n1  Kate   26  Portland\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   age  name\n0   20   Max\n1   26  Kate\n"
+            },
+            "label": "intended",
+            "comment": "filtering and re-ordering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 8:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(1, 2, 3)],\n    dtype=[(\"one\", \"i4\"), (\"two\", \"i4\"), (\"three\", \"i4\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"two\", \"one\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   one  two  three\n0    1    2      3\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n   two  one\n0    2    1\n"
+            },
+            "label": "intended",
+            "comment": "filtering and re-ordering didn't work in old version, but works in new version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nimport numpy as np\nimport pandas as pd\n\ndata = np.array(\n    [(1.0, 2.0)],\n    dtype=[(\"A\", \"f4\"), (\"B\", \"f4\")]\n)\n\ndf = pd.DataFrame.from_records(data, columns=[\"B\", \"A\"])\nprint(df)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n     A    B\n0  1.0  2.0\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n     B    A\n0  2.0  1.0\n"
+            },
+            "label": "intended",
+            "comment": "filtering and re-ordering didn't work in old version, but works in new version"
+        }
+    ]
+}

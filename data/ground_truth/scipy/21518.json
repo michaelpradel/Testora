@@ -1,0 +1,15 @@
+{
+    "pr_number": 21518,
+    "log_file": "data/results/scipy/21518_2024-11-23 09:06:43.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 15:\nimport numpy as np\nfrom scipy import stats\n\ndata = np.array([-1, -2, -3])\nlmb = 1.0\n\ntry:\n    log_likelihood = stats.boxcox_llf(lmb, data)\n    print(f\"Box-Cox Log-likelihood with negative data: {log_likelihood}\")\nexcept Exception as e:\n    print(f\"Error with negative values: {e}\")",
+                "old_output": "/home/scipy/scipy/stats/_morestats.py:961: RuntimeWarning: invalid value encountered in log\n  logdata = xp.log(data)\n/home/scipy/scipy/special/_logsumexp.py:128: RuntimeWarning: invalid value encountered in exp\n  tmp = xp.exp(a - a_max)\nBox-Cox Log-likelihood with negative data: nan\n",
+                "new_output": "/home/scipy/scipy/stats/_morestats.py:967: RuntimeWarning: invalid value encountered in log\n  logdata = xp.log(data)\n/home/scipy/scipy/special/_logsumexp.py:128: RuntimeWarning: invalid value encountered in exp\n  tmp = xp.exp(a - a_max)\nBox-Cox Log-likelihood with negative data: nan\n"
+            },
+            "label": "intended",
+            "comment": "line numbers are different, everything else is the same"
+        }
+    ]
+}

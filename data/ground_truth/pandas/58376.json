@@ -1,0 +1,15 @@
+{
+    "pr_number": 58376,
+    "log_file": "data/old_results/results_pandas_58389_58294.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Corner Case Example 10: Using RangeIndex.searchsorted with a negative step value\nimport pandas as pd\n\nri = pd.RangeIndex(9, 0, -3)\nvalue = 5\nresult = ri.searchsorted(value)\nprint(result)",
+                "old_output": "0\n",
+                "new_output": "2\n"
+            },
+            "label": "coincidental fix",
+            "comment": "https://github.com/pandas-dev/pandas/issues/58641"
+        }
+    ]
+}

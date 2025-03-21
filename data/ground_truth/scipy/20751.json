@@ -1,0 +1,15 @@
+{
+    "pr_number": 20751,
+    "log_file": "data/old_results/results_scipy_20759_20656.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 9: Using float32 data type arrays\nimport numpy as np\nfrom scipy.stats import bartlett\n\na = np.array([10.1, 10.2, 10.3, 10.4], dtype=np.float32)\nb = np.array([10.15, 10.25, 10.35, 10.45], dtype=np.float32)\nc = np.array([10.05, 10.15, 10.25, 10.35], dtype=np.float32)\n\nresult = bartlett(a, b, c)\nprint(\"Bartlett test result for float32 data type arrays:\", result)",
+                "old_output": "Bartlett test result for float32 data type arrays: BartlettResult(statistic=np.float64(2.7743484928754286e-11), pvalue=np.float64(0.9999999999861282))\n",
+                "new_output": "Bartlett test result for float32 data type arrays: BartlettResult(statistic=np.float64(-7.080736255702299e-07), pvalue=np.float64(1.0))\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/scipy/scipy/issues/21152"
+        }
+    ]
+}

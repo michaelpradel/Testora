@@ -1,0 +1,15 @@
+{
+    "pr_number": 57046,
+    "log_file": "data/old_results/results_pandas_57112_56981.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 13: Corner Case - SeriesGroupBy.idxmin with NaN values only\nimport pandas as pd\nimport numpy as np\n\ns = pd.Series([np.nan, np.nan, np.nan, np.nan], index=['a', 'b', 'a', 'b'])\ngrouped = s.groupby(s.index)\nresult = grouped.idxmin(skipna=True)\nprint(\"SeriesGroupBy.idxmin with NaN values only result:\\n\", result)",
+                "old_output": "SeriesGroupBy.idxmin with NaN values only result:\n a    a\nb    a\ndtype: object\n",
+                "new_output": "SeriesGroupBy.idxmin with NaN values only result:\n a    NaN\nb    NaN\ndtype: object\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "pr_number": 2271,
+    "log_file": "data/results/marshmallow/2271_2024-11-23 09:16:17.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 4:\nfrom marshmallow import Schema, fields\n\nclass ManySchema(Schema):\n    foo = fields.Str()\n\n    class Meta:\n        many = True\n\nschema = ManySchema()\nresult = schema.load([{\"foo\": \"bar\"}, {\"foo\": \"baz\"}])",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in <module>\n    result = schema.load([{\"foo\": \"bar\"}, {\"foo\": \"baz\"}])\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 724, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 911, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'_schema': ['Invalid input type.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "PR addresses issue that is about supporting 'many=True'"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nfrom marshmallow import Schema, fields\n\nclass SampleSchema(Schema):\n    code = fields.Int()\n\n    class Meta:\n        many = True\n\nschema = SampleSchema()\nresult = schema.load([{\"code\": 100}, {\"code\": 200}])",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in <module>\n    result = schema.load([{\"code\": 100}, {\"code\": 200}])\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 724, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 911, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'_schema': ['Invalid input type.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "PR addresses issue that is about supporting 'many=True'"
+        }
+    ]
+}

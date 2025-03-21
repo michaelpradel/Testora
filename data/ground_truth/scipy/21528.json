@@ -1,0 +1,24 @@
+{
+    "pr_number": 21528,
+    "log_file": "data/results/scipy/21528_2024-11-23 09:06:43.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 8:\nimport numpy as np\nfrom scipy.special import logsumexp\n\na = np.array([1.0, 2.0, 3.0], dtype=np.float32)\nresult = logsumexp(a)\nprint(\"logsumexp(a) with dtype np.float32 =\", result)",
+                "old_output": "logsumexp(a) with dtype np.float32 = 3.4076059644443806\n",
+                "new_output": "logsumexp(a) with dtype np.float32 = 3.4076061\n"
+            },
+            "label": "intended",
+            "comment": "floating point (in)accuracy, which seems a legitimate side-effect of the type-related fix"
+        },
+        {
+            "test": {
+                "test_code": "# Example 13:\nimport numpy as np\nfrom scipy.special import logsumexp\n\na = None\ntry:\n    result = logsumexp(a)\nexcept Exception as e:",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 8 (BugGPT_test_code.py, line 8)\n/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 8 (BugGPT_test_code.py, line 8)\n"
+            },
+            "label": "intended",
+            "comment": "irrelevant difference in logging order"
+        }
+    ]
+}

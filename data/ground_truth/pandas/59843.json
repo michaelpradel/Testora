@@ -1,0 +1,159 @@
+{
+    "pr_number": 59843,
+    "log_file": "data/results/pandas/59843_2024-11-23 09:09:42.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 2:\nimport pandas as pd\n\n# Create a Series\ns = pd.Series(['apple', 'banana', 'cherry'])\n\n# Map values using a function that utilizes kwargs\nresult = s.map(lambda fruit, prefix: f\"{prefix} {fruit}\", prefix='Delicious')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda fruit, prefix: f\"{prefix} {fruit}\", prefix='Delicious')\nTypeError: Series.map() got an unexpected keyword argument 'prefix'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nimport pandas as pd\n\n# Create a Series with mixed values\ns = pd.Series([1, 2, 3])\n\n# Using a static method with keyword arguments\nresult = s.map(lambda x, increment: x + increment, increment=10)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, increment: x + increment, increment=10)\nTypeError: Series.map() got an unexpected keyword argument 'increment'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nimport pandas as pd\n\n# Create a Series of integers\ns = pd.Series([5, 10, 15])\n\n# Map values using a function with added keyword arguments\nresult = s.map(lambda x, factor: x / factor, factor=5)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, factor: x / factor, factor=5)\nTypeError: Series.map() got an unexpected keyword argument 'factor'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nimport pandas as pd\n\n# Create a Series of categorical values\ns = pd.Series(['a', 'b', 'c'])\n\n# Mapping with a function using a kwargs\nresult = s.map(lambda x, prefix: f\"{prefix}{x}\", prefix='Value: ')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, prefix: f\"{prefix}{x}\", prefix='Value: ')\nTypeError: Series.map() got an unexpected keyword argument 'prefix'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7:\nimport pandas as pd\n\n# Create a Series\ns = pd.Series([100, 200, 300])\n\n# Using a function that utilizes keyword arguments for discount application\nresult = s.map(lambda x, discount: x - x * discount, discount=0.1)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, discount: x - x * discount, discount=0.1)\nTypeError: Series.map() got an unexpected keyword argument 'discount'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nimport pandas as pd\n\n# Create a Series with None values\ns = pd.Series([None, 2, 3])\n\n# Map over the Series while ignoring None\nresult = s.map(lambda x, default=0: x if x is not None else default, default=5)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, default=0: x if x is not None else default, default=5)\nTypeError: Series.map() got an unexpected keyword argument 'default'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 10:\nimport pandas as pd\n\n# Create a Series with strings\ns = pd.Series(['1', '2', '3'])\n\n# Map to integers with a function that takes a keyword argument\nresult = s.map(lambda x, base: int(x) + base, base=10)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, base: int(x) + base, base=10)\nTypeError: Series.map() got an unexpected keyword argument 'base'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 11:\nimport pandas as pd\n\n# Create a Series with NaN values\ns = pd.Series([1, 2, None])\n\n# Function to map values, ignoring NaN\nresult = s.map(lambda x, default=0: x if pd.notna(x) else default, default=10)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, default=0: x if pd.notna(x) else default, default=10)\nTypeError: Series.map() got an unexpected keyword argument 'default'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 12:\nimport pandas as pd\n\n# Create a Series with one NaN and one empty string\ns = pd.Series(['', 'apple', None])\n\n# Map values using kwargs, inspecting empty and None values\nresult = s.map(lambda x, replace: x if x else replace, replace='N/A')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, replace: x if x else replace, replace='N/A')\nTypeError: Series.map() got an unexpected keyword argument 'replace'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 13:\nimport pandas as pd\n\n# Create a Series with mixed data types\ns = pd.Series(['text', 1, True, None])\n\n# Map by converting values to strings while providing a default\nresult = s.map(lambda x, default='UNKNOWN': str(x) if x is not None else default, default='NULL')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, default='UNKNOWN': str(x) if x is not None else default, default='NULL')\nTypeError: Series.map() got an unexpected keyword argument 'default'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 14:\nimport pandas as pd\n\n# Create a Series with negative values\ns = pd.Series([-1, -2, -3])\n\n# Using a function to add a positive number\nresult = s.map(lambda x, increment: x + increment, increment=5)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, increment: x + increment, increment=5)\nTypeError: Series.map() got an unexpected keyword argument 'increment'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 15:\nimport pandas as pd\n\n# Create a Series with a long string\ns = pd.Series(['Hello World!', 'Pandas is great!', 'This is a test.'])\n\n# Map values to truncate strings, providing a max length via kwargs\nresult = s.map(lambda x, max_len: x[:max_len], max_len=10)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, max_len: x[:max_len], max_len=10)\nTypeError: Series.map() got an unexpected keyword argument 'max_len'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 16:\nimport pandas as pd\n\n# Create a Series with special characters\ns = pd.Series(['!@#$', '%^&*', '()_+'])\n\n# Map values by escaping special characters\nresult = s.map(lambda x, escape_char: escape_char + x, escape_char='\\\\')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, escape_char: escape_char + x, escape_char='\\\\')\nTypeError: Series.map() got an unexpected keyword argument 'escape_char'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 17:\nimport pandas as pd\n\n# Create a Series that is entirely NaN\ns = pd.Series([None, None, None])\n\n# Mapping should ideally return the default or NaNs\nresult = s.map(lambda x, default=10: x if x is not None else default, default=5)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, default=10: x if x is not None else default, default=5)\nTypeError: Series.map() got an unexpected keyword argument 'default'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 18:\nimport pandas as pd\n\n# Create a Series with a single element\ns = pd.Series([42])\n\n# Mapping with a keyword argument\nresult = s.map(lambda x, add: x + add, add=8)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, add: x + add, add=8)\nTypeError: Series.map() got an unexpected keyword argument 'add'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 19:\nimport pandas as pd\n\n# Create a Series that is empty\ns = pd.Series([])\n\n# Map should remain empty\nresult = s.map(lambda x, increment: x + increment, increment=5)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, increment: x + increment, increment=5)\nTypeError: Series.map() got an unexpected keyword argument 'increment'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        },
+        {
+            "test": {
+                "test_code": "# Example 20:\nimport pandas as pd\n\n# Create a Series with duplicates and NaN\ns = pd.Series([1, 2, 2, None, 3])\n\n# Map to handle NaN values\nresult = s.map(lambda x, default=0: x + default if x is not None else default, default=10)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = s.map(lambda x, default=0: x + default if x is not None else default, default=10)\nTypeError: Series.map() got an unexpected keyword argument 'default'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "intended",
+            "comment": "PR removes exception related to kwargs"
+        }
+    ]
+}

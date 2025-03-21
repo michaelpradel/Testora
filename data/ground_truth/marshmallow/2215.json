@@ -1,0 +1,15 @@
+{
+    "pr_number": 2215,
+    "log_file": "data/old_results/results_marshmallow_2215_2130.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 10: Demonstrate warning for deprecated option in SchemaOpts\nfrom marshmallow.schema import SchemaOpts\n\nclass Meta:\n    json_module = \"custom_json\"\n\noptions = SchemaOpts(meta=Meta)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:7: RemovedInMarshmallow4Warning: The json_module class Meta option is deprecated. Use render_module instead.\n  options = SchemaOpts(meta=Meta)\n"
+            },
+            "label": "intended",
+            "comment": "updating the dependencies leads to a valid deprecation warning"
+        }
+    ]
+}

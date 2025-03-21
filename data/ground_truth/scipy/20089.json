@@ -1,0 +1,15 @@
+{
+    "pr_number": 20089,
+    "log_file": "data/old_results/results_scipy_20138_20023.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 12: Using hyp2f1 with complex -inf input\nimport numpy as np\nimport scipy.special\n\nresult = scipy.special.hyp2f1(1.0, -np.inf, 3.0, 4.0+1.0j)\nprint(result)\n",
+                "old_output": "(nan+nanj)\n",
+                "new_output": "(1+0j)\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/scipy/scipy/issues/20988"
+        }
+    ]
+}

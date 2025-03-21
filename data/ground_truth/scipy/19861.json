@@ -1,0 +1,15 @@
+{
+    "pr_number": 19861,
+    "log_file": "data/old_results/results_scipy_19909_19818.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 13: Corner case with empty string arrays\nimport numpy as np\nfrom scipy.io import savemat, loadmat\nimport tempfile\n\nwith tempfile.TemporaryDirectory() as tmpdirname:\n    empty_string_array = np.array([\"\", \"\"])\n    data = {\"empty_string_array\": empty_string_array}\n    savemat(f\"{tmpdirname}/empty_string.mat\", data, format=\"4\", oned_as='row')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    savemat(f\"{tmpdirname}/empty_string.mat\", data, format=\"4\", oned_as='row')\n  File \"/home/scipy/scipy/io/matlab/_mio.py\", line 301, in savemat\n    MW.put_variables(mdict)\n  File \"/home/scipy/scipy/io/matlab/_mio4.py\", line 624, in put_variables\n    self._matrix_writer.write(var, name)\n  File \"/home/scipy/scipy/io/matlab/_mio4.py\", line 522, in write\n    self.write_char(arr, name)\n  File \"/home/scipy/scipy/io/matlab/_mio4.py\", line 565, in write_char\n    arr = np.ndarray(shape=dims, dtype='S1', buffer=st)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: buffer is too small for requested array\n"
+            },
+            "label": "coincidental fix",
+            "comment": "not 100% sure; could also be a regression; intended behavior is hard to guess"
+        }
+    ]
+}

@@ -1,0 +1,105 @@
+{
+    "pr_number": 21604,
+    "log_file": "data/results/scipy/21604_2024-11-23 09:06:44.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport numpy as np\nimport scipy.special as sc\nimport pytest\n\ntry:\n    C_nan_alpha = sc.gegenbauer(0, np.nan)\nexcept ValueError as e:\n    print(f\"ValueError for alpha=np.nan: {e}\")",
+                "old_output": "",
+                "new_output": "ValueError for alpha=np.nan: `alpha` must be a finite number greater than -1/2\n"
+            },
+            "label": "intended",
+            "comment": "PR adds input validation for 'alpha', which causes the difference in output"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nimport numpy as np\nimport scipy.special as sc\n\nn = 0\nalpha = 0\nC_zero_zero = sc.gegenbauer(n, alpha)",
+                "old_output": "/home/scipy/scipy/special/_orthogonal.py:1623: RuntimeWarning: invalid value encountered in scalar divide\n  factor = (_gam(2*alpha + n) * _gam(alpha + 0.5) /\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "PR avoids NaN when n=0, which had causes the warning in the old version"
+        },
+        {
+            "test": {
+                "test_code": "# Example 11:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 2\nalpha = -0.6\ntry:\n    result = gegenbauer(n, alpha)\nexcept ValueError as e:\n    print(\"Example 11 (n=2, alpha=-0.6):\", e)",
+                "old_output": "Example 11 (n=2, alpha=-0.6): alpha and beta must be greater than -1.\n",
+                "new_output": "Example 11 (n=2, alpha=-0.6): `alpha` must be a finite number greater than -1/2\n"
+            },
+            "label": "intended",
+            "comment": "consequence of better input validation of 'alpha'"
+        },
+        {
+            "test": {
+                "test_code": "# Example 12:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 3\nalpha = np.nan\ntry:\n    result = gegenbauer(n, alpha)\nexcept ValueError as e:\n    print(\"Example 12 (n=3, alpha=np.nan):\", e)",
+                "old_output": "Example 12 (n=3, alpha=np.nan): array must not contain infs or NaNs\n",
+                "new_output": "Example 12 (n=3, alpha=np.nan): `alpha` must be a finite number greater than -1/2\n"
+            },
+            "label": "intended",
+            "comment": "consequence of better input validation of 'alpha'"
+        },
+        {
+            "test": {
+                "test_code": "# Example 13:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 4\nalpha = np.inf\ntry:\n    result = gegenbauer(n, alpha)\nexcept ValueError as e:",
+                "old_output": "/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 9 (BugGPT_test_code.py, line 9)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 9 (BugGPT_test_code.py, line 9)\n/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "different order of printing the same runtime errors"
+        },
+        {
+            "test": {
+                "test_code": "# Example 14:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 5\nalpha = -1.0\ntry:\n    result = gegenbauer(n, alpha)\nexcept ValueError as e:\n    print(\"Example 14 (n=5, alpha=-1.0):\", e)",
+                "old_output": "Example 14 (n=5, alpha=-1.0): alpha and beta must be greater than -1.\n",
+                "new_output": "Example 14 (n=5, alpha=-1.0): `alpha` must be a finite number greater than -1/2\n"
+            },
+            "label": "intended",
+            "comment": "consequence of better input validation of 'alpha'"
+        },
+        {
+            "test": {
+                "test_code": "# Example 15:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 0\nalpha = -0.7\ntry:\n    result = gegenbauer(n, alpha)\nexcept ValueError as e:\n    print(\"Example 15 (n=0, alpha=-0.7):\", e)",
+                "old_output": "",
+                "new_output": "Example 15 (n=0, alpha=-0.7): `alpha` must be a finite number greater than -1/2\n"
+            },
+            "label": "intended",
+            "comment": "consequence of better input validation of 'alpha'"
+        },
+        {
+            "test": {
+                "test_code": "# Example 17:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 7\nalpha = -np.inf\ntry:",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'try' statement on line 7 (BugGPT_test_code.py, line 7)\n/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'try' statement on line 7 (BugGPT_test_code.py, line 7)\n"
+            },
+            "label": "intended",
+            "comment": "different order of printing the same runtime errors"
+        },
+        {
+            "test": {
+                "test_code": "# Example 18:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 1\nalpha = np.nan\ntry:\n    result = gegenbauer(n, alpha, monic=True)\nexcept ValueError as e:\n    print(\"Example 18 (n=1, alpha=np.nan, monic=True):\", e)",
+                "old_output": "Example 18 (n=1, alpha=np.nan, monic=True): array must not contain infs or NaNs\n",
+                "new_output": "Example 18 (n=1, alpha=np.nan, monic=True): `alpha` must be a finite number greater than -1/2\n"
+            },
+            "label": "intended",
+            "comment": "consequence of better input validation of 'alpha'"
+        },
+        {
+            "test": {
+                "test_code": "# Example 19:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 5\nalpha = -1.1\ntry:\n    result = gegenbauer(n, alpha, monic=False)\nexcept ValueError as e:",
+                "old_output": "/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 9 (BugGPT_test_code.py, line 9)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 9 (BugGPT_test_code.py, line 9)\n/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "different order of printing the same runtime errors"
+        },
+        {
+            "test": {
+                "test_code": "# Example 20:\nimport numpy as np\nfrom scipy.special import gegenbauer\n\nn = 2\nalpha = 'invalid'\ntry:\n    result = gegenbauer(n, alpha)\nexcept TypeError as e:",
+                "old_output": "/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 9 (BugGPT_test_code.py, line 9)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 9 (BugGPT_test_code.py, line 9)\n/root/conda/envs/scipy-dev/lib/python3.13/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "different order of printing the same runtime errors"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "pr_number": 9999999,
+    "log_file": "data/old_results/XXXXX",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "XXXX",
+                "old_output": "XXXX",
+                "new_output": "XXXX"
+            },
+            "label": "TODO",
+            "comment": ""
+        }
+    ]
+}

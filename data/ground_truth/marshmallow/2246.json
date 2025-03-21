@@ -1,0 +1,15 @@
+{
+    "pr_number": 2246,
+    "log_file": "data/results/marshmallow/2246_2024-11-23 09:16:17.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1: Field Declaration as a Class (Expecting TypeError)\nfrom marshmallow import Schema, fields\n\nclass BadUserSchema(Schema):\n    name = fields.String  # Incorrect: declaring as class, should be an instance\n\ntry:",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'try' statement on line 7 (BugGPT_test_code.py, line 7)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'try' statement on line 7 (BugGPT_test_code.py, line 7)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        }
+    ]
+}

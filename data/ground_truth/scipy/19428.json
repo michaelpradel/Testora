@@ -1,0 +1,15 @@
+{
+    "pr_number": 19428,
+    "log_file": "data/old_results/results_scipy_19533_19428.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 20: Perform a Levene test with one sample vector containing both positive and negative infinity values\nfrom scipy.stats import levene\nimport numpy as np\n\nsample1 = np.array([-np.inf, 1, 2, np.inf, 4])\n\nresult = levene(sample1)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    result = levene(sample1)\n             ^^^^^^^^^^^^^^^\n  File \"/home/scipy/scipy/stats/_morestats.py\", line 3213, in levene\n    raise ValueError(\"Must enter at least two input sample vectors.\")\nValueError: Must enter at least two input sample vectors.\n",
+                "new_output": ""
+            },
+            "label": "unintended",
+            "comment": "API expects at least two input sample vectors; newer version went back to old behavior (independently of us)"
+        }
+    ]
+}

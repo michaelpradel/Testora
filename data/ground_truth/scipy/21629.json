@@ -1,0 +1,69 @@
+{
+    "pr_number": 21629,
+    "log_file": "data/results/scipy/21629_2024-11-23 09:06:44.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Corner Case Example 2:\nimport numpy as np\nfrom scipy.special import spherical_yn\n\nn = 1\nz = None\ntry:\n    result = spherical_yn(n, z)\nexcept Exception as e:\n    print(f\"spherical_yn({n}, {z}) raised an exception: {e}\")",
+                "old_output": "spherical_yn(1, None) raised an exception: ufunc '_spherical_yn' not supported for the input types, and the inputs could not be safely coerced to any supported types according to the casting rule ''safe''\n",
+                "new_output": "spherical_yn(1, None) raised an exception: '>=' not supported between instances of 'NoneType' and 'int'\n"
+            },
+            "label": "intended",
+            "comment": "different errors messages that both are about the same invalid input"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case Example 4:\nimport numpy as np\nfrom scipy.special import spherical_kn\n\nn = 0\nz = -1.0\nresult = spherical_kn(n, z)\nprint(f\"spherical_kn({n}, {z}) = {result}\")",
+                "old_output": "spherical_kn(0, -1.0) = nan\n",
+                "new_output": "spherical_kn(0, -1.0) = -4.269867111336788\n"
+            },
+            "label": "intended",
+            "comment": "new version avoids NaN for negative z input, which is the intention of the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case Example 7:\nimport numpy as np\nfrom scipy.special import spherical_in\n\nn = 1\nz = -0.5\nresult = spherical_in(n, z)\nprint(f\"spherical_in({n}, {z}) = {result}\")",
+                "old_output": "spherical_in(1, -0.5) = nan\n",
+                "new_output": "spherical_in(1, -0.5) = -0.17087070843777216\n"
+            },
+            "label": "intended",
+            "comment": "new version avoids NaN for negative z input, which is the intention of the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case Example 8:\nimport numpy as np\nfrom scipy.special import spherical_kn\n\nn = 1\nz = -100.0\nresult = spherical_kn(n, z)\nprint(f\"spherical_kn({n}, {z}) = {result}\")",
+                "old_output": "spherical_kn(1, -100.0) = nan\n",
+                "new_output": "spherical_kn(1, -100.0) = -4.18025968703559e+41\n"
+            },
+            "label": "intended",
+            "comment": "new version avoids NaN for negative z input, which is the intention of the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nimport numpy as np\nfrom scipy.special import spherical_jn\n\nn = 3\nz = -1.0  # Negative input to see reflection behavior\nresult = spherical_jn(n, z)\nprint(f\"spherical_jn({n}, {z}) = {result}\")",
+                "old_output": "spherical_jn(3, -1.0) = nan\n",
+                "new_output": "spherical_jn(3, -1.0) = -0.009006581117112524\n"
+            },
+            "label": "intended",
+            "comment": "new version avoids NaN for negative z input, which is the intention of the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Example 15:\nimport numpy as np\nfrom scipy.special import spherical_jn\n\nn = 1\nz = np.array([-1.0, np.nan, 1.0])  # Mixed values\nresult = spherical_jn(n, z)\nprint(f\"spherical_jn({n}, [-1.0, nan, 1.0]) = {result}\")",
+                "old_output": "spherical_jn(1, [-1.0, nan, 1.0]) = [       nan        nan 0.30116868]\n",
+                "new_output": "spherical_jn(1, [-1.0, nan, 1.0]) = [-0.30116868         nan  0.30116868]\n"
+            },
+            "label": "intended",
+            "comment": "new version reduces NaNs for negative z input, which is the intention of the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Example 17:\nimport numpy as np\nfrom scipy.special import spherical_in\n\nn = 0\nz = np.array([1e10, -1e10])  # Large values\nresult = spherical_in(n, z)\nprint(f\"spherical_in({n}, [1e10, -1e10]) = {result}\")",
+                "old_output": "spherical_in(0, [1e10, -1e10]) = [inf nan]\n",
+                "new_output": "spherical_in(0, [1e10, -1e10]) = [inf inf]\n"
+            },
+            "label": "intended",
+            "comment": "new version avoids NaN for negative z input, which is the intention of the PR"
+        }
+    ]
+}

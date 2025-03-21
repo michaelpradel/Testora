@@ -1,0 +1,60 @@
+{
+    "pr_number": 1998,
+    "log_file": "data/results/marshmallow/1998_2024-11-23 09:16:16.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 2:\nfrom marshmallow import Schema, fields\nimport datetime as dt\n\nclass MySchema(Schema):\n    duration = fields.TimeDelta(precision='minutes', serialization_type=float)\n\ndata = {'duration': dt.timedelta(minutes=2)}\nschema = MySchema()\nresult = schema.dump(data)\nprint(\"Serialized (float, minutes):\", result)",
+                "old_output": "Serialized (float, minutes): {'duration': 2}\n",
+                "new_output": "Serialized (float, minutes): {'duration': 2.0}\n"
+            },
+            "label": "intended",
+            "comment": "serialized value now is a float"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nfrom marshmallow import Schema, fields\nimport datetime as dt\n\nclass MySchema(Schema):\n    duration = fields.TimeDelta(precision='hours', serialization_type=float)\n\ndata = {'duration': dt.timedelta(hours=1, seconds=1200)}\nschema = MySchema()\nresult = schema.dump(data)\nprint(\"Serialized (float, hours):\", result)",
+                "old_output": "Serialized (float, hours): {'duration': 1}\n",
+                "new_output": "Serialized (float, hours): {'duration': 1.3333333333333333}\n"
+            },
+            "label": "intended",
+            "comment": "serialized value now is a float"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nfrom marshmallow import Schema, fields\nimport datetime as dt\n\nclass MySchema(Schema):\n    duration = fields.TimeDelta(precision='weeks', serialization_type=float)\n\ndata = {'duration': dt.timedelta(weeks=1)}\nschema = MySchema()\nresult = schema.dump(data)\nprint(\"Serialized (float, weeks):\", result)",
+                "old_output": "Serialized (float, weeks): {'duration': 1}\n",
+                "new_output": "Serialized (float, weeks): {'duration': 1.0}\n"
+            },
+            "label": "intended",
+            "comment": "serialized value now is a float"
+        },
+        {
+            "test": {
+                "test_code": "# Example 8:\nfrom marshmallow import Schema, fields\nimport datetime as dt\n\nclass MySchema(Schema):\n    duration = fields.TimeDelta(precision='seconds', serialization_type=float)\n\ndata = {'duration': dt.timedelta(seconds=60.5)}\nschema = MySchema()\nresult = schema.dump(data)\nprint(\"Serialized (float, seconds):\", result)",
+                "old_output": "Serialized (float, seconds): {'duration': 60}\n",
+                "new_output": "Serialized (float, seconds): {'duration': 60.5}\n"
+            },
+            "label": "intended",
+            "comment": "serialized value now is a float"
+        },
+        {
+            "test": {
+                "test_code": "# Example 10:\nfrom marshmallow import Schema, fields\nimport datetime as dt\n\nclass MySchema(Schema):\n    duration = fields.TimeDelta(precision='milliseconds', serialization_type=float)\n\ndata = {'duration': dt.timedelta(milliseconds=1500)}\nschema = MySchema()\nresult = schema.dump(data)\nprint(\"Serialized (float, milliseconds):\", result)",
+                "old_output": "Serialized (float, milliseconds): {'duration': 1500}\n",
+                "new_output": "Serialized (float, milliseconds): {'duration': 1500.0}\n"
+            },
+            "label": "intended",
+            "comment": "serialized value now is a float"
+        },
+        {
+            "test": {
+                "test_code": "# Example 14:\nfrom marshmallow import Schema, fields\nimport datetime as dt\n\nclass MySchema(Schema):\n    duration = fields.TimeDelta(precision='seconds', serialization_type=float)\n\ndata = {'duration': dt.timedelta(seconds=-1)}\nschema = MySchema()\nresult = schema.dump(data)\nprint(\"Serialized (negative duration):\", result)",
+                "old_output": "Serialized (negative duration): {'duration': -1}\n",
+                "new_output": "Serialized (negative duration): {'duration': -1.0}\n"
+            },
+            "label": "intended",
+            "comment": "serialized value now is a float"
+        }
+    ]
+}

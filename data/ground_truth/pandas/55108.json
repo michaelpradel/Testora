@@ -1,0 +1,15 @@
+{
+    "pr_number": 55108,
+    "log_file": "data/old_results/results_pandas_known_bugs.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 7: Using difference with one Index being a DateTimeIndex\nimport pandas as pd\n\nindex1 = pd.date_range('2022-01-01', periods=5)\nindex2 = pd.Index(['2022-01-03', '2022-01-04'])\nresult = index1.difference(index2)\nprint(result)",
+                "old_output": "DatetimeIndex(['2022-01-01', '2022-01-02', '2022-01-05'], dtype='datetime64[ns]', freq=None)\n",
+                "new_output": "DatetimeIndex(['2022-01-01', '2022-01-02', '2022-01-03', '2022-01-04',\n               '2022-01-05'],\n              dtype='datetime64[ns]', freq='D')\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/pandas-dev/pandas/issues/58971"
+        }
+    ]
+}

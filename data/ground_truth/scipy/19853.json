@@ -1,0 +1,15 @@
+{
+    "pr_number": 19853,
+    "log_file": "data/old_results/results_scipy_19909_19818.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Corner Case Example 7: Calculating mean on an empty sparse matrix\nfrom scipy.sparse import coo_matrix\n\nA = coo_matrix((0, 0))\n\nA.mean()",
+                "old_output": "/home/scipy/scipy/sparse/_base.py:712: RuntimeWarning: divide by zero encountered in divide\n  return self.astype(np.float64)._mul_scalar(1./other)\n",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 6, in <module>\n    A.mean()\n  File \"/home/scipy/scipy/sparse/_base.py\", line 1209, in mean\n    return (inter_self / (self.shape[0] * self.shape[1]))\\\n            ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n  File \"/home/scipy/scipy/sparse/_base.py\", line 752, in __truediv__\n    return self._divide(other, true_divide=True)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/scipy/scipy/sparse/_base.py\", line 716, in _divide\n    return self.astype(np.float64)._mul_scalar(1./other)\n                                               ~~^~~~~~\nZeroDivisionError: float division by zero\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

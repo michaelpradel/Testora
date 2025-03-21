@@ -1,0 +1,24 @@
+{
+    "pr_number": 2123,
+    "log_file": "data/results/marshmallow/2123_2024-11-23 09:16:17.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 7: Setting both relative and absolute, expecting failure\nfrom marshmallow import Schema, fields, ValidationError\n\ntry:\n    class MySchema(Schema):\n        url = fields.Url(relative=True, absolute=False)\n\n    schema = MySchema()\n    result = schema.load({\"url\": \"http://example.com\"})\nexcept ValidationError as e:",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 10 (BugGPT_test_code.py, line 10)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "from marshmallow import Schema, fields\n\n# Example 3: URL that is not absolute or relative\ntry:\n    class MySchema(Schema):\n        url = fields.Url(relative=False, absolute=False)\n        \n    result = MySchema().load({\"url\": \"example.com\"})\nexcept Exception as e:\n    print(e)  # Should raise a validation error",
+                "old_output": "{'url': ['Not a valid URL.']}\n",
+                "new_output": "URL validation cannot set both relative and absolute to False.\n"
+            },
+            "label": "intended",
+            "comment": "PR mentions that cannot set both 'relative' and 'absolute' to False"
+        }
+    ]
+}

@@ -1,0 +1,51 @@
+{
+    "pr_number": 2022,
+    "log_file": "data/results/marshmallow/2022_2024-11-23 09:16:16.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 3: Serialize using timestamp format\nfrom marshmallow import Schema, fields\nimport datetime\n\nclass EventSchema(Schema):\n    timestamp = fields.DateTime(format='timestamp')\n\ndata = {'timestamp': datetime.datetime(2023, 10, 1, 10, 0, 0)}\nschema = EventSchema()\nresult = schema.dump(data)\nprint(\"Serialized Timestamp:\", result)",
+                "old_output": "Serialized Timestamp: {'timestamp': 'timestamp'}\n",
+                "new_output": "Serialized Timestamp: {'timestamp': 1696154400.0}\n"
+            },
+            "label": "intended",
+            "comment": "'timestamp' field now contains a valid timestamp value"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5: Deserialization using timestamp\nfrom marshmallow import Schema, fields\n\nclass EventSchema(Schema):\n    timestamp = fields.DateTime(format='timestamp')\n\ndata = {'timestamp': 1696156800}  # POSIX timestamp for 2023-10-01 10:00:00 UTC\nschema = EventSchema()\nresult = schema.load(data)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    result = schema.load(data)\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 722, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 909, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'timestamp': ['Not a valid datetime.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version rejects invalid timestamp value"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6: Custom timestamp format with milliseconds\nfrom marshmallow import Schema, fields\n\nclass EventSchema(Schema):\n    timestamp = fields.DateTime(format='timestamp_ms')\n\ndata = {'timestamp': 1696156800000}  # POSIX timestamp in milliseconds\nschema = EventSchema()\nresult = schema.load(data)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    result = schema.load(data)\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 722, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 909, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'timestamp': ['Not a valid datetime.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version rejects invalid timestamp value"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9: Passing a valid timestamp and checking the response\nfrom marshmallow import Schema, fields\n\nclass EventSchema(Schema):\n    timestamp = fields.DateTime(format='timestamp')\n\ndata = {'timestamp': 1696156800}  # POSIX timestamp for 2023-10-01 10:00:00 UTC\nschema = EventSchema()\nresult = schema.load(data)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    result = schema.load(data)\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 722, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 909, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'timestamp': ['Not a valid datetime.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version rejects invalid timestamp value"
+        },
+        {
+            "test": {
+                "test_code": "# Example 10: Deserializing a valid timestamp with milliseconds\nfrom marshmallow import Schema, fields\n\nclass EventSchema(Schema):\n    timestamp = fields.DateTime(format='timestamp_ms')\n\ndata = {'timestamp': 1696156800000}  # POSIX timestamp in milliseconds\nschema = EventSchema()\nresult = schema.load(data)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    result = schema.load(data)\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 722, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 909, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'timestamp': ['Not a valid datetime.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version rejects invalid timestamp value"
+        }
+    ]
+}

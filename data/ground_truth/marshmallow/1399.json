@@ -1,0 +1,15 @@
+{
+    "pr_number": 1399,
+    "log_file": "data/old_results/results_marshmallow_1488_1348.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 2: Normal usage scenario\nfrom marshmallow.utils import get_func_args\n\nclass ExampleClass:\n    def __init__(self, attr1, attr2):\n        pass\n\nargs = get_func_args(ExampleClass)\nprint(args)\n# Output: ['attr1', 'attr2']\n\n",
+                "old_output": "['args', 'kwargs']\n",
+                "new_output": "['attr1', 'attr2']\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

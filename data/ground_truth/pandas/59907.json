@@ -1,0 +1,60 @@
+{
+    "pr_number": 59907,
+    "log_file": "data/results/pandas/59907_2024-11-23 09:09:42.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport pandas as pd\n\nresult = pd.eval(\"1 / 2\", engine=\"numexpr\")\nexpected = 0.5\nprint(f\"Result: {result}, Expected: {expected}\")",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 0.0, Expected: 0.5\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 0.5, Expected: 0.5\n"
+            },
+            "label": "intended",
+            "comment": "PR is about fixing the incorrect division results"
+        },
+        {
+            "test": {
+                "test_code": "# Example 2:\nimport pandas as pd\n\nresult = pd.eval(\"3 / 4\", engine=\"numexpr\")\nexpected = 0.75\nprint(f\"Result: {result}, Expected: {expected}\")",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 0.0, Expected: 0.75\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 0.75, Expected: 0.75\n"
+            },
+            "label": "intended",
+            "comment": "PR is about fixing the incorrect division results"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7:\nimport pandas as pd\n\nresult = pd.eval(\"5 / 2\", engine=\"numexpr\")\nexpected = 2.5\nprint(f\"Result: {result}, Expected: {expected}\")",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 2.0, Expected: 2.5\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 2.5, Expected: 2.5\n"
+            },
+            "label": "intended",
+            "comment": "PR is about fixing the incorrect division results"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case 10:\nimport pandas as pd\n\n# Trying a complex division with nested expressions\nresult = pd.eval(\"(1 + 2) / (3 - 1)\", engine=\"numexpr\")\nexpected = 1.5  # Should evaluate correctly\nprint(f\"Result: {result}, Expected: {expected}\")",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 1.0, Expected: 1.5\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nResult: 1.5, Expected: 1.5\n"
+            },
+            "label": "intended",
+            "comment": "PR is about fixing the incorrect division results"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nimport pandas as pd\nimport numpy as np\n\n# Creating a Series of strings\ndata = pd.Series(['a', 'b', 'c'])\nprint(\"Original Series:\", data)\n\n# Reconstructing the object as a string type\nreconstructed = pd.core.computation.align.reconstruct_object(str, data, None, None, 'example_str')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nOriginal Series: 0    a\n1    b\n2    c\ndtype: object\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    reconstructed = pd.core.computation.align.reconstruct_object(str, data, None, None, 'example_str')\n  File \"/home/pandas/pandas/core/computation/align.py\", line 216, in reconstruct_object\n    ret_value = typ(obj).astype(res_t)\nAttributeError: 'str' object has no attribute 'astype'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nOriginal Series: 0    a\n1    b\n2    c\ndtype: object\n"
+            },
+            "label": "coincidental fix",
+            "comment": "new behavior seems correct, but unrelated to the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7:\nimport pandas as pd\nimport numpy as np\n\n# Creating a Series with a single non-numeric value\ndata = pd.Series(['text'])\nprint(\"Original Series with text:\", data)\n\n# Reconstructing the object\nreconstructed = pd.core.computation.align.reconstruct_object(str, data, None, None, 'example_single_text')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nOriginal Series with text: 0    text\ndtype: object\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    reconstructed = pd.core.computation.align.reconstruct_object(str, data, None, None, 'example_single_text')\n  File \"/home/pandas/pandas/core/computation/align.py\", line 216, in reconstruct_object\n    ret_value = typ(obj).astype(res_t)\nAttributeError: 'str' object has no attribute 'astype'\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nOriginal Series with text: 0    text\ndtype: object\n"
+            },
+            "label": "coincidental fix",
+            "comment": "new behavior seems correct, but unrelated to the PR"
+        }
+    ]
+}

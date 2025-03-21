@@ -1,0 +1,15 @@
+{
+    "pr_number": 21036,
+    "log_file": "data/old_results/results_scipy_21067_20937.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 14:\nimport numpy as np\nfrom scipy import stats\n\na = np.array([1, 2])\nprint(\"Array:\", a)\ntry:\n    tsem_value = stats.tsem(a, ddof=3)\n    print(\"Standard Error of Mean with ddof > number of elements:\", tsem_value)\nexcept Exception as e:\n    print(\"Error:\", e)",
+                "old_output": "Array: [1 2]\nStandard Error of Mean with ddof > number of elements: inf\n/root/conda/envs/scipy-dev/lib/python3.12/site-packages/numpy/core/fromnumeric.py:3787: RuntimeWarning: Degrees of freedom <= 0 for slice\n  return _methods._var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,\n/root/conda/envs/scipy-dev/lib/python3.12/site-packages/numpy/core/_methods.py:198: RuntimeWarning: divide by zero encountered in scalar divide\n  ret = ret.dtype.type(ret / rcount)\n",
+                "new_output": "Array: [1 2]\nStandard Error of Mean with ddof > number of elements: nan\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

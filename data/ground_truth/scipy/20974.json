@@ -1,0 +1,15 @@
+{
+    "pr_number": 20974,
+    "log_file": "data/old_results/results_scipy_21067_20937.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 10: Using method 'stouffer' with weights and axis (1)\nimport numpy as np\nfrom scipy.stats import combine_pvalues\n\npvalues = np.array([[0.01, 0.02, 0.05], [0.03, 0.04, 0.07], [0.08, 0.01, 0.02]])\nweights = np.array([1, 2, 3])\nresult = combine_pvalues(pvalues, method='stouffer', weights=weights, axis=1)\nprint(\"Stouffer Method, weights, axis=1:\", result)",
+                "old_output": "Stouffer Method, weights, axis=1: SignificanceResult(statistic=array([3.03833446, 2.62170953, 3.26566887]), pvalue=array([0.00118945, 0.0043745 , 0.00054603]))\n",
+                "new_output": "Stouffer Method, weights, axis=1: SignificanceResult(statistic=array([[2.7536326 , 3.34989642, 2.87511156],\n       [2.7536326 , 3.34989642, 2.87511156],\n       [2.7536326 , 3.34989642, 2.87511156]]), pvalue=array([[0.00294689, 0.00040421, 0.00201942],\n       [0.00294689, 0.00040421, 0.00201942],\n       [0.00294689, 0.00040421, 0.00201942]]))\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/scipy/scipy/issues/21106"
+        }
+    ]
+}

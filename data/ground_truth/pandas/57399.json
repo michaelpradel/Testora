@@ -1,0 +1,15 @@
+{
+    "pr_number": 57399,
+    "log_file": "data/old_results/results_pandas_57450_57356.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 20: Creating an interval range with non-matching dtype for start and end\nimport pandas as pd\nimport numpy as np\n\nresult = pd.interval_range(start=np.float32(0), end=5, freq=1)\nprint(result)",
+                "old_output": "IntervalIndex([(0.0, 1.0], (1.0, 2.0], (2.0, 3.0], (3.0, 4.0], (4.0, 5.0]], dtype='interval[float64, right]')\n",
+                "new_output": "IntervalIndex([(0, 1], (1, 2], (2, 3], (3, 4], (4, 5]], dtype='interval[int64, right]')\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/pandas-dev/pandas/issues/58964"
+        }
+    ]
+}

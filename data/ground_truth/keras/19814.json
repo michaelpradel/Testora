@@ -1,0 +1,15 @@
+{
+    "pr_number": 19814,
+    "log_file": "data/old_results/results_keras_19840_19690.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 19: Multiple predictions with mixed types.\nimport numpy as np\nimport jax.numpy as jnp\nfrom keras.src.backend.jax.math import in_top_k\n\npredictions = jnp.array([[0.1, np.nan, 0.1], [0.9, np.nan, 0.0]])\ntargets = jnp.array([1, 2])\nk = 1\ntry:\n    result = in_top_k(targets, predictions, k)\n    print(result)\nexcept Exception as e:\n    print(f\"Error: {e}\")  # Invalid predictions/types - Error expected\n",
+                "old_output": "[False False]\n",
+                "new_output": "[ True False]\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/keras-team/keras/issues/19995"
+        }
+    ]
+}

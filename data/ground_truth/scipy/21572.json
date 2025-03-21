@@ -1,0 +1,51 @@
+{
+    "pr_number": 21572,
+    "log_file": "data/results/scipy/21572_2024-11-23 09:06:43.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 7:\nimport numpy as np\nfrom scipy.spatial import distance\n\nu = np.array([1, 1, 0], dtype=bool)\nv = np.array([0, 0, 1], dtype=bool)\n\n# Computing Kulczynski 1\nkulczynski_value = distance.kulczynski1(u, v)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:9: DeprecationWarning: The kulczynski1 metric is deprecated since SciPy 1.15.0 and will be removed in SciPy 1.17.0.  Replace usage of 'kulczynski1(u, v)' with '1/jaccard(u, v) - 1'.\n  kulczynski_value = distance.kulczynski1(u, v)\n"
+            },
+            "label": "intended",
+            "comment": "new version prints deprecation warning, which is what the PR is about"
+        },
+        {
+            "test": {
+                "test_code": "# Example 2:\nimport numpy as np\nfrom scipy.spatial import distance\n\nu = np.array([np.nan, 1, 0], dtype=bool)\nv = np.array([0, 1, 1], dtype=bool)\n\n# Computation with NaN\nkulczynski_result = distance.kulczynski1(u, v)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:9: DeprecationWarning: The kulczynski1 metric is deprecated since SciPy 1.15.0 and will be removed in SciPy 1.17.0.  Replace usage of 'kulczynski1(u, v)' with '1/jaccard(u, v) - 1'.\n  kulczynski_result = distance.kulczynski1(u, v)\n"
+            },
+            "label": "intended",
+            "comment": "new version prints deprecation warning, which is what the PR is about"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nimport numpy as np\nfrom scipy.spatial import distance\n\nu = np.array([1, 1, 1], dtype=bool)\nv = np.array([0, 0, 0], dtype=bool)\n\n# All equal values\nkulczynski_result = distance.kulczynski1(u, v)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:9: DeprecationWarning: The kulczynski1 metric is deprecated since SciPy 1.15.0 and will be removed in SciPy 1.17.0.  Replace usage of 'kulczynski1(u, v)' with '1/jaccard(u, v) - 1'.\n  kulczynski_result = distance.kulczynski1(u, v)\n"
+            },
+            "label": "intended",
+            "comment": "new version prints deprecation warning, which is what the PR is about"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nimport numpy as np\nfrom scipy.spatial import distance\n\nu = np.array([1], dtype=bool)\nv = np.array([0], dtype=bool)\n\n# Single element arrays\nkulczynski_result = distance.kulczynski1(u, v)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:9: DeprecationWarning: The kulczynski1 metric is deprecated since SciPy 1.15.0 and will be removed in SciPy 1.17.0.  Replace usage of 'kulczynski1(u, v)' with '1/jaccard(u, v) - 1'.\n  kulczynski_result = distance.kulczynski1(u, v)\n"
+            },
+            "label": "intended",
+            "comment": "new version prints deprecation warning, which is what the PR is about"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nimport numpy as np\nfrom scipy.spatial import distance\n\nu = np.array([1, 1, 0, 0], dtype=bool)\nv = np.array([1, 0, 1, 1], dtype=bool)\n\n# Compute distance with mixed values\nkulczynski_result = distance.kulczynski1(u, v)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:9: DeprecationWarning: The kulczynski1 metric is deprecated since SciPy 1.15.0 and will be removed in SciPy 1.17.0.  Replace usage of 'kulczynski1(u, v)' with '1/jaccard(u, v) - 1'.\n  kulczynski_result = distance.kulczynski1(u, v)\n"
+            },
+            "label": "intended",
+            "comment": "new version prints deprecation warning, which is what the PR is about"
+        }
+    ]
+}

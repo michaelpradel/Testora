@@ -1,0 +1,51 @@
+{
+    "pr_number": 21597,
+    "log_file": "data/results/scipy/21597_2024-11-23 09:06:44.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport numpy as np\nfrom scipy.special import logsumexp\n\na = np.array([1.0, 2.0, 3.0])\nresult = logsumexp(a)\nprint(\"logsumexp of [1.0, 2.0, 3.0]:\", result)",
+                "old_output": "logsumexp of [1.0, 2.0, 3.0]: 3.4076059644443806\n",
+                "new_output": "logsumexp of [1.0, 2.0, 3.0]: 3.40760596444438\n"
+            },
+            "label": "intended",
+            "comment": "PR is about changing the precision of the output"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nimport numpy as np\nfrom scipy.special import logsumexp\n\na = np.array([1.0, 2.0, 3.0])\nresult = logsumexp(a, return_sign=True)\nprint(\"logsumexp with sign of [1.0, 2.0, 3.0]:\", result)",
+                "old_output": "logsumexp with sign of [1.0, 2.0, 3.0]: (np.float64(3.4076059644443806), np.float64(1.0))\n",
+                "new_output": "logsumexp with sign of [1.0, 2.0, 3.0]: (np.float64(3.40760596444438), np.float64(1.0))\n"
+            },
+            "label": "intended",
+            "comment": "PR is about changing the precision of the output"
+        },
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport numpy as np\nfrom scipy.special import logsumexp\n\na = np.array([1.0, 2.0, 3.0])\nresult = logsumexp(a)\nprint(\"Example 1 - Normal case:\", result)",
+                "old_output": "Example 1 - Normal case: 3.4076059644443806\n",
+                "new_output": "Example 1 - Normal case: 3.40760596444438\n"
+            },
+            "label": "intended",
+            "comment": "PR is about changing the precision of the output"
+        },
+        {
+            "test": {
+                "test_code": "import numpy as np\nfrom scipy.special import logsumexp\n\n# Example 5:\n# Return sign\na = np.array([1.0, 2.0, 3.0])\nresult, sign = logsumexp(a, return_sign=True)\nprint(\"Example 5 - Return sign:\", result, sign)",
+                "old_output": "Example 5 - Return sign: 3.4076059644443806 1.0\n",
+                "new_output": "Example 5 - Return sign: 3.40760596444438 1.0\n"
+            },
+            "label": "intended",
+            "comment": "PR is about changing the precision of the output"
+        },
+        {
+            "test": {
+                "test_code": "import numpy as np\nfrom scipy.special import logsumexp\n\n# Example 20:\n# Testing different data types\na = np.array([1, 2, 3], dtype=np.int32)\nresult = logsumexp(a.astype(float))  # Convert to float for logsumexp\nprint(\"Example 20 - Different data types:\", result)",
+                "old_output": "Example 20 - Different data types: 3.4076059644443806\n",
+                "new_output": "Example 20 - Different data types: 3.40760596444438\n"
+            },
+            "label": "intended",
+            "comment": "PR is about changing the precision of the output"
+        }
+    ]
+}

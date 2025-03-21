@@ -1,0 +1,24 @@
+{
+    "pr_number": 21577,
+    "log_file": "data/results/scipy/21577_2024-11-23 09:06:43.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport numpy as np\nfrom scipy import special\n\n# Edge case with zero order and zero input\nresult = special.hankel2(0, 0)\nprint(\"hankel2(0, 0) = \", result)",
+                "old_output": "hankel2(0, 0) =  (nan+nanj)\n",
+                "new_output": "hankel2(0, 0) =  (nan+infj)\n"
+            },
+            "label": "intended",
+            "comment": "not 100% sure about the math, but changing the output for this input is the PR's intention"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nimport numpy as np\nfrom scipy import special\n\n# Testing with a complex input of zero\nresult = special.hankel2(0, complex(0, 0))\nprint(\"hankel2(0, complex(0, 0)) = \", result)",
+                "old_output": "hankel2(0, complex(0, 0)) =  (nan+nanj)\n",
+                "new_output": "hankel2(0, complex(0, 0)) =  (nan+infj)\n"
+            },
+            "label": "intended",
+            "comment": "not 100% sure about the math, but changing the output for this input is the PR's intention"
+        }
+    ]
+}

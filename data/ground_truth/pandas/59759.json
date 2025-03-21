@@ -1,0 +1,69 @@
+{
+    "pr_number": 59759,
+    "log_file": "data/results/pandas/59759_2024-11-23 09:09:42.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 4:\nimport pandas as pd\n\n# Create a StringArray with None value\ndata = pd.array(['apple', None, 'banana'], dtype='string')\n# Check presence of values including a None\nresult = data.isin(['banana', None])\nprint(\"Example 4 Result:\", result)  # Expect: [False, True, True]",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nExample 4 Result: [False False  True]\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nExample 4 Result: [False  True  True]\n"
+            },
+            "label": "intended",
+            "comment": ""
+        },
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport pandas as pd\nimport numpy as np\n\n# Create a StringArray with NaN values\ndata = pd.array(['apple', np.nan, 'banana'], dtype='string')\n# Check presence including NaN\nresult = data.isin([np.nan, 'apple'])\nprint(\"Corner Case Example 1 Result:\", result)  # Expect: [True, True, False]",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 1 Result: [ True False False]\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 1 Result: [ True  True False]\n"
+            },
+            "label": "intended",
+            "comment": ""
+        },
+        {
+            "test": {
+                "test_code": "# Example 2:\nimport pandas as pd\n\n# Create a StringArray with all None values\ndata = pd.array([None, None, None], dtype='string')\n# Check presence against None\nresult = data.isin([None])\nprint(\"Corner Case Example 2 Result:\", result)  # Expect: [True, True, True]",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 2 Result: [False False False]\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 2 Result: [ True  True  True]\n"
+            },
+            "label": "intended",
+            "comment": ""
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nimport pandas as pd\n\n# Create a StringArray with mixed valid and invalid types\ndata = pd.array(['valid', 123, None], dtype='string')\n# Check presence that includes a non-string type\nresult = data.isin(['valid', 123, 'invalid'])\nprint(\"Corner Case Example 4 Result:\", result)  # Expect: [True, False, False]",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 4 Result: [ True False False]\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 4 Result: [ True  True False]\n"
+            },
+            "label": "intended",
+            "comment": ""
+        },
+        {
+            "test": {
+                "test_code": "# Example 8:\nimport pandas as pd\n\n# Create a StringArray with mixed types\ndata = pd.array(['string', 5, None], dtype='string')\n# Check presence including an integer\nresult = data.isin(['string', 5])\nprint(\"Corner Case Example 8 Result:\", result)  # Expect: [True, False, False]",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 8 Result: [ True False False]\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 8 Result: [ True  True False]\n"
+            },
+            "label": "intended",
+            "comment": ""
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nimport pandas as pd\n\n# Create an array with different data types\ndata = pd.array(['apple', None, 'orange', 42], dtype='string')\n# Check presence focusing on types with strings\nresult = data.isin(['apple', '42', None])\nprint(\"Corner Case Example 9 Result:\", result)  # Expect: [True, False, False, False]",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 9 Result: [ True False False  True]\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 9 Result: [ True  True False  True]\n"
+            },
+            "label": "intended",
+            "comment": ""
+        },
+        {
+            "test": {
+                "test_code": "# Example 10:\nimport pandas as pd\n\n# Create a StringArray with nested lists\ndata = pd.array([['apple', 'banana'], ['orange'], []], dtype='string')\n# Check presence of invalid structured data\nresult = data.isin([['apple'], ['mango']])",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    result = data.isin([['apple'], ['mango']])\n  File \"/home/pandas/pandas/core/arrays/string_.py\", line 754, in isin\n    values = self._from_sequence(values, dtype=self.dtype)\n  File \"/home/pandas/pandas/core/arrays/string_.py\", line 658, in _from_sequence\n    result = lib.ensure_string_array(scalars, na_value=na_value, copy=copy)\n  File \"lib.pyx\", line 719, in pandas._libs.lib.ensure_string_array\n  File \"lib.pyx\", line 807, in pandas._libs.lib.ensure_string_array\nValueError: Buffer has wrong number of dimensions (expected 1, got 2)\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

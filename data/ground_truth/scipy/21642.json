@@ -1,0 +1,15 @@
+{
+    "pr_number": 21642,
+    "log_file": "data/results/scipy/21642_2024-11-23 09:06:44.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 3:\nimport numpy as np\nfrom scipy.io import mmwrite, mmread\n\n# Write a matrix directly to a file without specifying extension\ndata = np.array([[5, 0, 0], [0, 0, 6]])\nmmwrite('matrix3', data)\n\n# Read back the created file\nloaded_matrix = mmread('matrix3.mtx')",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    loaded_matrix = mmread('matrix3.mtx')\n  File \"/home/scipy/scipy/io/_fast_matrix_market/__init__.py\", line 354, in mmread\n    cursor, stream_to_close = _get_read_cursor(source)\n                              ~~~~~~~~~~~~~~~~^^^^^^^^\n  File \"/home/scipy/scipy/io/_fast_matrix_market/__init__.py\", line 197, in _get_read_cursor\n    return _fmm_core.open_read_file(path, parallelism), ret_stream_to_close\n           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nValueError: Line 1: Not a Matrix Market file. Missing banner.\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "exception in old version is due to the bug fixed by the PR"
+        }
+    ]
+}

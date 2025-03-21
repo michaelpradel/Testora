@@ -1,0 +1,15 @@
+{
+    "pr_number": 2102,
+    "log_file": "data/results/marshmallow/2102_2024-11-23 09:16:17.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 13:\nimport marshmallow.utils as utils\n\ntimestamp = float('inf')  # Value is positive infinity\ntry:\n    result = utils.from_timestamp(timestamp)\nexcept ValueError as e:\n    print(\"Timestamp:\", timestamp, \"-> Exception:\", e)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 6, in <module>\n    result = utils.from_timestamp(timestamp)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 200, in from_timestamp\n    return dt.datetime.fromtimestamp(value, tz=dt.timezone.utc).replace(tzinfo=None)\nOverflowError: timestamp out of range for platform time_t\n",
+                "new_output": "Timestamp: inf -> Exception: Timestamp is too large\n"
+            },
+            "label": "intended",
+            "comment": "PR adds better error handling"
+        }
+    ]
+}

@@ -1,0 +1,51 @@
+{
+    "pr_number": 2244,
+    "log_file": "data/results/marshmallow/2244_2024-11-23 09:16:17.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 5:\nfrom marshmallow import Schema, fields\n\nclass URLSchema(Schema):\n    url = fields.URL()\n\nvalid_data = {\"url\": \"http://@example.com\"}\nresult = URLSchema().load(valid_data)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    result = URLSchema().load(valid_data)\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 722, in load\n    return self._do_load(\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 909, in _do_load\n    raise exc\nmarshmallow.exceptions.ValidationError: {'url': ['Not a valid URL.']}\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "it's a legal URL"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nfrom marshmallow import Schema, fields, ValidationError\n\nclass URLSchema(Schema):\n    url = fields.URL()\n\ntry:\n    invalid_data = {\"url\": \"http://^@example.com\"}\n    URLSchema().load(invalid_data)\nexcept ValidationError as err:\n    print(\"Validation Error for 'http://^@example.com':\", err.messages)",
+                "old_output": "",
+                "new_output": "Validation Error for 'http://^@example.com': {'url': ['Not a valid URL.']}\n"
+            },
+            "label": "intended",
+            "comment": "it's an illegal URL (as specified in the newly added test)"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nfrom marshmallow import Schema, fields, ValidationError\n\nclass URLSchema(Schema):\n    url = fields.URL()\n\ntry:\n    invalid_data = {\"url\": \"http://%0G@example.com\"}\n    URLSchema().load(invalid_data)\nexcept ValidationError as err:\n    print(\"Validation Error for 'http://%0G@example.com':\", err.messages)",
+                "old_output": "",
+                "new_output": "Validation Error for 'http://%0G@example.com': {'url': ['Not a valid URL.']}\n"
+            },
+            "label": "intended",
+            "comment": "it's an illegal URL"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nfrom marshmallow import Schema, fields, ValidationError\n\nclass URLSchema(Schema):\n    url = fields.URL()\n\ntry:\n    invalid_data = {\"url\": \"http://%@example.com\"}",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 8)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 8)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nfrom marshmallow import Schema, fields, ValidationError\n\nclass URLSchema(Schema):\n    url = fields.URL()\n\ntry:\n    invalid_data = {\"url\": \"http://:pass@example.com\"}\n    URLSchema().load(invalid_data)\nexcept ValidationError as err:",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 10 (BugGPT_test_code.py, line 10)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        }
+    ]
+}

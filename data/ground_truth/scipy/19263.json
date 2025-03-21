@@ -1,0 +1,15 @@
+{
+    "pr_number": 19263,
+    "log_file": "data/old_results/results_scipy_19310_19224.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 13: Passing a list instead of a numpy array to hfftn\nfrom scipy.fft import hfftn\n\nx = [[1, 2], [3, 4]]\nresult = hfftn(x)",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 5, in <module>\n    result = hfftn(x)\n             ^^^^^^^^\n  File \"/home/scipy/scipy/fft/_backend.py\", line 28, in __ua_function__\n    return fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/home/scipy/scipy/fft/_basic_backend.py\", line 154, in hfftn\n    return _pocketfft.hfftn(x, s, axes, norm, overwrite_x, workers, plan=plan)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/scipy/scipy/fft/_pocketfft/basic.py\", line 208, in c2rn\n    shape[-1] = (x.shape[axes[-1]] - 1) * 2\n                 ^^^^^^^\nAttributeError: 'list' object has no attribute 'shape'\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/scipy/scipy/issues/21207"
+        }
+    ]
+}

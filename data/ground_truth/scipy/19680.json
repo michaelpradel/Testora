@@ -1,0 +1,15 @@
+{
+    "pr_number": 19680,
+    "log_file": "data/old_results/results_scipy_19724_19637.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 5: Testing the shapiro function with extreme values\nfrom scipy import stats\n\ndata = [10**20, -10**20, 10**30, -10**30]  # Extreme values\nshapiro_result = stats.shapiro(data)",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 5, in <module>\n    shapiro_result = stats.shapiro(data)\n                     ^^^^^^^^^^^^^^^^^^^\n  File \"/home/scipy/scipy/stats/_axis_nan_policy.py\", line 505, in axis_nan_policy_wrapper\n    contains_nan = [_contains_nan(sample, nan_policy)[0]\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/scipy/scipy/_lib/_util.py\", line 716, in _contains_nan\n    if np.issubdtype(type(el), np.number) and np.isnan(el):\n                                              ^^^^^^^^^^^^\nTypeError: ufunc 'isnan' not supported for the input types, and the inputs could not be safely coerced to any supported types according to the casting rule ''safe''\n"
+            },
+            "label": "unintended",
+            "comment": "https://github.com/scipy/scipy/issues/21205"
+        }
+    ]
+}

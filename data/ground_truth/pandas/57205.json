@@ -1,0 +1,15 @@
+{
+    "pr_number": 57205,
+    "log_file": "data/old_results/results_pandas_57278_57203.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "import pandas as pd\n# Example 12: Corner case - Creating a DataFrame with all None values\ndata = {'a': None, 'b': None}\ncolumns = ['a', 'b']\ndf = pd.DataFrame(data, columns=columns, index=range(2))\nprint(\"DataFrame 12:\\n\", df)",
+                "old_output": "DataFrame 12:\n      a    b\n0  NaN  NaN\n1  NaN  NaN\n",
+                "new_output": "DataFrame 12:\n       a     b\n0  None  None\n1  None  None\n"
+            },
+            "label": "coincidental fix",
+            "comment": ""
+        }
+    ]
+}

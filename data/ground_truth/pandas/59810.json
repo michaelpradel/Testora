@@ -1,0 +1,15 @@
+{
+    "pr_number": 59810,
+    "log_file": "data/results/pandas/59810_2024-11-23 09:09:42.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 6:\nimport pandas as pd\n\ndf = pd.DataFrame({'x': [1, 2, None], 'y': [2, 2, 3]})\nresult = df.query('x == y or x == None')",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nTraceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 5, in <module>\n    result = df.query('x == y or x == None')\n  File \"/home/pandas/pandas/core/frame.py\", line 4616, in query\n    res = self.eval(expr, **kwargs)\n  File \"/home/pandas/pandas/core/frame.py\", line 4769, in eval\n    return _eval(expr, inplace=inplace, **kwargs)\n  File \"/home/pandas/pandas/core/computation/eval.py\", line 366, in eval\n    ret = eng_inst.evaluate()\n  File \"/home/pandas/pandas/core/computation/engines.py\", line 85, in evaluate\n    res = self._evaluate()\n  File \"/home/pandas/pandas/core/computation/engines.py\", line 129, in _evaluate\n    return ne.evaluate(s, local_dict=scope)\n  File \"/usr/local/lib/python3.10/site-packages/numexpr/necompiler.py\", line 977, in evaluate\n    raise e\n  File \"/usr/local/lib/python3.10/site-packages/numexpr/necompiler.py\", line 874, in validate\n    _names_cache[expr_key] = getExprNames(ex, context, sanitize=sanitize)\n  File \"/usr/local/lib/python3.10/site-packages/numexpr/necompiler.py\", line 723, in getExprNames\n    ex = stringToExpression(text, {}, context, sanitize)\n  File \"/usr/local/lib/python3.10/site-packages/numexpr/necompiler.py\", line 309, in stringToExpression\n    ex = eval(c, names)\n  File \"<expr>\", line 1, in <module>\n  File \"/usr/local/lib/python3.10/site-packages/numexpr/expressions.py\", line 80, in func\n    raise TypeError(\"unsupported object type: %s\" % type(x))\nTypeError: unsupported object type: <class 'NoneType'>\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\n"
+            },
+            "label": "coincidental fix",
+            "comment": "Positive side-effect of the fix. The new version uses the Python evaluation of queries, which doesn't raise an error but handles the None value correctly."
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "pr_number": 59782,
+    "log_file": "data/results/pandas/59782_2024-11-23 09:09:42.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 7:\nimport pandas as pd\n\n# Using a larger dataset and grouping\ndf = pd.DataFrame({\"group\": [\"A\", \"A\", \"B\", \"B\", \"C\", \"C\"],\n                   \"value\": [pd.Timedelta(1), pd.Timedelta(2), pd.NaT, pd.Timedelta(4), pd.NaT, pd.NaT]})\nresult = df.groupby(\"group\")[\"value\"].any()\nprint(\"Example 7 Result:\\n\", result)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nExample 7 Result:\n group\nA    True\nB    True\nC    True\nName: value, dtype: bool\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nExample 7 Result:\n group\nA     True\nB     True\nC    False\nName: value, dtype: bool\n"
+            },
+            "label": "intended",
+            "comment": "values for C are all NaT, and hence, result should be False"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nimport pandas as pd\n\n# Grouping with a single group having only NaT\ndf = pd.DataFrame({\"group\": [\"A\", \"A\", \"B\"], \"value\": [pd.NaT, pd.NaT, pd.Timedelta(1)]})\nresult = df.groupby(\"group\")[\"value\"].any()\nprint(\"Corner Case Example 4 Result:\\n\", result)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 4 Result:\n group\nA    True\nB    True\nName: value, dtype: bool\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 4 Result:\n group\nA    False\nB     True\nName: value, dtype: bool\n"
+            },
+            "label": "intended",
+            "comment": "values for A are all NaT, and hence, result should be False"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7:\nimport pandas as pd\n\n# Grouping with a series of NaT values and expected output check\ndf = pd.DataFrame({\"group\": [\"B\", \"B\", \"C\", \"C\"], \n                   \"value\": [pd.NaT, pd.NaT, pd.NaT, pd.Timedelta(5)]})\nresult = df.groupby(\"group\")[\"value\"].any()\nprint(\"Corner Case Example 7 Result:\\n\", result)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 7 Result:\n group\nB    True\nC    True\nName: value, dtype: bool\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/inorout.py:457: CoverageWarning: --include is ignored because --source is set (include-ignored)\n  self.warn(\"--include is ignored because --source is set\", slug=\"include-ignored\")\nCorner Case Example 7 Result:\n group\nB    False\nC     True\nName: value, dtype: bool\n"
+            },
+            "label": "intended",
+            "comment": "values for B are all NaT, and hence, result should be False"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "pr_number": 21553,
+    "log_file": "data/results/scipy/21553_2024-11-23 09:06:43.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 19:\nimport numpy as np\nfrom scipy.linalg import expm\n\nA = np.array([[1, 2], [3, 4]], dtype=np.float32)  # Single precision float matrix\nresult = expm(A)\nprint(\"Exponential of A with float32 precision:\\n\", result)",
+                "old_output": "Exponential of A with float32 precision:\n [[ 51.969006  74.73665 ]\n [112.10497  164.074   ]]\n",
+                "new_output": "Exponential of A with float32 precision:\n [[ 44.694115  65.096375]\n [ 97.64457  142.33871 ]]\n"
+            },
+            "label": "unintended",
+            "comment": "unintended side-effect of a performance optimization"
+        }
+    ]
+}

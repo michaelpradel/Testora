@@ -1,0 +1,159 @@
+{
+    "pr_number": 1989,
+    "log_file": "data/results/marshmallow/1989_2024-11-23 09:16:16.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Corner Case 1:\nimport simplejson as json\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    name = fields.String(required=True)\n    age = fields.Integer()\n\ntry:\n    schema = UserSchema(unknown=\"badval\")  # Invalid value\nexcept ValueError as e:\n    print(\"Error for unknown parameter at schema creation:\", e)",
+                "old_output": "",
+                "new_output": "Error for unknown parameter at schema creation: Object 'badval' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case 2:\nimport simplejson as json\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    name = fields.String(required=True)\n\nuser_data = {\"name\": \"Jack\", \"unknown_field\": \"data\"}\nschema = UserSchema(unknown=\"badval\")  # Invalid value",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    schema = UserSchema(unknown=\"badval\")  # Invalid value\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'badval' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case 4:\nimport simplejson as json\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    name = fields.String(required=True)\n    age = fields.Integer()\n\ntry:\n    schema = UserSchema(unknown=\"invalid_value\")\nexcept ValueError as e:\n    print(\"Error for unknown parameter with invalid value:\", e)",
+                "old_output": "",
+                "new_output": "Error for unknown parameter with invalid value: Object 'invalid_value' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case 5:\nimport simplejson as json\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    name = fields.String(required=True)\n\ntry:\n    schema = UserSchema()",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 9)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 9)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "Different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case 6:\nimport simplejson as json\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    name = fields.String(required=True)\n\ntry:\n    schema = UserSchema(unknown=[])  # Pass empty list\nexcept ValueError as e:\n    print(\"Error for unknown parameter with empty list:\", e)",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    schema = UserSchema(unknown=[])  # Pass empty list\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 340, in validate_unknown_parameter_value\n    if obj not in _UNKNOWN_VALUES:\nTypeError: unhashable type: 'list'\n"
+            },
+            "label": "intended",
+            "comment": "not exactly the error that the developer has in mind, but it's raised anyway due an invalid input"
+        },
+        {
+            "test": {
+                "test_code": "# Corner Case 7:\nimport simplejson as json\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    name = fields.String(required=True)\n\ntry:\n    schema = UserSchema(unknown={})  # Pass empty dictionary",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 9)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 9)\n"
+            },
+            "label": "intended",
+            "comment": "Different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n    email = fields.Email()\n\nuser_data = {\"username\": \"Charlie\", \"extra_field\": \"value\"}\nschema = UserSchema(unknown='RAISE')  # Set unknown parameter to 'RAISE'\ntry:\n    schema.load(user_data)\nexcept Exception as e:\n    print(\"Error raised with RAISE:\", e)",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    schema = UserSchema(unknown='RAISE')  # Set unknown parameter to 'RAISE'\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'RAISE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 1:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='RAISE')\nuser_data = {\"user\": \"Test User\"}\ntry:\n    schema.load(user_data)\nexcept ValueError as e:\n    print(\"Error for unexpected field:\", e)  # Should raise error for unexpected field",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='RAISE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'RAISE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 2:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='EXCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='EXCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'EXCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='INCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='INCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'INCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='RAISE')\nuser_data = {\"username\": \"User\", \"invalid_field\": 123}\ntry:\n    schema.load(user_data)\nexcept ValueError as e:\n    print(\"Exception for invalid field:\", e)  # Should raise because of the invalid field",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='RAISE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'RAISE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='EXCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='EXCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'EXCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='INCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='INCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'INCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='RAISE')\nuser_data = {\"username\": \"User\", \"invalid_param\": None}\ntry:\n    schema.load(user_data)\nexcept ValueError as e:\n    print(\"Error for invalid param:\", e)",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='RAISE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'RAISE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 8:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nuser_data = {\"username\": \"User\", \"extra_param\": float('NaN')}\nschema = UserSchema(unknown='INCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    schema = UserSchema(unknown='INCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'INCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nuser_data = {\"username\": \"User\", \"extra_param\": None}\nschema = UserSchema(unknown='EXCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 8, in <module>\n    schema = UserSchema(unknown='EXCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'EXCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        },
+        {
+            "test": {
+                "test_code": "# Example 10:\nfrom marshmallow import Schema, fields\n\nclass UserSchema(Schema):\n    username = fields.Str()\n\nschema = UserSchema(unknown='EXCLUDE')",
+                "old_output": "",
+                "new_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 7, in <module>\n    schema = UserSchema(unknown='EXCLUDE')\n  File \"/home/marshmallow/src/marshmallow/schema.py\", line 396, in __init__\n    else validate_unknown_parameter_value(unknown)\n  File \"/home/marshmallow/src/marshmallow/utils.py\", line 341, in validate_unknown_parameter_value\n    raise ValueError(\nValueError: Object 'EXCLUDE' is not a valid value for the 'unknown' parameter\n"
+            },
+            "label": "intended",
+            "comment": "PR adds stricter checking of invalid values"
+        }
+    ]
+}

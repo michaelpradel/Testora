@@ -1,0 +1,168 @@
+{
+    "pr_number": 2017,
+    "log_file": "data/results/marshmallow/2017_2024-11-23 09:16:16.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Color(Enum):\n    RED = \"red\"\n    GREEN = \"green\"\n    BLUE = \"blue\"\n\nclass ColorSchema(Schema):",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 2:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Status(Enum):\n    NEW = 1\n    IN_PROGRESS = 2\n    COMPLETED = 3\n\nclass TaskSchema(Schema):\n    status = fields.EnumSymbol(Status)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class TaskSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in TaskSchema\n    status = fields.EnumSymbol(Status)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Direction(Enum):\n    NORTH = \"north\"\n    SOUTH = \"south\"\n    EAST = \"east\"\n    WEST = \"west\"\n\nclass DirectionSchema(Schema):\n    travel_direction = fields.EnumSymbol(Direction)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in <module>\n    class DirectionSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 12, in DirectionSchema\n    travel_direction = fields.EnumSymbol(Direction)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Animal(Enum):\n    DOG = 1\n    CAT = 2\n    BIRD = 3\n\nclass AnimalSchema(Schema):",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Size(Enum):\n    SMALL = \"S\"\n    MEDIUM = \"M\"\n    LARGE = \"L\"\n\nclass SizeSchema(Schema):\n    shirt_size = fields.EnumSymbol(Size)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class SizeSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in SizeSchema\n    shirt_size = fields.EnumSymbol(Size)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Vehicle(Enum):\n    CAR = \"car\"\n    TRUCK = \"truck\"\n    MOTORCYCLE = \"motorcycle\"\n\nclass VehicleSchema(Schema):\n    vehicle_type = fields.EnumSymbol(Vehicle)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class VehicleSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in VehicleSchema\n    vehicle_type = fields.EnumSymbol(Vehicle)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Fruit(Enum):\n    APPLE = \"apple\"\n    BANANA = \"banana\"\n    CHERRY = \"cherry\"\n\nclass FruitSchema(Schema):",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 8:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Game(Enum):\n    CHESS = \"chess\"\n    CHECKERS = \"checkers\"\n    CANDY_LAND = \"candy_land\"\n\nclass GameSchema(Schema):\n    favorite_game = fields.EnumSymbol(Game)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class GameSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in GameSchema\n    favorite_game = fields.EnumSymbol(Game)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 9:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Emotion(Enum):\n    HAPPY = \"happy\"\n    SAD = \"sad\"\n    ANGRY = \"angry\"\n\nclass EmotionSchema(Schema):",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 10:\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Cuisine(Enum):\n    ITALIAN = \"italian\"\n    MEXICAN = \"mexican\"\n    JAPANESE = \"japanese\"\n\nclass CuisineSchema(Schema):\n    favorite_cuisine = fields.EnumSymbol(Cuisine)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class CuisineSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in CuisineSchema\n    favorite_cuisine = fields.EnumSymbol(Cuisine)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 11:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Color(Enum):\n    RED = \"red\"\n    GREEN = \"green\"\n\nclass ColorSchema(Schema):\n    favorite_color = fields.EnumSymbol(Color)\n\n# Invalid color - no value provided\ntry:\n    color_data = {\"favorite_color\": None}\n    schema = ColorSchema()\n    result = schema.load(color_data)\nexcept ValidationError as e:\n    print(e.messages)  # Should show validation error regarding unknown color",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class ColorSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in ColorSchema\n    favorite_color = fields.EnumSymbol(Color)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": "{'favorite_color': ['Field may not be null.']}\n"
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 12:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Status(Enum):\n    NEW = \"new\"\n    IN_PROGRESS = \"in_progress\"\n    COMPLETED = \"completed\"\n\nclass TaskSchema(Schema):\n    status = fields.EnumSymbol(Status)\n\n# Invalid status\ntry:\n    task_data = {\"status\": \"INVALID_STATUS\"}\n    schema = TaskSchema()\n    result = schema.load(task_data)",
+                "old_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 17)\n",
+                "new_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: SyntaxError: expected 'except' or 'finally' block (BugGPT_test_code.py, line 17)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 13:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Animal(Enum):\n    DOG = \"dog\"\n    CAT = \"cat\"\n\nclass AnimalSchema(Schema):\n    pet = fields.EnumSymbol(Animal)\n\n# No data provided\ntry:\n    empty_data = {}\n    schema = AnimalSchema()\n    result = schema.load(empty_data)\nexcept ValidationError as e:\n    print(e.messages)  # Should show validation error due to missing field",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class AnimalSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in AnimalSchema\n    pet = fields.EnumSymbol(Animal)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 16:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Vehicle(Enum):\n    CAR = \"car\"\n    BIKE = \"bike\"\n\nclass VehicleSchema(Schema):\n    vehicle_type = fields.EnumSymbol(Vehicle)\n\n# Testing with a whitespace string\nvehicle_data = {\"vehicle_type\": \" \"}\nschema = VehicleSchema()\ntry:\n    result = schema.load(vehicle_data)\nexcept ValidationError as e:\n    print(e.messages)  # Expecting an error for whitespace input",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class VehicleSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in VehicleSchema\n    vehicle_type = fields.EnumSymbol(Vehicle)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": "{'vehicle_type': ['Must be one of: CAR, BIKE.']}\n"
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 17:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Mood(Enum):\n    HAPPY = \"happy\"\n    SAD = \"sad\"\n\nclass MoodSchema(Schema):\n    current_mood = fields.EnumSymbol(Mood)\n\n# No input provided for current mood\ntry:\n    mood_data = {}\n    schema = MoodSchema()\n    result = schema.load(mood_data)\nexcept ValidationError as e:",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 17 (BugGPT_test_code.py, line 17)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 17 (BugGPT_test_code.py, line 17)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 18:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Genre(Enum):\n    FICTION = \"fiction\"\n    NON_FICTION = \"non_fiction\"\n\nclass BookSchema(Schema):\n    book_genre = fields.EnumSymbol(Genre)\n\n# Using an integer instead of a string\ntry:\n    genre_data = {\"book_genre\": 42}\n    schema = BookSchema()\n    result = schema.load(genre_data)\nexcept ValidationError as e:",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 17 (BugGPT_test_code.py, line 17)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after 'except' statement on line 17 (BugGPT_test_code.py, line 17)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 19:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Flavor(Enum):\n    VANILLA = \"vanilla\"\n    CHOCOLATE = \"chocolate\"\n\nclass IceCreamSchema(Schema):\n    favorite_flavor = fields.EnumSymbol(Flavor)\n\n# Providing an unsupported flavor\ntry:\n    flavor_data = {\"favorite_flavor\": \"strawberry\"}\n    schema = IceCreamSchema()\n    result = schema.load(flavor_data)\nexcept ValidationError as e:\n    print(e.messages)  # Expect validation error",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class IceCreamSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in IceCreamSchema\n    favorite_flavor = fields.EnumSymbol(Flavor)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": "{'favorite_flavor': ['Must be one of: VANILLA, CHOCOLATE.']}\n"
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        },
+        {
+            "test": {
+                "test_code": "# Example 20:\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Device(Enum):\n    PHONE = \"phone\"\n    TABLET = \"tablet\"\n\nclass DeviceSchema(Schema):\n    device_type = fields.EnumSymbol(Device)\n\n# Testing empty input\ntry:\n    device_data = {\"device_type\": \"\"}\n    schema = DeviceSchema()\n    result = schema.load(device_data)\nexcept ValidationError as e:\n    print(e.messages)  # Expecting an error for the empty string as input",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class DeviceSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in DeviceSchema\n    device_type = fields.EnumSymbol(Device)\nAttributeError: module 'marshmallow.fields' has no attribute 'EnumSymbol'\n",
+                "new_output": "{'device_type': ['Must be one of: PHONE, TABLET.']}\n"
+            },
+            "label": "intended",
+            "comment": "test uses newly added EnumSymbol field"
+        }
+    ]
+}

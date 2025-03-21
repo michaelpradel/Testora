@@ -1,0 +1,78 @@
+{
+    "pr_number": 2044,
+    "log_file": "data/results/marshmallow/2044_2024-11-23 09:16:16.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1: Basic Serialization by Name\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Color(Enum):\n    RED = \"red\"\n    GREEN = \"green\"\n    BLUE = \"blue\"\n\nclass ColorSchema(Schema):",
+                "old_output": "Couldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\n",
+                "new_output": "/usr/local/lib/python3.10/site-packages/coverage/control.py:892: CoverageWarning: No data was collected. (no-data-collected)\n  self._warn(\"No data was collected.\", slug=\"no-data-collected\")\nCouldn't run '/tmp/BugGPT/BugGPT_test_code.py' as Python code: IndentationError: expected an indented block after class definition on line 10 (BugGPT_test_code.py, line 10)\n"
+            },
+            "label": "intended",
+            "comment": "different order of error messages"
+        },
+        {
+            "test": {
+                "test_code": "# Example 2: Basic Deserialization by Name\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Color(Enum):\n    RED = \"red\"\n    GREEN = \"green\"\n    BLUE = \"blue\"\n\nclass ColorSchema(Schema):\n    color = fields.Enum(enum=Color)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class ColorSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in ColorSchema\n    color = fields.Enum(enum=Color)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        },
+        {
+            "test": {
+                "test_code": "# Example 3: Serialization by Value\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Status(Enum):\n    ACTIVE = 1\n    INACTIVE = 0\n\nclass StatusSchema(Schema):\n    status = fields.Enum(enum=Status, by_value=True)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class StatusSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in StatusSchema\n    status = fields.Enum(enum=Status, by_value=True)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        },
+        {
+            "test": {
+                "test_code": "# Example 4: Deserialization by Value\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Status(Enum):\n    ACTIVE = 1\n    INACTIVE = 0\n\nclass StatusSchema(Schema):\n    status = fields.Enum(enum=Status, by_value=True)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class StatusSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in StatusSchema\n    status = fields.Enum(enum=Status, by_value=True)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        },
+        {
+            "test": {
+                "test_code": "# Example 5: Custom Field for Deserialization by Value\nfrom marshmallow import Schema, fields, validate\nfrom enum import Enum\n\nclass PaymentMethod(Enum):\n    CREDIT_CARD = \"credit card\"\n    PAYPAL = \"paypal\"\n\nclass PaymentMethodSchema(Schema):\n    method = fields.Enum(enum=PaymentMethod, by_value=False)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class PaymentMethodSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in PaymentMethodSchema\n    method = fields.Enum(enum=PaymentMethod, by_value=False)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        },
+        {
+            "test": {
+                "test_code": "# Example 6: Full Enum Serialization and Deserialization\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Animal(Enum):\n    DOG = \"dog\"\n    CAT = \"cat\"\n    BIRD = \"bird\"\n\nclass AnimalSchema(Schema):\n    animal = fields.Enum(enum=Animal)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class AnimalSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in AnimalSchema\n    animal = fields.Enum(enum=Animal)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        },
+        {
+            "test": {
+                "test_code": "# Example 7: Using Field Class for Serialization by Value\nfrom marshmallow import Schema, fields\nfrom enum import Enum\n\nclass Size(Enum):\n    SMALL = 1\n    MEDIUM = 2\n    LARGE = 3\n\nclass SizeSchema(Schema):\n    size = fields.Enum(enum=Size, by_value=True)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in <module>\n    class SizeSchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 11, in SizeSchema\n    size = fields.Enum(enum=Size, by_value=True)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        },
+        {
+            "test": {
+                "test_code": "# Example 8: Valid Enum but Empty Input\nfrom marshmallow import Schema, fields, ValidationError\nfrom enum import Enum\n\nclass Day(Enum):\n    MONDAY = \"Monday\"\n    TUESDAY = \"Tuesday\"\n\nclass DaySchema(Schema):\n    day = fields.Enum(enum=Day)\n\ndata = {}\n\ntry:\n    schema = DaySchema()\n    result = schema.load(data)\nexcept ValidationError as e:\n    print(\"Validation Error (no input):\", e.messages)",
+                "old_output": "Traceback (most recent call last):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 9, in <module>\n    class DaySchema(Schema):\n  File \"/tmp/BugGPT/BugGPT_test_code.py\", line 10, in DaySchema\n    day = fields.Enum(enum=Day)\nTypeError: EnumMeta.__call__() got an unexpected keyword argument 'enum'\n",
+                "new_output": ""
+            },
+            "label": "intended",
+            "comment": "old version doesn't support 'enum' argument"
+        }
+    ]
+}

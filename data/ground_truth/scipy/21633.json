@@ -1,0 +1,24 @@
+{
+    "pr_number": 21633,
+    "log_file": "data/results/scipy/21633_2024-11-23 09:06:44.json",
+    "differentiating_tests": [
+        {
+            "test": {
+                "test_code": "# Example 1:\nimport numpy as np\nfrom scipy.linalg import kron\n\nA = np.array([[1, 2], [3, 4]])\nB = np.array([[0, 5], [6, 7]])\nresult = kron(A, B)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:7: DeprecationWarning: `kron` has been deprecated in favour of `numpy.kron` in SciPy 1.15.0 and will be removed in SciPy 1.17.0.\n  result = kron(A, B)\n"
+            },
+            "label": "intended",
+            "comment": "new code prints deprecation warning, as intended by the PR"
+        },
+        {
+            "test": {
+                "test_code": "# Example 10:\nimport numpy as np\nfrom scipy.linalg import kron\n\nA = np.array([[1, 0], [0, 1]])\nB = np.array([[2, 2], [2, 2]])\nresult = kron(A, B)",
+                "old_output": "",
+                "new_output": "/tmp/BugGPT/BugGPT_test_code.py:7: DeprecationWarning: `kron` has been deprecated in favour of `numpy.kron` in SciPy 1.15.0 and will be removed in SciPy 1.17.0.\n  result = kron(A, B)\n"
+            },
+            "label": "intended",
+            "comment": "new code prints deprecation warning, as intended by the PR"
+        }
+    ]
+}
