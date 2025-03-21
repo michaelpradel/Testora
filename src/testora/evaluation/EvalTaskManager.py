@@ -257,6 +257,9 @@ if __name__ == "__main__":
                         help="Apply to classification tasks")
 
     args = parser.parse_args()
+
+    initialize()
+
     table_name = "classification_tasks" if args.classification else "tasks"
     if args.status:
         show_status()

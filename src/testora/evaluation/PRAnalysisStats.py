@@ -15,7 +15,7 @@ project_to_pr_range = {
     "scipy": [21652, 22457],
 }
 
-base_dir = "data/results"
+base_dir = "data/results_03_2025"
 
 
 @dataclass

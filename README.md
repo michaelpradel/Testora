@@ -84,5 +84,22 @@ Assuming you have set up the database:
 
 See [this sheet](https://docs.google.com/spreadsheets/d/1We-EwrNv_0U1Wco_eAUbxwjyFkkPI9kM7tkaRgP0yyI/edit?usp=sharing) for details on the 30 real-world problems, the corresponding PRs, the issues we reported, and their status.
 
-### RQ2: Effectiveness of Test Generation
+### RQ2 (Effectiveness of Test Generation) and RQ4 (Costs)
 
+**TODO: Download released data**
+
+Run the following command:
+
+```python -m testora.evaluation.PRAnalysisStats```
+
+It will do the following:
+ * Read the logs of all 1,274 PRs analyzed for RQ2 and RQ4
+ * Compute the test generation statistics reported in RQ2
+ * Compute the token cost statistics reported in RQ4
+ * Output the corresponding LaTeX tables
+ * Output LaTeX macros that define results used repeatedly in the paper (e.g., monetary cost per PR)
+ * Write the plots that show time costs and token costs into [data/figures](data/figures)
+
+### RQ3: Accuracy of Classifier
+
+Our dataset of 164 manually labeled data points is in [data/ground_truth](data/ground_truth).

@@ -2,6 +2,7 @@ from collections import Counter
 import json
 from testora.evaluation.ResultsManager import result_files_for_project
 
+config = "multi-question_GPT-4o-mini"
 
 print("Project, PR, Prediction, Label, Result")
 nb_fps = 0
@@ -11,7 +12,10 @@ nb_tns = 0
 variance_ctr = Counter()
 config_used = None
 for project in ["keras", "marshmallow", "scipy", "pandas"]:
-    for result_file in result_files_for_project(project, is_classification=True):
+    print(f"Project: {project}")
+    for result_file in result_files_for_project(project,
+                                                is_classification=True,
+                                                file_name=f"{config}.json"):
         with open(result_file, "r") as f:
             result_json = json.load(f)
             config_used_here = result_json[0]["message"]
@@ -32,8 +36,8 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                                 results.append("FN")
                                 nb_fns += 1
                             else:
-                                raise ValueError(f"Invalid prediction: {
-                                    entry['prediction']}")
+                                raise ValueError(
+                                    f"Invalid prediction: {entry['prediction']}")
                     elif entry["label"] in ["intended", "coincidental fix"]:
                         for prediction in entry["predictions"].split("#"):
                             if prediction == "intended":
@@ -43,15 +47,16 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                                 results.append("FP")
                                 nb_fps += 1
                             else:
-                                raise ValueError(f"Invalid prediction: {
-                                    entry['prediction']}")
+                                raise ValueError(
+                                    f"Invalid prediction: {entry['prediction']}")
                     else:
-                        raise ValueError(f"Invalid label: {
-                                         entry['label']}, {entry["pr_nb"]}")
+                        raise ValueError(
+                            f"Invalid label: {entry['label']}, {entry['pr_nb']}")
 
                     # check variance of predictions
                     results_counter = Counter(results)
-                    variance_str = str(sorted(list(results_counter.values()), reverse=True))
+                    variance_str = str(
+                        sorted(list(results_counter.values()), reverse=True))
                     variance_ctr[variance_str] += 1
 
                     # print into CSV
@@ -59,7 +64,7 @@ for project in ["keras", "marshmallow", "scipy", "pandas"]:
                           f"{entry['pr_nb']}, "
                           f"{entry['predictions']}, "
                           f"{entry['label']}, "
-                          f"{",".join(results)}"
+                          f"{', '.join(results)}"
                           )
 
 print(config_used)
@@ -69,7 +74,9 @@ precision = 0 if (nb_tps + nb_fps) == 0 else nb_tps / (nb_tps + nb_fps)
 print(f"Precision: {precision}")
 recall = 0 if (nb_tps + nb_fns) == 0 else nb_tps / (nb_tps + nb_fns)
 print(f"Recall: {recall}")
-f1 = 0 if (precision + recall) == 0 else 2 * precision * recall / (precision + recall)
+f1 = 0 if (precision + recall) == 0 else 2 * \
+    precision * recall / (precision + recall)
 print(f"F1: {f1}")
 print()
 print(f"Variance of predictions: {variance_ctr}")
+print(f"Total data points: {nb_tps+nb_fps+nb_fns+nb_tns}")
