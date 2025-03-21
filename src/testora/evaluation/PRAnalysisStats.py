@@ -1,7 +1,8 @@
 from collections import Counter
 from dataclasses import dataclass, field
 import glob
-from os.path import join
+from os import makedirs
+from os.path import join, exists
 from statistics import mean
 from testora.util.LogParser import PRResult, parse_log_files, parse_time_stamp, pr_results_as_dict
 from testora.util.Logs import List
@@ -253,6 +254,9 @@ if __name__ == "__main__":
     print("Table w/ test generation stats:\n")
     print("\n".join(test_generation_table_rows))
     print("\n\n")
+
+    if not exists("data/figures"):
+        makedirs("data/figures")
 
     print_and_plot_token_results(input_token_costs, output_token_costs)
     print_and_plot_time_results(time_costs)
