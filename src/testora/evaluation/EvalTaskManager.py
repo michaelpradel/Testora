@@ -6,6 +6,8 @@ from pathlib import Path
 from testora.evaluation.ResultsManager import current_results, add_result
 from testora.evaluation.TargetPRs import project_to_target_prs
 
+classification_pr_nb = -23
+
 
 def initialize():
     global config, my_worker_id, classification_pr_nb
@@ -20,8 +22,6 @@ def initialize():
 
     with open(".worker_id", "r") as f:
         my_worker_id = f.read().strip()
-
-    classification_pr_nb = -23
 
 
 def connect_and_do(func):
