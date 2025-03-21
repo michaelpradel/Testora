@@ -20,8 +20,8 @@ fix_undefined_refs = True
 
 # model_version = "gpt-3.5-turbo-0125"
 # model_version = "gpt-4-0125-preview"
-# model_version = "gpt-4o-mini-2024-07-18"
-model_version = "gpt-4o-2024-08-06"
+model_version = "gpt-4o-mini-2024-07-18"
+# model_version = "gpt-4o-2024-08-06"
 # model_version = "deepseek/deepseek-r1"
 
 # OpenAI's default: 1.0
