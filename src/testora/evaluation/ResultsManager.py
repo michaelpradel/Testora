@@ -13,8 +13,12 @@ def result_files():
                 yield os.path.join(results_base_dir, project_dir, pr_result_file)
 
 
-def result_files_for_project(project_name, minimum_timestamp=None, is_classification=False, file_name=None):
-    base_dir = classification_results_base_dir if is_classification else results_base_dir
+def result_files_for_project(project_name, minimum_timestamp=None, is_classification=False, file_name=None, base_dir_arg=None):
+    if base_dir_arg:
+        base_dir = base_dir_arg
+    else:
+        base_dir = classification_results_base_dir if is_classification else results_base_dir
+    
     for pr_result_file in os.listdir(os.path.join(base_dir, project_name)):
         if pr_result_file.endswith(".json"):
             if minimum_timestamp:
@@ -22,7 +26,7 @@ def result_files_for_project(project_name, minimum_timestamp=None, is_classifica
                     ".json", "").split("_")[1]
                 if datetime.strptime(pr_timestamp, "%Y-%m-%d %H:%M:%S") < datetime.strptime(minimum_timestamp, "%Y-%m-%d %H:%M:%S"):
                     continue
-            
+
             if file_name and pr_result_file != file_name:
                 continue
 
@@ -53,7 +57,8 @@ def add_result(project_name, pr_nb, timestamp, result, is_classification):
     base_dir = classification_results_base_dir if is_classification else results_base_dir
 
     all_old_results = current_results(is_classification=is_classification)
-    non_archive_old_results = current_results(False, is_classification=is_classification)
+    non_archive_old_results = current_results(
+        False, is_classification=is_classification)
 
     # check if result already exists
     for old_pr_nb, old_timestamp in all_old_results[project_name]:

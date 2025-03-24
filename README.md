@@ -86,9 +86,10 @@ See [this sheet](https://docs.google.com/spreadsheets/d/1We-EwrNv_0U1Wco_eAUbxwj
 
 ### RQ2 (Effectiveness of Test Generation) and RQ4 (Costs)
 
-**TODO: Download released data**
+Download the logs as described in [DATA.md](data/DATA.md).
+This will create a folder [data/results_03_2025/](data/results_03_2025/), which contains the raw logs of running Testora in its default configuration.
 
-Run the following command:
+To analyze the logs, run the following command:
 
 ```python -m testora.evaluation.PRAnalysisStats```
 
@@ -103,3 +104,14 @@ It will do the following:
 ### RQ3: Accuracy of Classifier
 
 Our dataset of 164 manually labeled data points is in [data/ground_truth](data/ground_truth).
+
+To run evaluate the classifier against the ground truth, we use [ClassificationEvaluator.py](src/testora/evaluation/ClassificationEvaluator.py). 
+If not done yet for RQ2, download the logs as described in [DATA.md](data/DATA.md).
+Afterward, the raw logs of running Testora with three LLMs (GPT-4o-mini, GPT-4o, DeepSeek-R1) and two different prompting techniques (multi-question classifier, single-question classifier) are available in [data/classification_results_03_2025/](data/classification_results_03_2025/).
+
+To compute the precision, recall, and F1 score, run the following command:
+
+```python - m testora.evaluation.ClassificationResultsSummarizer```
+
+It will output detailed results for each PR in the ground truth dataset, and the at end, the overall results.
+To switch between different LLMs and prompting techniques, edit [ClassificationResultsSummarizer.py](src/testora/evaluation/ClassificationResultsSummarizer.py) to modify the lines at the beginning that select a model-prompt combination.
