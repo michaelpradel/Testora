@@ -648,6 +648,7 @@ def main():
     if args.db:
         if args.project or args.pr:
             raise ValueError("When using --db, cannot use --project and --pr")
+        EvalTaskManager.initialize()
         fetch_and_check_prs()
     else:
         if not args.project or not args.pr:
