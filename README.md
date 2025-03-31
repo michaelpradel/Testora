@@ -2,6 +2,9 @@
 
 Testora is an automated approach to check behavioral changes introduced by a pull request against the title, description, etc. of the pull request.
 
+Paper:
+[https://arxiv.org/abs/2503.18597](https://arxiv.org/abs/2503.18597)
+
 ## Installation
 
 Testora uses two kinds of Docker containers:
