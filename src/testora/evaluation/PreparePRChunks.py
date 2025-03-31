@@ -47,6 +47,8 @@ def write_range_of_PR_tasks_into_database(project_name, project_id, start_pr_nb,
 
 
 if __name__ == "__main__":
+    EvalTaskManager.initialize()
+
     write_range_of_PR_tasks_into_database(
         "pandas", "pandas-dev/pandas", 60322, 300)
 
