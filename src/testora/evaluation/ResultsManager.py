@@ -41,8 +41,11 @@ def current_results(include_archive=True, is_classification=False):
         project_to_prs_and_timestamps[project_dir] = []
         result_dirs = [os.path.join(base_dir, project_dir)]
         if include_archive:
-            result_dirs.append(os.path.join(
-                base_dir, project_dir, "archive"))
+            archive_dir = os.path.join(base_dir, project_dir, "archive")
+            if not os.path.exists(archive_dir):
+                os.makedirs(archive_dir)
+                print(f"Created directory {archive_dir}")
+            result_dirs.append(archive_dir)
         for result_dir in result_dirs:
             for pr_result_file in os.listdir(result_dir):
                 if pr_result_file.endswith(".json"):
@@ -55,6 +58,10 @@ def current_results(include_archive=True, is_classification=False):
 
 def add_result(project_name, pr_nb, timestamp, result, is_classification):
     base_dir = classification_results_base_dir if is_classification else results_base_dir
+
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)
+        print(f"Created directory {base_dir}")
 
     all_old_results = current_results(is_classification=is_classification)
     non_archive_old_results = current_results(
@@ -82,6 +89,7 @@ def add_result(project_name, pr_nb, timestamp, result, is_classification):
             archive_dir = os.path.join(base_dir, project_name, "archive")
             if not os.path.exists(archive_dir):
                 os.makedirs(archive_dir)
+                print(f"Created directory {archive_dir}")
             renamed_target_file = os.path.join(
                 archive_dir, f"{old_pr_nb}_{old_timestamp}.json")
             os.rename(old_target_file, renamed_target_file)
