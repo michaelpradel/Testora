@@ -26,5 +26,12 @@
             "request": "launch",
             "module": "testora.evaluation.ClassificationResultsSummarizer",
         },
+        {
+            "name": "BugDetector",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "testora.BugDetector",
+            "args": ["--module", "scipy.fft"],
+        },
     ]
 }

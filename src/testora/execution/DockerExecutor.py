@@ -7,7 +7,7 @@ from os import chdir, getcwd
 
 
 class DockerExecutor:
-    def __init__(self, container_name, project_name, coverage_files):
+    def __init__(self, container_name, project_name, coverage_files=[]):
         client = docker.from_env()
         self.container = client.containers.get(container_name)
         self.container.start()
@@ -47,7 +47,7 @@ class DockerExecutor:
 
         os.remove(temp_tar_file)
 
-    def execute_python_code(self, code):
+    def execute_python_code(self, code, args=""):
         # create a fresh directory to get rid of any old state
         self.container.exec_run("rm -rf /tmp/Testora")
         self.container.exec_run("mkdir /tmp/Testora")
@@ -58,7 +58,7 @@ class DockerExecutor:
         command = (
             f"timeout 300s python -u -m coverage run "
             f"--include={coverage_files} "
-            f"--data-file /tmp/coverage_report /tmp/Testora/Testora_test_code.py"
+            f"--data-file /tmp/coverage_report /tmp/Testora/Testora_test_code.py {args}"
         )
 
         # for scipy and numpy, make sure we run inside the their dev environment
