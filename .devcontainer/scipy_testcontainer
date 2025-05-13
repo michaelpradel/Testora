@@ -1,0 +1,5 @@
+FROM python:3.10
+
+COPY .devcontainer/setup_scipy_to_run_in_container.sh /root/setup.sh
+RUN chmod +x /root/setup.sh
+RUN --mount=type=bind,source=clones/clone1/scipy,target=/home/scipy,rw cd /home/scipy && /root/setup.sh
