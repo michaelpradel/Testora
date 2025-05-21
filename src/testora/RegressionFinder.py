@@ -612,7 +612,7 @@ def check_single_pr(project, pr_nb):
 
 
 def fetch_and_check_prs():
-    project, pr_nb = EvalTaskManager.fetch_task()
+    project, pr_nb, timestamp = EvalTaskManager.fetch_task()
     while project and pr_nb:
         try:
             check_single_pr(project, pr_nb)
@@ -624,10 +624,10 @@ def fetch_and_check_prs():
         # store log on disk and into DB
         store_logs()
         log = get_logs_as_json()
-        EvalTaskManager.write_results(project, pr_nb, log)
+        EvalTaskManager.write_results(project, pr_nb, log, timestamp)
         reset_logs()
 
-        project, pr_nb = EvalTaskManager.fetch_task()
+        project, pr_nb, timestamp = EvalTaskManager.fetch_task()
 
     print("No more tasks to work on")
 

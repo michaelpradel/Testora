@@ -67,20 +67,20 @@ def fetch_task(table_name="tasks"):
 
         # check if there's already an unfinished task assigned to this container; if yes, work on it
         select_query = (
-            f"SELECT project, pr FROM {table_name} "
+            f"SELECT project, pr, timestamp FROM {table_name} "
             f"WHERE worker=%s AND result IS NULL"
         )
         cursor.execute(select_query, (my_worker_id,))
         row = cursor.fetchone()
         if row:
-            return row[0], row[1]
+            return row[0], row[1], row[2]
 
         # otherwise, fetch a new task and mark it as assigned to this container
         target_project_file = Path(".target_project")
         with open(target_project_file, "r") as f:
             target_project = f.read().strip()
         select_query = (
-            f"SELECT project, pr FROM {table_name} "
+            f"SELECT project, pr, timestamp FROM {table_name} "
             f"WHERE worker IS NULL AND project=%s LIMIT 1"
         )
         cursor.execute(select_query, (target_project,))
@@ -88,25 +88,28 @@ def fetch_task(table_name="tasks"):
         row = cursor.fetchone()
 
         if row:
-            project, pr = row[0], row[1]
+            project, pr, timestamp = row[0], row[1], row[2]
             update_query = (
                 f"UPDATE {table_name} SET worker = %s "
-                f"WHERE project = %s AND pr = %s AND worker IS NULL"
+                f"WHERE project = %s AND pr = %s AND timestamp = %s AND worker IS NULL"
             )
-            cursor.execute(update_query, (my_worker_id, project, pr))
+            cursor.execute(update_query, (my_worker_id, project, pr, timestamp))
             connection.commit()
-            return project, pr
+            return project, pr, timestamp
         else:
             print("No task found.")
-            return None, None
+            return None, None, None
 
     return connect_and_do(inner)
 
 
-def write_results(project, pr, result, table_name="tasks"):
+def write_results(project, pr, result, timestamp, table_name="tasks"):
     def inner(connection, cursor):
-        insert_query = f"UPDATE {table_name} SET result=%s WHERE project=%s AND pr=%s"
-        cursor.execute(insert_query, (result, project, pr))
+        if timestamp is None:
+            insert_query = f"UPDATE {table_name} SET result=%s WHERE project=%s AND pr=%s"
+        else:
+            insert_query = f"UPDATE {table_name} SET result=%s WHERE project=%s AND pr=%s AND timestamp=%s"
+        cursor.execute(insert_query, (result, project, pr, timestamp))
 
     connect_and_do(inner)
 
