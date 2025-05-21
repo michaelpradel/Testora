@@ -56,7 +56,7 @@ class DockerExecutor:
         coverage_files = ",".join(f"\"{f}\"" for f in self.coverage_files)
         # -u to avoid non-deterministic buffering
         command = (
-            f"timeout 300s python -u -m coverage run "
+            f"timeout 600s python -u -m coverage run "
             f"--include={coverage_files} "
             f"--data-file /tmp/coverage_report /tmp/Testora/Testora_test_code.py"
         )
@@ -77,6 +77,9 @@ class DockerExecutor:
 
         exec_result = self.container.exec_run(command)
         output = exec_result.output.decode("utf-8")
+
+        if exec_result.exit_code != 0:
+            raise Exception("Generation of coverage_report failed. Timeout or compile error.")
 
         self.copy_file_from_container(
             "/tmp/coverage_report", ".")
