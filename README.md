@@ -114,7 +114,7 @@ Afterward, the raw logs of running Testora with three LLMs (GPT-4o-mini, GPT-4o,
 
 To compute the precision, recall, and F1 score, run the following command:
 
-```python - m testora.evaluation.ClassificationResultsSummarizer```
+```python -m testora.evaluation.ClassificationResultsSummarizer```
 
 It will output detailed results for each PR in the ground truth dataset, and the at end, the overall results.
 To switch between different LLMs and prompting techniques, edit [ClassificationResultsSummarizer.py](src/testora/evaluation/ClassificationResultsSummarizer.py) to modify the lines at the beginning that select a model-prompt combination.
