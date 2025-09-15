@@ -65,7 +65,7 @@ class DockerExecutor:
         if self.container.name.startswith("scipy-dev"):
             command = (
                 f"bash -c 'source /root/conda/etc/profile.d/conda.sh"
-                f" && source /root/conda/etc/profile.d/mamba.sh && mamba activate scipy-dev"
+                f" && eval \"$(mamba shell hook --shell bash)\" && mamba activate scipy-dev"
                 f" && {command}'"
             )
         elif self.container.name.startswith("numpy-dev"):
