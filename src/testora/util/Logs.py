@@ -1,10 +1,11 @@
 import json
 import os
-import fnmatch
 from datetime import datetime, timedelta
 import atexit
 from typing import List, Optional
 from pydantic import BaseModel
+
+from testora.util.ClassificationResult import Classification
 
 
 class Event(BaseModel):
@@ -36,12 +37,11 @@ class PreClassificationEvent(Event):
 
 
 class ClassificationEvent(Event):
-    is_relevant_change: Optional[bool]
-    is_deterministic: Optional[bool]
-    is_public: Optional[bool]
-    is_legal: Optional[bool]
-    is_surprising: Optional[bool]
-    correct_output: Optional[int]
+    test_code: str
+    old_output: str
+    new_output: str
+    classification: Classification
+    classification_explanation: str
     old_is_crash: bool
     new_is_crash: bool
 
@@ -67,7 +67,7 @@ class ClassifierEvalEvent(Event):
     predictions: str
 
 
-events: List = []
+events: List[Event] = []
 last_time_stored = datetime.now()
 last_file_stored_to: Optional[str] = None
 
@@ -91,7 +91,7 @@ def get_logs_as_json():
 def store_logs():
     global last_file_stored_to
     timestamp = datetime.now().isoformat()
-    event_dicts = [evt.dict() for evt in events]
+    event_dicts = [evt.model_dump() for evt in events]
     out_file = f"logs_{timestamp}.json"
     json.dump(event_dicts, open(out_file, "w"), indent=2)
 

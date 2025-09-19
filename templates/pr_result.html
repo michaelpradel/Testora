@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result for PR {{ pr_result.number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .info {
+            margin-bottom: 20px;
+        }
+
+        .compact-table {
+            width: auto;
+            border: 1px solid black;
+        }
+
+        .entries {
+            font-size: 11pt;
+        }
+
+        .width100ch {
+            max-width: 100ch;
+            border: 1px solid #ccc;
+            padding: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="info">
+        <h1><a href="{{ pr_result.url }}">PR{{ pr_result.number }}</a>: {{ pr_result.title }}</h1>
+    </div>
+
+    <h2>Test Case</h2>
+    <pre><code>{{ classification_result.test_code }}</code></pre>
+
+    <h2>Old Output</h2>
+    <pre>{{ classification_result.old_output }}</pre>
+
+    <h2>New Output</h2>
+    <pre>{{ classification_result.new_output }}</pre>
+
+    <h2>Classification: {{ classification_result.classification }}</h2>
+    <div class="width100ch">{{ classification_result.classification_explanation}}</div>
+    <br>
+    <div><a href="/pr{{ pr_result.number }}_log">Detailed log</a></div>
+
+</body>
+
+</html>

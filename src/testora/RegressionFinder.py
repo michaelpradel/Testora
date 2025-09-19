@@ -9,17 +9,14 @@ from testora.execution.TestExecution import TestExecution
 from testora.llms.LLMCache import LLMCache
 from testora.prompts.UndefinedRefsFixingPrompt import UndefinedRefsFixingPrompt
 from testora.prompts.PRRegressionBugRanking import PRRegressionBugRanking
-from testora.prompts.RegressionClassificationPromptV1 import RegressionClassificationPromptV1
-from testora.prompts.RegressionClassificationPromptV2 import RegressionClassificationPromptV2
-from testora.prompts.RegressionClassificationPromptV3 import RegressionClassificationPromptV3
-from testora.prompts.RegressionClassificationPromptV4 import RegressionClassificationPromptV4
-from testora.prompts.RegressionClassificationPromptV5 import RegressionClassificationPromptV5
-from testora.prompts.RegressionClassificationPromptV6 import RegressionClassificationPromptV6
-from testora.prompts.RegressionTestGeneratorPrompt import RegressionTestGeneratorPrompt
+from testora.prompts.RegressionClassificationPromptV7 import RegressionClassificationPromptV7
+from testora.prompts.RegressionTestGeneratorPromptV1 import RegressionTestGeneratorPromptV1
+from testora.prompts.RegressionTestGeneratorPromptV2 import RegressionTestGeneratorPromptV2
 from testora.prompts.SelectExpectedBehaviorPrompt import SelectExpectedBehaviorPrompt
 from testora.util.ClonedRepoManager import ClonedRepoManager
 from testora.util.DocstringRetrieval import retrieve_relevant_docstrings
 from testora.util.Exceptions import TestoraException
+from testora.util.LogParser import Classification
 from testora.util.PullRequest import PullRequest
 from testora.llms.OpenAIGPT import OpenAIGPT
 from testora.util.Logs import CoverageEvent, PreClassificationEvent, start_logging, ClassificationEvent, ErrorEvent, PREvent, SelectBehaviorEvent, TestExecutionEvent, append_event, Event, ComparisonEvent, LLMEvent, get_logs_as_json, store_logs, reset_logs
@@ -31,18 +28,21 @@ from testora.execution.CoverageAnalyzer import summarize_coverage
 
 llm = LLMCache(OpenAIGPT())
 
-if Config.classification_prompt_version == 1:
-    RegressionClassificationPrompt = RegressionClassificationPromptV1
-elif Config.classification_prompt_version == 2:
-    RegressionClassificationPrompt = RegressionClassificationPromptV2
-elif Config.classification_prompt_version == 3:
-    RegressionClassificationPrompt = RegressionClassificationPromptV3
-elif Config.classification_prompt_version == 4:
-    RegressionClassificationPrompt = RegressionClassificationPromptV4
-elif Config.classification_prompt_version == 5:
-    RegressionClassificationPrompt = RegressionClassificationPromptV5
-elif Config.classification_prompt_version == 6:
-    RegressionClassificationPrompt = RegressionClassificationPromptV6
+# V1 to V6 not supported anymore
+# if Config.classification_prompt_version == 1:
+#     RegressionClassificationPrompt = RegressionClassificationPromptV1
+# elif Config.classification_prompt_version == 2:
+#     RegressionClassificationPrompt = RegressionClassificationPromptV2
+# elif Config.classification_prompt_version == 3:
+#     RegressionClassificationPrompt = RegressionClassificationPromptV3
+# elif Config.classification_prompt_version == 4:
+#     RegressionClassificationPrompt = RegressionClassificationPromptV4
+# elif Config.classification_prompt_version == 5:
+#     RegressionClassificationPrompt = RegressionClassificationPromptV5
+# elif Config.classification_prompt_version == 6:
+#     RegressionClassificationPrompt = RegressionClassificationPromptV6
+if Config.classification_prompt_version == 7:
+    RegressionClassificationPrompt = RegressionClassificationPromptV7
 
 
 def clean_output(output):
@@ -195,27 +195,25 @@ def generate_tests(pr, github_repo, changed_functions):
 
     all_tests = []
 
+    if Config.test_generation_prompt_version == 1:
+        RegressionTestGeneratorPrompt = RegressionTestGeneratorPromptV1
+    elif Config.test_generation_prompt_version == 2:
+        RegressionTestGeneratorPrompt = RegressionTestGeneratorPromptV2
+    else:
+        raise TestoraException(
+            f"Unsupported test_generation_prompt_version: {Config.test_generation_prompt_version}")
+
     if len(full_diff.split("\n")) <= 200:
-        # full diff with GPT4
         prompt_full_diff = RegressionTestGeneratorPrompt(
             github_repo.name, changed_functions, full_diff)
         all_tests.extend(generate_tests_with_prompt(
             pr, prompt_full_diff, llm))
 
-        # full diff with GPT3.5
-        # all_tests.extend(generate_tests_with_prompt(
-        #     pr, prompt_full_diff, gpt35, nb_samples=10))
-
     if len(filtered_diff.split("\n")) <= 200 and filtered_diff != full_diff:
-        # filtered diff with GPT4
         prompt_filtered_diff = RegressionTestGeneratorPrompt(
             github_repo.name, changed_functions, filtered_diff)
         all_tests.extend(generate_tests_with_prompt(
             pr, prompt_filtered_diff, llm))
-
-        # filtered diff with GPT3.5
-        # all_tests.extend(generate_tests_with_prompt(
-        #     pr, prompt_filtered_diff, gpt35, nb_samples=10))
 
     # de-dup tests
     nb_tests_before_dedup_and_cleaning = len(all_tests)
@@ -314,20 +312,18 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
 
     all_results = []
     for raw_answer_sample in raw_answer:
-        is_relevant_change, is_deterministic, is_public, is_legal, is_surprising, correct_output = prompt.parse_answer(
-            [raw_answer_sample])
+        classification_result = prompt.parse_answer([raw_answer_sample])
         append_event(ClassificationEvent(pr_nb=pr.number,
                                          message="Classification",
-                                         is_relevant_change=is_relevant_change,
-                                         is_deterministic=is_deterministic,
-                                         is_public=is_public,
-                                         is_legal=is_legal,
-                                         is_surprising=is_surprising,
-                                         correct_output=correct_output,
+                                         test_code=old_execution.code,
+                                         old_output=old_execution.output,
+                                         new_output=new_execution.output,
+                                         classification=classification_result.classification,
+                                         classification_explanation=classification_result.classification_explanation,
                                          old_is_crash=is_crash(
                                              old_execution.output),
                                          new_is_crash=is_crash(new_execution.output)))
-        result = is_relevant_change and is_deterministic and is_public and is_legal and is_surprising
+        result = classification_result.classification == Classification.REGRESSION
         all_results.append(result)
     return all_results
 

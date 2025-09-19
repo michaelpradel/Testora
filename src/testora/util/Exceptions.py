@@ -1,2 +1,2 @@
-class TestoraException:
+class TestoraException(BaseException):
     pass

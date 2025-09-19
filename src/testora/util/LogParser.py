@@ -1,28 +1,12 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from enum import Enum
 import json
 import re
 import argparse
 from testora.util.Logs import Event
-
+from testora.util.ClassificationResult import Classification, ClassificationResult
 
 nb_test_generated_pattern = r"^Generated (\d+) tests"
-
-
-class Classification(Enum):
-    UNKNOWN = 0
-    INTENDED_CHANGE = 1
-    COINCIDENTAL_FIX = 2
-    REGRESSION = 3
-
-
-class ClassificationResult:
-    def __init__(self, test_code: str, old_output: str, new_output: str):
-        self.test_code = test_code
-        self.old_output = old_output
-        self.new_output = new_output
-        self.classification: Classification = Classification.UNKNOWN
 
 
 @dataclass
@@ -198,38 +182,23 @@ class PRResult:
         # extract classification details
         for entry_idx, entry in enumerate(self.entries):
             if entry["message"] == "Classification":
-                classification_result = None
-                # find test code, old output, new output by looking further up in the log
-                for idx2 in range(entry_idx, -1, -1):
-                    if self.entries[idx2]["message"] == "Different outputs (also after test reduction)":
-                        classification_result = ClassificationResult(
-                            self.entries[idx2]["test_code"], self.entries[idx2]["old_output"], self.entries[idx2]["new_output"])
-                        break
-                if classification_result is None:
-                    raise Exception(
-                        "Could not find test code, old output, new output for classification entry")
+                classification_result = ClassificationResult(
+                    test_code=entry["test_code"],
+                    old_output=entry["old_output"],
+                    new_output=entry["new_output"],
+                    classification=entry["classification"],
+                    classification_explanation=entry["classification_explanation"]
+                )
 
-                # extract outcome of classification
-                if entry["is_relevant_change"] in [True, False] and \
-                        entry["is_deterministic"] in [True, False] and \
-                        entry["is_public"] in [True, False] and \
-                        entry["is_legal"] in [True, False] and \
-                        entry["is_surprising"] in [True, False]:
-                    if entry["is_relevant_change"] and \
-                            entry["is_deterministic"] and \
-                            entry["is_public"] and \
-                            entry["is_legal"] and \
-                            entry["is_surprising"]:
-                        # find entry that selected the expected behavior further down in the log
-                        for idx2 in range(entry_idx, len(self.entries)):
-                            if self.entries[idx2]["message"] == "Selected expected behavior":
-                                if self.entries[idx2]["expected_output"] == 1:
-                                    classification_result.classification = Classification.REGRESSION
-                                elif self.entries[idx2]["expected_output"] == 2:
-                                    classification_result.classification = Classification.COINCIDENTAL_FIX
-                                break
-                    else:
-                        classification_result.classification = Classification.INTENDED_CHANGE
+                # find entry that selected the expected behavior further down in the log
+                if classification_result.classification == Classification.REGRESSION:
+                    for idx2 in range(entry_idx, len(self.entries)):
+                        if self.entries[idx2]["message"] == "Selected expected behavior":
+                            if self.entries[idx2]["expected_output"] == 1:
+                                classification_result.classification = Classification.REGRESSION
+                            elif self.entries[idx2]["expected_output"] == 2:
+                                classification_result.classification = Classification.COINCIDENTAL_FIX
+                            break
 
                 self.classification_results.append(classification_result)
 

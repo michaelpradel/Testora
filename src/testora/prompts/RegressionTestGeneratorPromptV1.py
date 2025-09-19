@@ -1,4 +1,7 @@
-class RegressionTestGeneratorPrompt:
+# Prompt for generating regression tests based on a given diff
+# V1: As used for ICSE'26 paper
+
+class RegressionTestGeneratorPromptV1:
     def __init__(self, project_name, fut_qualified_names, diff):
         self.project_name = project_name
         self.fut_qualified_names = fut_qualified_names

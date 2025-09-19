@@ -102,14 +102,20 @@ def main_page():
     pr_results, _ = parse_log_files(args.files)
     summary = summarize_status()
     pr_number_to_result = pr_results_as_dict(pr_results)
-    return render_template("index.html", summary=summary, data=pr_results, color_mapping=status_colors)
+    return render_template("index.html", summary=summary, pr_results=pr_results, color_mapping=status_colors)
 
 
-@app.route('/pr<int:number>')
-def pr_page(number):
+@app.route('/pr<int:number>_log')
+def pr_log_page(number):
     pr_result = pr_number_to_result[int(number)]
     perf_stats = compute_perf_stats(pr_result.entries)
-    return render_template('pr.html', pr_result=pr_result, perf_stats=perf_stats)
+    return render_template('pr_log.html', pr_result=pr_result, perf_stats=perf_stats)
+
+@app.route('/pr<int:pr_number>_result<int:result_number>')
+def pr_result_page(pr_number, result_number):
+    pr_result = pr_number_to_result[int(pr_number)]
+    classification_result = pr_result.classification_results[int(result_number) - 1]
+    return render_template('pr_result.html', pr_result=pr_result, classification_result=classification_result)
 
 
 if __name__ == "__main__":
