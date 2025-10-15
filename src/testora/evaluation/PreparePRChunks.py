@@ -27,17 +27,17 @@ def write_range_of_PR_tasks_into_database(project_name, project_id, start_pr_nb,
             pr = github_repo.get_pull(next_candidate_pr_nb)
         except Exception:
             # not a valid PR number
-            print(f"Skipping number {
-                  next_candidate_pr_nb} (not a valid PR number)")
+            print(
+                f"Skipping number {next_candidate_pr_nb} (not a valid PR number)")
             next_candidate_pr_nb += 1
             continue
-        
+
         # check if PR is closed
         if not pr.is_merged():
             print(f"Skipping number {next_candidate_pr_nb} (PR not merged)")
             next_candidate_pr_nb += 1
             continue
-        
+
         # found a valid PR number -- add to list
         print(f"Adding PR number {next_candidate_pr_nb} into the list")
         result_pr_nbs.append(next_candidate_pr_nb)
@@ -49,14 +49,14 @@ def write_range_of_PR_tasks_into_database(project_name, project_id, start_pr_nb,
 if __name__ == "__main__":
     EvalTaskManager.initialize()
 
-    write_range_of_PR_tasks_into_database(
-        "pandas", "pandas-dev/pandas", 60322, 300)
+    # write_range_of_PR_tasks_into_database(
+    #     "pandas", "pandas-dev/pandas", 60322, 300)
 
     write_range_of_PR_tasks_into_database(
-        "scipy", "scipy/scipy", 22031, 300)
+        "scipy", "scipy/scipy", 23665, 30)
 
-    write_range_of_PR_tasks_into_database(
-        "keras", "keras-team/keras", 20711, 300)
+    # write_range_of_PR_tasks_into_database(
+    #     "keras", "keras-team/keras", 20711, 300)
 
-    write_range_of_PR_tasks_into_database(
-        "marshmallow", "marshmallow-code/marshmallow", 2804, 300)
+    # write_range_of_PR_tasks_into_database(
+    #     "marshmallow", "marshmallow-code/marshmallow", 2804, 300)
