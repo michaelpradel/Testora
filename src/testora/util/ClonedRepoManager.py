@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 import json
 from os.path import exists
+from pathlib import Path
+import shutil
+import subprocess
 from typing import List
 from git import Repo
 
@@ -76,7 +79,7 @@ class ClonedRepoManager:
         try:
             cloned_repo.git.checkout(commit)
             cloned_repo.git.submodule('update', '--init', '--recursive')
-        except Exception as e:
+        except Exception:
             if commit == "main":
                 self._safe_checkout(cloned_repo, "master")
             elif commit == "master":
@@ -84,10 +87,39 @@ class ClonedRepoManager:
             else:
                 cloned_repo.git.rm('--cached', '-rf', '.')
                 cloned_repo.git.reset('--hard')
-                cloned_repo.git.clean('-f', '-d')
+                cloned_repo.git.clean('-f', '-d', '-x')
                 origin = cloned_repo.remotes.origin
                 origin.fetch()
-                cloned_repo.git.checkout(commit)
+                try:
+                    cloned_repo.git.checkout(commit)
+                except Exception:
+                    # we get here when submodules are in a strange state
+                    self._remove_and_reinit_submodules(cloned_repo)
+                    cloned_repo.git.checkout(commit)
+
+    def _remove_and_reinit_submodules(self, cloned_repo: Repo):
+        # 1) de-initialize all submodules
+        cloned_repo.git.submodule('deinit', '-f', '--all')
+
+        # 2) remove all submodule working trees
+        root = Path(cloned_repo.working_dir)
+        ls_output = subprocess.run(
+            ["git", "ls-files", "-s"], capture_output=True, text=True, check=True
+        ).stdout.splitlines()
+        for line in ls_output:
+            parts = line.split()
+            if len(parts) >= 4 and parts[0] == "160000":
+                path = " ".join(parts[3:])
+                shutil.rmtree(root / path, ignore_errors=True)
+
+        # 3) remove all submodule git metadata under .git/modules
+        modules_dir = root / ".git" / "modules"
+        if modules_dir.exists():
+            for child in modules_dir.iterdir():
+                shutil.rmtree(child, ignore_errors=True)
+
+        # 4) re-initialize submodules recursively
+        cloned_repo.git.submodule('update', '--init', '--recursive')
 
     def get_cloned_repo(self, commit) -> ClonedRepo:
         # reuse existing clone if possible
