@@ -87,17 +87,16 @@ class ClonedRepoManager:
             else:
                 cloned_repo.git.rm('--cached', '-rf', '.')
                 cloned_repo.git.reset('--hard')
-                cloned_repo.git.clean('-f', '-d', '-x')
+                cloned_repo.git.clean('-f', '-d')
                 origin = cloned_repo.remotes.origin
                 origin.fetch()
                 try:
                     cloned_repo.git.checkout(commit)
                 except Exception:
                     # we get here when submodules are in a strange state
-                    self._remove_and_reinit_submodules(cloned_repo)
-                    cloned_repo.git.checkout(commit)
+                    self._remove_and_reinit_submodules(cloned_repo, commit)
 
-    def _remove_and_reinit_submodules(self, cloned_repo: Repo):
+    def _remove_and_reinit_submodules(self, cloned_repo: Repo, commit: str):
         # 1) de-initialize all submodules
         cloned_repo.git.submodule('deinit', '-f', '--all')
 
@@ -118,7 +117,10 @@ class ClonedRepoManager:
             for child in modules_dir.iterdir():
                 shutil.rmtree(child, ignore_errors=True)
 
-        # 4) re-initialize submodules recursively
+        # 4) checkout the desired commit
+        cloned_repo.git.checkout(commit)
+
+        # 5) re-initialize submodules recursively
         cloned_repo.git.submodule('update', '--init', '--recursive')
 
     def get_cloned_repo(self, commit) -> ClonedRepo:
