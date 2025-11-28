@@ -186,7 +186,7 @@ class PRResult:
                     test_code=entry["test_code"],
                     old_output=entry["old_output"],
                     new_output=entry["new_output"],
-                    classification=entry["classification"],
+                    classification=Classification(entry["classification"]),
                     classification_explanation=entry["classification_explanation"]
                 )
 
