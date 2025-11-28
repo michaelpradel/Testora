@@ -190,7 +190,8 @@ If any required detail (such as diffs, docstrings, outputs, or test code) is mis
             r"^```(?:json)?|```$", "", raw_answer.strip(),
             flags=re.MULTILINE)
         cleaned = backtick_regexp.strip()
-        answer = json.loads(cleaned)
+        extracted = cleaned[cleaned.find("{"):cleaned.rfind("}")+1]
+        answer = json.loads(extracted)
 
         if answer["answer1"] == "noteworthy" and \
             answer["answer2"] == "deterministic" and \
