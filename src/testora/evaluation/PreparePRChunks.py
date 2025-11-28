@@ -28,8 +28,7 @@ def write_range_of_PR_tasks_into_database(project_name, project_id, start_pr_nb,
             pr = github_repo.get_pull(next_candidate_pr_nb)
         except Exception:
             # not a valid PR number
-            print(f"Skipping number {
-                  next_candidate_pr_nb}(not a valid PR number)")
+            print(f"Skipping number {next_candidate_pr_nb}(not a valid PR number)")
             next_candidate_pr_nb += 1
             continue
 
