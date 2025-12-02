@@ -197,7 +197,7 @@ If any required detail (such as diffs, docstrings, outputs, or test code) is mis
             answer["answer2"] == "deterministic" and \
             answer["answer3"] == "public" and \
             answer["answer4"] == "legal" and \
-            answer["answer5"] == "intended":
+            answer["answer5"] == "unintended":
             classification = Classification.REGRESSION
         else:
             classification = Classification.INTENDED_CHANGE
