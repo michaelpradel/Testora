@@ -330,16 +330,27 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
 
 def select_expected_behavior(project_name, pr, old_execution, new_execution, docstrings):
     """Ask LLM which of two possible outputs is the expected behavior."""
-    prompt = SelectExpectedBehaviorPrompt(
-        project_name, old_execution.code, old_execution.output, new_execution.output, docstrings)
-    raw_answer = llm.query(prompt, temperature=Config.classification_temp)
-    append_event(LLMEvent(pr_nb=pr.number,
-                          message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
-    expected_behavior = prompt.parse_answer(raw_answer)
-    append_event(SelectBehaviorEvent(pr_nb=pr.number,
-                                     message="Selected expected behavior",
-                                     expected_output=expected_behavior))
-    return expected_behavior
+
+    attempts_left = 3
+    while attempts_left > 0:
+        try:
+            prompt = SelectExpectedBehaviorPrompt(
+            project_name, old_execution.code, old_execution.output, new_execution.output, docstrings)
+            raw_answer = llm.query(prompt, temperature=Config.classification_temp)
+            append_event(LLMEvent(pr_nb=pr.number,
+                                message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
+            expected_behavior = prompt.parse_answer(raw_answer)
+            append_event(SelectBehaviorEvent(pr_nb=pr.number,
+                                                message="Selected expected behavior",
+                                                expected_output=expected_behavior))
+            return expected_behavior
+
+        except TestoraException as e:
+            attempts_left -= 1
+            append_event(Event(pr_nb=pr.number,
+                               message=f"Error selecting expected behavior: {e}"))
+            if attempts_left == 0:
+                raise e
 
 
 def check_pr(github_repo, cloned_repo_manager, pr):
