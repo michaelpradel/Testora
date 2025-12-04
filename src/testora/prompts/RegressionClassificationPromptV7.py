@@ -5,6 +5,7 @@ import json
 import re
 
 from testora.util.ClassificationResult import Classification, ClassificationResult
+from testora.util.Exceptions import TestoraException
 
 
 class RegressionClassificationPromptV7:
@@ -191,7 +192,10 @@ If any required detail (such as diffs, docstrings, outputs, or test code) is mis
             flags=re.MULTILINE)
         cleaned = backtick_regexp.strip()
         extracted = cleaned[cleaned.find("{"):cleaned.rfind("}")+1]
-        answer = json.loads(extracted)
+        try:
+            answer = json.loads(extracted)
+        except Exception as e:
+            raise TestoraException("Could not find answer in the response.", e)
 
         if answer["answer1"] == "noteworthy" and \
             answer["answer2"] == "deterministic" and \

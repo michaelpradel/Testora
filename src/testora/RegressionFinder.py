@@ -312,18 +312,28 @@ def classify_regression(project_name, pr, changed_functions, docstrings, old_exe
 
     all_results = []
     for raw_answer_sample in raw_answer:
-        classification_result = prompt.parse_answer([raw_answer_sample])
+        attempts_left = 3
+        while attempts_left > 0:
+            try:
+                classification_result = prompt.parse_answer([raw_answer_sample])
+                break
+            except TestoraException as e:
+                attempts_left -= 1
+                append_event(Event(pr_nb=pr.number,
+                                   message=f"Error parsing classification answer: {e}"))
+                if attempts_left == 0:
+                    raise e
         append_event(ClassificationEvent(pr_nb=pr.number,
                                          message="Classification",
                                          test_code=old_execution.code,
                                          old_output=old_execution.output,
                                          new_output=new_execution.output,
-                                         classification=classification_result.classification,
-                                         classification_explanation=classification_result.classification_explanation,
+                                         classification=classification_result.classification, # type: ignore
+                                         classification_explanation=classification_result.classification_explanation, # type: ignore
                                          old_is_crash=is_crash(
                                              old_execution.output),
                                          new_is_crash=is_crash(new_execution.output)))
-        result = classification_result.classification == Classification.REGRESSION
+        result = classification_result.classification == Classification.REGRESSION # type: ignore
         all_results.append(result)
     return all_results
 
