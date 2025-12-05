@@ -16,7 +16,10 @@
             border: 1px solid #ddd;
             padding: 10px;
             border-radius: 5px;
-            overflow: auto;
+            max-width: 72rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         table {
@@ -71,7 +74,7 @@
     <pre>{{ classification_result.new_output }}</pre>
 
     <h2>Classification: {{ classification_result.classification }}</h2>
-    <div class="width100ch">{{ classification_result.classification_explanation}}</div>
+    <pre>{{ classification_result.classification_explanation }}</pre>
     <br>
     <div><a href="/pr{{ pr_result.number }}_log">Detailed log</a></div>
 
