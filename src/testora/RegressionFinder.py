@@ -169,15 +169,22 @@ def is_crash(output):
 
 
 def generate_tests_with_prompt(pr, prompt, model, nb_samples=1):
-    raw_answer = model.query(prompt, nb_samples)
-    append_event(LLMEvent(pr_nb=pr.number,
-                 message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
-
-    generated_tests = prompt.parse_answer(raw_answer)
-    for idx, test in enumerate(generated_tests):
+    attempts_left = 3
+    while attempts_left > 0:
+        raw_answer = model.query(prompt, nb_samples)
         append_event(LLMEvent(pr_nb=pr.number,
-                     message=f"Generated test {idx+1}", content=test))
-    return generated_tests
+                    message="Raw answer", content="\n---(next sample)---".join(raw_answer)))
+
+        generated_tests = prompt.parse_answer(raw_answer)
+        for idx, test in enumerate(generated_tests):
+            append_event(LLMEvent(pr_nb=pr.number,
+                        message=f"Generated test {idx+1}", content=test))
+        if len(generated_tests) > 0:
+            return generated_tests
+        attempts_left -= 1
+        append_event(Event(pr_nb=pr.number,
+                           message="No tests generated; retrying"))
+    return []
 
 
 def remove_tests_with_private_call(tests):

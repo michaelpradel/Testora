@@ -21,7 +21,7 @@ This diff modifies the following functions: {fut_qualified_names}.
 Instructions:
 - Use only the public API from {project_name}. Assume the package is installed and importable.
 - Avoid using any randomly generated data or dynamic timestamps. All inputs must be fixed or deterministic.
-- Generate a total of 20 executable Python usage examples, each in a separate, clearly marked code block.
+- Generate a total of 20 executable Python usage examples, each in a separate code block marked with triple backticks.
 - The first 10 examples should demonstrate standard/typical usage scenarios.
 - The next 10 (examples 11-20) should focus on corner cases and edge conditions, such as unusual values (e.g., None, NaN, empty lists, etc.).
 - Each Python code block must:
@@ -29,7 +29,7 @@ Instructions:
     - Begin with a comment: e.g., '# Example 1: <short description>'.
     - Include clear print statements for input arguments, outputs, and any intermediate values that help show differences in behavior.
     - If an exception is expected for an edge case, wrap the code in a try/except and print only the exception message (avoid printing stack traces).
-- Use the following output format for each example:
+- Use the following output format for each example. Failing to wrap the code into backticks will make the result unusable:
 ```python
 # Example <N>: <short description>
 <example code>
