@@ -5,6 +5,7 @@ from os.path import join, exists
 import atexit
 from testora.prompts.PromptCommon import system_message
 from testora.util.Logs import append_event, LLMEvent
+from testora import Config
 
 cache_base_dir = "./data/llm_cache/"
 if not exists(cache_base_dir):
@@ -48,7 +49,7 @@ class LLMCache:
         prompt_str = prompt.create_prompt()
 
         # check for cached answer
-        if not no_cache:
+        if not no_cache and Config.use_llm_cache:
             result = self.cache.get(prompt_str)
             if result is not None:
                 cached_answers = []
@@ -69,7 +70,7 @@ class LLMCache:
         self.nb_misses += 1
         result = self.llm_module.query(prompt, nb_samples=nb_samples, temperature=temperature)
 
-        if no_cache:
+        if no_cache or not Config.use_llm_cache:
             return result
 
         # update cache (only if answer is non-empty)

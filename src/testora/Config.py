@@ -25,6 +25,8 @@ model_version = "gpt-5-mini-2025-08-07"
 # model_version = "gpt-4o-2024-08-06"
 # model_version = "deepseek/deepseek-r1"
 
+# whether to use LLM caching
+use_llm_cache = False
 
 # OpenAI's default: 1.0
 classification_temp = 1.0
