@@ -26,7 +26,8 @@ from testora.evaluation import EvalTaskManager
 from testora import Config
 from testora.execution.CoverageAnalyzer import summarize_coverage
 
-llm = LLMCache(OpenAIGPT())
+# llm = LLMCache(OpenAIGPT())  # use cache
+llm = OpenAIGPT()  ## don't use cache
 
 # V1 to V6 not supported anymore
 # if Config.classification_prompt_version == 1:
