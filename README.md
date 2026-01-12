@@ -19,7 +19,7 @@ To install and run Testora, follow these steps:
 
 2) Open Testora in Visual Studio Code:
    
-   ```code .```
+   ```code <main_dir_of_this_project>```
 
 3) In Visual Studio Code, build the Dev Container and reopen the project in the container:
 
